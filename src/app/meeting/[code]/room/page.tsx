@@ -1,0 +1,246 @@
+'use client';
+
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { io, Socket } from 'socket.io-client';
+import { useAuthStore } from '@/store/authStore';
+import { useWebRTC } from '@/hooks/useWebRTC';
+import { VideoGrid } from '@/components/meeting/VideoGrid';
+import { ControlBar } from '@/components/meeting/ControlBar';
+import { ChatPanel } from '@/components/meeting/ChatPanel';
+import api from '@/lib/axios';
+
+interface ChatMessage {
+  id?: string;
+  userId: string;
+  userName: string;
+  message: string;
+  sentAt: string;
+}
+
+export default function MeetingRoomPage() {
+  const { code } = useParams();
+  const router = useRouter();
+  const { user, token } = useAuthStore();
+
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [roomId, setRoomId] = useState('');
+  const [meetingId, setMeetingId] = useState('');
+  const [hostId, setHostId] = useState('');
+  const [isLocked, setIsLocked] = useState(false);
+  const [meetingEnded, setMeetingEnded] = useState(false);
+  const [kicked, setKicked] = useState(false);
+
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [screenSharing, setScreenSharing] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  // Fetch meeting info
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { data } = await api.get(`/meetings/join/${code}`);
+        setRoomId(data.roomId);
+        setMeetingId(data.meetingId);
+        setHostId(data.hostId);
+
+        // Read preferences from pre-join
+        const prefAudio = sessionStorage.getItem('vma_pref_audio');
+        const prefVideo = sessionStorage.getItem('vma_pref_video');
+        if (prefAudio !== null) setAudioEnabled(prefAudio === 'true');
+        if (prefVideo !== null) setVideoEnabled(prefVideo === 'true');
+      } catch {
+        router.push('/dashboard');
+      }
+    };
+    init();
+  }, [code, router]);
+
+  // Connect socket
+  useEffect(() => {
+    if (!token || !roomId) return;
+
+    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
+      auth: { token },
+      transports: ['websocket'],
+    });
+
+    s.on('connect', () => console.log('Socket connected'));
+
+    // Chat events
+    s.on('chat-message', (msg: ChatMessage) => {
+      setChatMessages((prev) => [...prev, msg]);
+    });
+    s.on('chat-history', (history: ChatMessage[]) => {
+      setChatMessages(history);
+    });
+
+    // Meeting lifecycle events
+    s.on('meeting-ended', () => setMeetingEnded(true));
+    s.on('kicked', () => setKicked(true));
+    s.on('room-locked', (data: { isLocked: boolean }) => setIsLocked(data.isLocked));
+
+    socketRef.current = s;
+    setSocket(s);
+
+    // Request chat history
+    s.emit('get-chat-history', { roomId });
+
+    return () => {
+      s.disconnect();
+    };
+  }, [token, roomId]);
+
+  // WebRTC hook
+  const { peers, localStream } = useWebRTC({
+    roomId,
+    socket,
+    userId: user?.id || '',
+    userName: user?.name || 'Guest',
+    initialAudio: audioEnabled,
+    initialVideo: videoEnabled,
+  });
+
+  // Toggle audio
+  const toggleAudio = useCallback(() => {
+    if (localStream) {
+      const track = localStream.getAudioTracks()[0];
+      if (track) {
+        track.enabled = !track.enabled;
+        setAudioEnabled(track.enabled);
+        socket?.emit('media-state-change', { roomId, audioEnabled: track.enabled, videoEnabled });
+      }
+    }
+  }, [localStream, socket, roomId, videoEnabled]);
+
+  // Toggle video
+  const toggleVideo = useCallback(() => {
+    if (localStream) {
+      const track = localStream.getVideoTracks()[0];
+      if (track) {
+        track.enabled = !track.enabled;
+        setVideoEnabled(track.enabled);
+        socket?.emit('media-state-change', { roomId, audioEnabled, videoEnabled: track.enabled });
+      }
+    }
+  }, [localStream, socket, roomId, audioEnabled]);
+
+  // Toggle screen share
+  const toggleScreenShare = useCallback(async () => {
+    if (screenSharing) {
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      socket?.emit('screen-share-stop', { roomId });
+      setScreenSharing(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        screenStreamRef.current = stream;
+        socket?.emit('screen-share-start', { roomId });
+        setScreenSharing(true);
+        stream.getVideoTracks()[0].onended = () => {
+          socket?.emit('screen-share-stop', { roomId });
+          setScreenSharing(false);
+        };
+      } catch {
+        console.log('Screen share cancelled');
+      }
+    }
+  }, [screenSharing, socket, roomId]);
+
+  // Send chat
+  const sendChat = useCallback((message: string) => {
+    socket?.emit('chat-message', { roomId, message });
+  }, [socket, roomId]);
+
+  // Leave meeting
+  const leaveMeeting = useCallback(() => {
+    socket?.emit('leave-room', { roomId });
+    router.push('/dashboard');
+  }, [socket, roomId, router]);
+
+  // End meeting (host)
+  const endMeeting = useCallback(() => {
+    socket?.emit('end-meeting', { roomId });
+  }, [socket, roomId]);
+
+  // Lock toggle (host)
+  const toggleLock = useCallback(() => {
+    socket?.emit('toggle-lock', { roomId });
+  }, [socket, roomId]);
+
+  // Redirects on meeting end or kick
+  useEffect(() => {
+    if (meetingEnded || kicked) {
+      const timeout = setTimeout(() => router.push('/dashboard'), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [meetingEnded, kicked, router]);
+
+  if (meetingEnded) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center glass p-12 rounded-2xl">
+          <h2 className="text-2xl font-bold text-white mb-2">Meeting Ended</h2>
+          <p className="text-slate-400">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (kicked) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center glass p-12 rounded-2xl">
+          <h2 className="text-2xl font-bold text-destructive mb-2">You were removed</h2>
+          <p className="text-slate-400">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isHost = user?.id === hostId;
+
+  return (
+    <div className="h-screen bg-slate-950 flex flex-col overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
+        <div className={`flex-1 transition-all ${chatOpen ? 'mr-0' : ''}`}>
+          <VideoGrid
+            peers={peers}
+            localStream={localStream}
+            localUserName={user?.name || 'You'}
+            localAudioEnabled={audioEnabled}
+            localVideoEnabled={videoEnabled}
+          />
+        </div>
+        {chatOpen && (
+          <ChatPanel
+            messages={chatMessages}
+            onSend={sendChat}
+            onClose={() => setChatOpen(false)}
+            currentUserId={user?.id || ''}
+          />
+        )}
+        <ControlBar
+          audioEnabled={audioEnabled}
+          videoEnabled={videoEnabled}
+          screenSharing={screenSharing}
+          chatOpen={chatOpen}
+          isHost={isHost}
+          isLocked={isLocked}
+          onToggleAudio={toggleAudio}
+          onToggleVideo={toggleVideo}
+          onToggleScreenShare={toggleScreenShare}
+          onToggleChat={() => setChatOpen(!chatOpen)}
+          onLeave={leaveMeeting}
+          onEndMeeting={endMeeting}
+          onToggleLock={toggleLock}
+        />
+      </div>
+    </div>
+  );
+}
