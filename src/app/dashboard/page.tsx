@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Plus, Video, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
+import { Plus, Video, Calendar as CalendarIcon, RefreshCw, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { MeetingCard } from '@/components/dashboard/MeetingCard';
 import api from '@/lib/axios';
@@ -43,14 +43,14 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-white">My Meetings</h1>
           <p className="text-slate-400 mt-1">Manage and join your virtual sessions</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={fetchMeetings}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button variant="outline" className="gap-2" onClick={() => {/* TODO: Show Schedule Modal */}}>
-            <CalendarIcon className="h-4 w-4" />
-            Schedule
+          <Button variant="outline" className="gap-2" onClick={() => window.location.href = '/dashboard/profile'}>
+            <User className="h-4 w-4" />
+            Profile
           </Button>
           <Button className="gap-2" onClick={createInstantMeeting}>
             <Plus className="h-4 w-4" />

@@ -36,33 +36,49 @@ function VerifyOtpContent() {
     setIsLoading(true);
     setError(null);
     try {
+      const signupDataRaw = sessionStorage.getItem('signup_data');
+      if (!signupDataRaw) {
+        throw new Error('Registration data missing. Please sign up again.');
+      }
+
+      const signupData = JSON.parse(signupDataRaw);
+
       const response = await api.post('/auth/verify-otp', {
-        email,
+        ...signupData,
         code: data.code,
       });
       
       const { user, access_token } = response.data;
+      
+      // Cleanup
+      sessionStorage.removeItem('signup_data');
+      
       setAuth(user, access_token);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid code. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Invalid code. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="w-full max-w-md space-y-8 glass p-8 rounded-2xl text-center">
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden text-center">
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
+
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Verify OTP</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Enter the code sent to <span className="text-primary font-medium">{email}</span>
+          <div className="inline-block p-3 rounded-xl bg-primary/10 border border-primary/20 mb-4">
+            <div className="w-12 h-12 flex items-center justify-center text-primary font-bold text-2xl">OTP</div>
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Verify Identity</h1>
+          <p className="mt-2 text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+            Code sent to <span className="text-primary">{email}</span>
           </p>
         </div>
 
         {error && (
-          <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg">
+          <div className="p-4 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
             {error}
           </div>
         )}
@@ -71,9 +87,9 @@ function VerifyOtpContent() {
           <Input
             label="Verification Code"
             type="text"
-            placeholder="Enter 6-digit code"
+            placeholder="000000"
             maxLength={6}
-            className="text-center text-2xl tracking-[0.5em] font-bold"
+            className="text-center text-3xl tracking-[0.6em] font-black py-5 bg-black/60 border-white/10"
             {...register('code', { 
               required: 'Code is required',
               pattern: { value: /^[0-9]{6}$/, message: "Must be a 6-digit number" }
@@ -81,20 +97,19 @@ function VerifyOtpContent() {
             error={errors.code?.message}
           />
 
-          <Button type="submit" className="w-full" isLoading={isLoading}>
+          <Button type="submit" className="w-full" isLoading={isLoading} size="lg">
             Verify & Continue
           </Button>
 
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-muted-foreground font-medium">
             Didn't receive the code?{' '}
             <button 
               type="button"
-              className="font-medium text-primary hover:text-primary/80 disabled:opacity-50"
+              className="text-primary hover:text-primary/80 transition-colors font-bold uppercase tracking-wider"
               onClick={async () => {
-                // Implement resend OTP if backend supports it
                 try {
-                  await api.post('/auth/resend-otp', { email });
-                  alert('OTP Resent!');
+                  await api.post('/auth/signup', { email });
+                  alert('A new OTP has been sent to your email.');
                 } catch (e) {
                   console.error(e);
                 }
