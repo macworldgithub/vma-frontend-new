@@ -9,6 +9,7 @@ import { VideoGrid } from '@/components/meeting/VideoGrid';
 import { ControlBar } from '@/components/meeting/ControlBar';
 import { ChatPanel } from '@/components/meeting/ChatPanel';
 import api from '@/lib/axios';
+import { Shield } from 'lucide-react';
 
 interface ChatMessage {
   id?: string;
@@ -183,10 +184,24 @@ export default function MeetingRoomPage() {
 
   if (meetingEnded) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center glass p-12 rounded-2xl">
-          <h2 className="text-2xl font-bold text-white mb-2">Meeting Ended</h2>
-          <p className="text-slate-400">Redirecting to dashboard...</p>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="glass max-w-md w-full p-12 rounded-[40px] border-emerald-500/20 text-center space-y-8 animate-in zoom-in-95 duration-500">
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse" />
+            <div className="relative p-6 rounded-full bg-emerald-500/10 text-emerald-500">
+              <Shield className="h-12 w-12" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-tight">Session <span className="text-emerald-400">Concluded</span></h2>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Secure Tunnel Successfully Terminated</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+            The meeting data has been encrypted and archived. Redirecting to your dashboard command center...
+          </div>
+          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500 animate-[progress_3s_linear_forwards]" />
+          </div>
         </div>
       </div>
     );
@@ -194,10 +209,24 @@ export default function MeetingRoomPage() {
 
   if (kicked) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center glass p-12 rounded-2xl">
-          <h2 className="text-2xl font-bold text-destructive mb-2">You were removed</h2>
-          <p className="text-slate-400">Redirecting to dashboard...</p>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="glass max-w-md w-full p-12 rounded-[40px] border-rose-500/20 text-center space-y-8 animate-in zoom-in-95 duration-500">
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-rose-500/20 rounded-full blur-2xl animate-pulse" />
+            <div className="relative p-6 rounded-full bg-rose-500/10 text-rose-500">
+              <Shield className="h-12 w-12" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-tight">Access <span className="text-rose-500">Revoked</span></h2>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Permissions terminated by host</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
+            Your connection to this secure session has been severed. Redirecting to dashboard...
+          </div>
+          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-rose-500 animate-[progress_3s_linear_forwards]" />
+          </div>
         </div>
       </div>
     );
