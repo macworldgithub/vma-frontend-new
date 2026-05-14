@@ -24,7 +24,8 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       const data = await meetingService.getMyMeetings();
-      setMeetings(data);
+      // Only show meetings that haven't ended yet
+      setMeetings(data.filter((m: any) => m.status !== 'ENDED'));
     } catch (error) {
       console.error('Error fetching meetings:', error);
     } finally {

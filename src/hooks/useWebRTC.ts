@@ -76,11 +76,29 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
       const { data } = await api.get('/meetings/ice-servers');
       iceServers.current = data.iceServers;
 
-      // 2. Get Local Stream
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: initialVideo,
-        audio: initialAudio,
-      });
+      // 2. Get Local Stream with fallback logic
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: initialVideo,
+          audio: initialAudio,
+        });
+      } catch (err: any) {
+        console.warn('VMA: Initial media capture failed, trying fallback...', err.name);
+        
+        // If both failed, try audio only
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+        } catch {
+          // If audio only failed, try video only
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          } catch {
+            console.error('VMA: No camera or microphone found. Joining with no media.');
+            stream = new MediaStream();
+          }
+        }
+      }
       setLocalStream(stream);
       localStreamRef.current = stream;
 
