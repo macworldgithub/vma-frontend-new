@@ -12,6 +12,7 @@ import { useAuthStore } from '@/store/authStore';
 interface LoginFormData {
   email: string;
   password: string;
+  role: 'staff' | 'admin';
 }
 
 export default function LoginPage() {
@@ -23,20 +24,31 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
-  } = useForm<LoginFormData>();
+  } = useForm<LoginFormData>({
+    defaultValues: {
+      role: 'staff'
+    }
+  });
+
+  const selectedRole = watch('role');
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await api.post('/auth/login', data);
-      const { user, access_token } = response.data;
+      const { access_token, user } = response.data;
+      
+      // Store token in localStorage
+      localStorage.setItem('vma_token', access_token);
       
       setAuth(user, access_token);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
+      setError(err.response?.data?.message || 'Invalid email, password, or role.');
     } finally {
       setIsLoading(false);
     }
@@ -67,8 +79,33 @@ export default function LoginPage() {
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setValue('role', 'staff')}
+                className={`p-3 rounded-xl border-2 transition-all duration-300 text-sm font-bold uppercase tracking-wider ${
+                  selectedRole === 'staff'
+                    ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20'
+                    : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'
+                }`}
+              >
+                Staff
+              </button>
+              <button
+                type="button"
+                onClick={() => setValue('role', 'admin')}
+                className={`p-3 rounded-xl border-2 transition-all duration-300 text-sm font-bold uppercase tracking-wider ${
+                  selectedRole === 'admin'
+                    ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20'
+                    : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'
+                }`}
+              >
+                Admin
+              </button>
+            </div>
+
             <Input
-              label="Staff Email"
+              label="Email Address"
               type="email"
               placeholder="name@pattersoncheney.com.au"
               {...register('email', { 

@@ -18,7 +18,7 @@ function VerifyOtpContent() {
   const email = searchParams.get('email');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (!email) {
@@ -43,24 +43,40 @@ function VerifyOtpContent() {
 
       const signupData = JSON.parse(signupDataRaw);
 
-      const response = await api.post('/auth/verify-otp', {
+      await api.post('/auth/verify-otp', {
         ...signupData,
         code: data.code,
       });
       
-      const { user, access_token } = response.data;
-      
-      // Cleanup
+      setSuccess(true);
       sessionStorage.removeItem('signup_data');
       
-      setAuth(user, access_token);
-      router.push('/dashboard');
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Invalid code. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden text-center">
+          <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
+          <div className="inline-block p-4 rounded-full bg-emerald-500/10 text-emerald-500 mb-4 border border-emerald-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black text-white uppercase italic">Account Verified!</h2>
+          <p className="text-muted-foreground font-medium">Your account has been created successfully. Redirecting you to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">

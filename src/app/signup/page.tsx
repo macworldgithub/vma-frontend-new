@@ -12,6 +12,7 @@ interface SignupFormData {
   name: string;
   email: string;
   password: string;
+  role: 'staff' | 'admin';
 }
 
 export default function SignupPage() {
@@ -22,8 +23,16 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
-  } = useForm<SignupFormData>();
+  } = useForm<SignupFormData>({
+    defaultValues: {
+      role: 'staff'
+    }
+  });
+
+  const selectedRole = watch('role');
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
@@ -32,10 +41,7 @@ export default function SignupPage() {
       await api.post('/auth/signup', { email: data.email });
       
       // Store signup data temporarily for verification step
-      sessionStorage.setItem('signup_data', JSON.stringify({
-        ...data,
-        role: 'staff', // Default role for Patterson Cheney staff
-      }));
+      sessionStorage.setItem('signup_data', JSON.stringify(data));
 
       // Redirect to OTP verification
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
@@ -71,6 +77,31 @@ export default function SignupPage() {
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setValue('role', 'staff')}
+                className={`p-3 rounded-xl border-2 transition-all duration-300 text-sm font-bold uppercase tracking-wider ${
+                  selectedRole === 'staff'
+                    ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20'
+                    : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'
+                }`}
+              >
+                Staff
+              </button>
+              <button
+                type="button"
+                onClick={() => setValue('role', 'admin')}
+                className={`p-3 rounded-xl border-2 transition-all duration-300 text-sm font-bold uppercase tracking-wider ${
+                  selectedRole === 'admin'
+                    ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20'
+                    : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'
+                }`}
+              >
+                Admin
+              </button>
+            </div>
+
             <Input
               label="Full Name"
               type="text"

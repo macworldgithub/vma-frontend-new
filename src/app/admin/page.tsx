@@ -2,18 +2,37 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Video, Shield, RefreshCw } from 'lucide-react';
+import { Users, Video, Shield, RefreshCw, Activity, PieChart, LayoutDashboard, Search } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';
+import {
+  dashboardService,
+  DashboardStats,
+  MeetingHistoryItem,
+  RecentMeeting,
+  TopUser
+} from '@/services/dashboardService';
+
+// New Dashboard Components
+import { StatCard } from '@/components/admin/StatCard';
+import { MeetingChart } from '@/components/admin/MeetingChart';
+import { RecentMeetingsTable } from '@/components/admin/RecentMeetingsTable';
+import { TopUsersList } from '@/components/admin/TopUsersList';
 
 export default function AdminPage() {
   const router = useRouter();
   const { user } = useAuthStore();
+
+  // State for different data segments
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [history, setHistory] = useState<MeetingHistoryItem[]>([]);
+  const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
+  const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [meetings, setMeetings] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'users' | 'meetings'>('users');
+  const [tab, setTab] = useState<'analytics' | 'users' | 'meetings'>('analytics');
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -24,14 +43,21 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [u, m] = await Promise.all([
-        api.get('/users'),
-        api.get('/meetings/all').catch(() => ({ data: [] })), // Fallback if no meetings route
+      const [s, h, r, t, u] = await Promise.all([
+        dashboardService.getStats(),
+        dashboardService.getMeetingHistory(30),
+        dashboardService.getRecentMeetings(10),
+        dashboardService.getTopUsers(5),
+        api.get('/users').then(res => res.data).catch(() => []),
       ]);
-      setUsers(u.data);
-      setMeetings(m.data);
+
+      setStats(s);
+      setHistory(h);
+      setRecentMeetings(r);
+      setTopUsers(t);
+      setUsers(u);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch admin dashboard data:', err);
     } finally {
       setLoading(false);
     }
@@ -47,156 +73,197 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-6xl mx-auto space-y-10">
-        <div className="flex items-center justify-between">
-          <div className="relative">
-            <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl" />
-            <h1 className="text-4xl font-black text-white uppercase italic tracking-tight relative">
-              Admin <span className="text-primary">Console</span>
-            </h1>
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.3em] mt-1">
-              Platform Management • 100 Seats
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <Button variant="outline" size="icon" onClick={fetchData} className="rounded-full border-white/5 bg-white/5">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button size="sm" className="hidden sm:flex">
-              Generate Report
-            </Button>
-          </div>
+    <div className="min-h-screen p-4 md:p-8 space-y-10">
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative">
+          <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+          <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter relative flex items-center gap-3">
+            Admin <span className="text-primary">Console</span>
+          </h1>
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">
+            OmniSuiteAI Platform Intelligence • AU Regional Data
+          </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={fetchData}
+            className="rounded-full border-white/5 bg-white/5 hover:bg-white/10"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button className="hidden sm:flex gap-2 font-black uppercase tracking-widest text-[10px]">
+            Export System Logs
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto space-y-8">
+
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap gap-1 p-1 bg-white/5 rounded-2xl w-fit">
           {[
-            { label: 'Active Users', value: users.length, icon: Users, color: 'text-primary' },
-            { label: 'Platform Seats', value: '100', icon: Shield, color: 'text-blue-500' },
-            { label: 'Meetings Handled', value: meetings.length, icon: Video, color: 'text-emerald-500' },
-          ].map((stat, i) => (
-            <div key={i} className="glass p-6 rounded-2xl border-white/5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-white/5 group-hover:bg-primary/30 transition-colors" />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                  <p className="text-3xl font-black text-white mt-1 italic">{stat.value}</p>
-                </div>
-                <stat.icon className={`h-8 w-8 ${stat.color} opacity-20`} />
-              </div>
-            </div>
+            { id: 'analytics', label: 'Analytics', icon: Activity },
+            { id: 'users', label: 'User Directory', icon: Users },
+            { id: 'meetings', label: 'Session Logs', icon: Video },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setTab(item.id as any)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${tab === item.id
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                }`}
+            >
+              <item.icon className="h-3 w-3" />
+              {item.label}
+            </button>
           ))}
         </div>
 
-        {/* Tabs Control */}
-        <div className="flex gap-8 border-b border-white/5">
-          <button 
-            onClick={() => setTab('users')} 
-            className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${tab === 'users' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`}
-          >
-            User Directory
-            {tab === 'users' && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-full animate-in fade-in slide-in-from-bottom-1" />}
-          </button>
-          <button 
-            onClick={() => setTab('meetings')} 
-            className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${tab === 'meetings' ? 'text-primary' : 'text-muted-foreground hover:text-white'}`}
-          >
-            Meeting Logs
-            {tab === 'meetings' && <div className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-full animate-in fade-in slide-in-from-bottom-1" />}
-          </button>
-        </div>
+        {loading && !stats ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+            {[1, 2, 3].map(i => <div key={i} className="h-32 glass rounded-2xl border-white/5" />)}
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+            {tab === 'analytics' && (
+              <div className="space-y-8">
+                {/* Stats Overview */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatCard
+                    label="Platform Users"
+                    value={stats?.users.total || 0}
+                    icon={Users}
+                    description={`${stats?.users.active || 0} ACTIVE SEATS`}
+                  />
+                  <StatCard
+                    label="Active Sessions"
+                    value={stats?.realtime.activeRooms || 0}
+                    icon={Activity}
+                    color="text-emerald-500"
+                    description={`${stats?.realtime.participantsOnline || 0} PARTICIPANTS`}
+                  />
+                  <StatCard
+                    label="Total Meetings"
+                    value={stats?.meetings.total || 0}
+                    icon={Video}
+                    color="text-blue-500"
+                    description={`${stats?.meetings.ended || 0} COMPLETED`}
+                  />
+                  <StatCard
+                    label="Live Capacity"
+                    value="100"
+                    icon={Shield}
+                    color="text-amber-500"
+                    description="MAX CONCURRENT"
+                  />
+                </div>
 
-        {/* Content Area */}
-        <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-          {tab === 'users' && (
-            <div className="glass rounded-2xl overflow-hidden border-white/5">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]">
-                      <th className="text-left p-5">Staff Member</th>
-                      <th className="text-left p-5">Role</th>
-                      <th className="text-right p-5">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {users.map((u: any) => (
-                      <tr key={u._id} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="p-5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-black text-primary border border-white/5 group-hover:border-primary/20 transition-colors">
-                              {u.name.charAt(0)}
-                            </div>
-                            <div>
-                              <div className="text-white font-bold">{u.name}</div>
-                              <div className="text-xs text-muted-foreground">{u.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-5">
-                          <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${u.role === 'admin' ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-white/5 text-muted-foreground border border-white/5'}`}>
-                            {u.role}
-                          </span>
-                        </td>
-                        <td className="p-5 text-right">
-                          <button 
-                            onClick={() => deleteUser(u._id)}
-                            className="text-muted-foreground hover:text-destructive transition-colors p-2"
-                            title="Revoke Access"
-                          >
-                            <Shield className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Chart Section */}
+                  <div className="lg:col-span-2">
+                    <MeetingChart data={history} />
+                  </div>
 
-          {tab === 'meetings' && (
-            <div className="glass rounded-2xl overflow-hidden border-white/5">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]">
-                      <th className="text-left p-5">Meeting Details</th>
-                      <th className="text-left p-5">Status</th>
-                      <th className="text-left p-5">Host Identity</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {meetings.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="p-10 text-center text-muted-foreground font-medium uppercase tracking-widest text-xs">No activity logged in this period</td>
-                      </tr>
-                    ) : meetings.map((m: any) => (
-                      <tr key={m._id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="p-5">
-                          <div className="text-white font-bold">{m.title}</div>
-                          <div className="text-xs font-mono text-primary uppercase tracking-widest mt-1">CODE: {m.meetingCode}</div>
-                        </td>
-                        <td className="p-5">
-                          <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${
-                            m.status === 'LIVE' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                            m.status === 'SCHEDULED' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
-                            'bg-white/5 text-muted-foreground border border-white/5'
-                          }`}>{m.status}</span>
-                        </td>
-                        <td className="p-5 text-xs font-mono text-muted-foreground">{m.hostId}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  {/* Top Users Section */}
+                  <div className="lg:col-span-1">
+                    <TopUsersList users={topUsers} />
+                  </div>
+                </div>
+
+                {/* Recent Activity Mini Table */}
+                <RecentMeetingsTable meetings={recentMeetings} />
               </div>
-            </div>
-          )}
-        </div>
+            )}
+
+            {tab === 'users' && (
+              <div className="glass rounded-3xl overflow-hidden border-white/5 relative">
+                <div className="p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-black text-white uppercase italic">Staff <span className="text-primary">Directory</span></h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Manage User Access & Roles</p>
+                  </div>
+                  <div className="relative group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <input
+                      type="text"
+                      placeholder="SEARCH STAFF..."
+                      className="bg-white/5 border border-white/10 rounded-full pl-10 pr-6 py-2 text-[10px] font-bold text-white uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all min-w-[240px]"
+                    />
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]">
+                        <th className="text-left p-6">Staff Member</th>
+                        <th className="text-left p-6">Identity Status</th>
+                        <th className="text-left p-6">Platform Role</th>
+                        <th className="text-right p-6">Governance</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {users.map((u: any) => (
+                        <tr key={u._id} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center font-black text-primary border border-white/5 group-hover:border-primary/30 transition-all duration-500 transform group-hover:scale-105">
+                                {u.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="text-white font-bold tracking-tight text-base">{u.name}</div>
+                                <div className="text-xs text-muted-foreground font-medium">{u.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-6">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-600'}`} />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                {u.isActive ? 'Verified Active' : 'Deactivated'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-6">
+                            <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter italic ${u.role === 'admin'
+                                ? 'bg-primary/20 text-primary border border-primary/20 shadow-lg shadow-primary/10'
+                                : 'bg-white/5 text-muted-foreground border border-white/5'
+                              }`}>
+                              {u.role}
+                            </span>
+                          </td>
+                          <td className="p-6 text-right">
+                            <button
+                              onClick={() => deleteUser(u._id)}
+                              className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all p-3 rounded-xl border border-transparent hover:border-rose-500/20"
+                              title="Revoke Access"
+                            >
+                              <Shield className="h-5 w-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {tab === 'meetings' && (
+              <RecentMeetingsTable meetings={recentMeetings} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
