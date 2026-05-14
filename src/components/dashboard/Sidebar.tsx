@@ -3,12 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Video, 
-  Calendar, 
-  Users, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Video,
+  Calendar,
+  Users,
+  Settings,
   LogOut,
   ShieldCheck,
   User
@@ -23,6 +23,7 @@ export const Sidebar = () => {
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
     { name: 'My Meetings', icon: Video, href: '/dashboard/meetings' },
+    { name: 'Google Calendar', icon: Calendar, href: '/dashboard/calendar' },
     { name: 'Profile', icon: User, href: '/dashboard/profile' },
     ...(user?.role === 'admin' ? [{ name: 'Admin', icon: ShieldCheck, href: '/admin' }] : []),
   ];
@@ -52,11 +53,10 @@ export const Sidebar = () => {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive 
-                  ? 'bg-primary/10 text-primary' 
-                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
-              }`}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive
+                ? 'bg-primary/10 text-primary'
+                : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
+                }`}
             >
               <item.icon className="h-5 w-5" />
               {item.name}
@@ -66,7 +66,7 @@ export const Sidebar = () => {
       </nav>
 
       <div className="border-t border-white/5 p-4">
-        <Link 
+        <Link
           href="/dashboard/profile"
           className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-all group"
         >
