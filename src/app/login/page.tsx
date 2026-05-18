@@ -46,6 +46,14 @@ export default function LoginPage() {
       localStorage.setItem('vma_token', access_token);
       
       setAuth(user, access_token);
+
+      try {
+        // Hit the Google Calendar OAuth URL API in the background with the access token
+        await api.get('/calendar/google/url');
+      } catch (urlErr) {
+        console.error('Failed to hit Google Calendar auth URL API:', urlErr);
+      }
+      
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid email, password, or role.');
@@ -53,6 +61,8 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
