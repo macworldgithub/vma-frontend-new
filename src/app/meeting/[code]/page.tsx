@@ -115,7 +115,7 @@ export default function JoinPage() {
       <div className="flex-1 relative flex items-center justify-center p-6 md:p-12 bg-gradient-to-br from-slate-950 to-slate-900">
         <div className="absolute top-12 left-12 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-black text-xl italic shadow-lg shadow-primary/20">PC</div>
+            <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-black text-xl italic shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">PC</div>
             <div>
               <h2 className="text-white font-black uppercase italic tracking-tight leading-none">Patterson Cheney</h2>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Virtual Lobby • Secure Session</p>

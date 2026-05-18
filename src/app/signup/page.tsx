@@ -58,8 +58,8 @@ export default function SignupPage() {
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
         
         <div className="text-center relative">
-          <div className="inline-block p-3 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-            <div className="w-12 h-12 flex items-center justify-center text-primary font-bold text-2xl">PC</div>
+          <div className="inline-block p-3 rounded-xl bg-accent/10 border border-accent/30 mb-4 shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">
+            <div className="w-12 h-12 flex items-center justify-center text-accent font-black text-2xl tracking-tighter">PC</div>
           </div>
           <h1 className="text-4xl font-black tracking-tight text-white uppercase italic">
             Patterson Cheney

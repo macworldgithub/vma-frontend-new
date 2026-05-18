@@ -1,131 +1,126 @@
 @import "tailwindcss";
 
-:root {
-  --background: #050505;
-  --foreground: #ffffff;
-  --card: #121212;
-  --card-foreground: #f8fafc;
-  --popover: #0a0a0a;
-  --popover-foreground: #f8fafc;
-  --primary: #cc0000; /* Patterson Cheney Red */
-  --primary-foreground: #ffffff;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #f8fafc;
-  --muted: #1a1a1a;
-  --muted-foreground: #888888;
-  --accent: #cc0000;
-  --accent-foreground: #ffffff;
-  --destructive: #ff3333;
-  --destructive-foreground: #ffffff;
-  --border: #262626;
-  --input: #1a1a1a;
-  --ring: #cc0000;
-  --radius: 0.5rem;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+@theme {
+  --color-background: #020512;
+  --color-foreground: #ffffff;
+  --color-card: #050b21;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #030718;
+  --color-popover-foreground: #f8fafc;
+  --color-primary: #00f0ff;
+  --color-primary-foreground: #020512;
+  --color-secondary: #0b1437;
+  --color-secondary-foreground: #f8fafc;
+  --color-muted: #0b1437;
+  --color-muted-foreground: #8a9fc4;
+  --color-accent: #dfb76c;
+  --color-accent-foreground: #020512;
+  --color-destructive: #ff3b30;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #13225c;
+  --color-input: #070e28;
+  --color-ring: #00f0ff;
+  --radius: 0.75rem;
 }
 
 * {
-  border-color: var(--border);
+  border-color: var(--color-border);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 0% 0%, rgba(204, 0, 0, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(204, 0, 0, 0.03) 0%, transparent 50%);
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(223, 183, 108, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(11, 20, 55, 0.5) 0%, transparent 100%);
 }
 
-/* Premium Glassmorphism */
+/* Premium UCL Glassmorphism */
 .glass {
-  background: rgba(18, 18, 18, 0.7);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  background: rgba(5, 11, 33, 0.65);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(19, 34, 92, 0.4);
+  box-shadow: 0 25px 50px -12px rgba(2, 5, 18, 0.7);
 }
 
 .glass-card {
-  background: rgba(25, 25, 25, 0.4);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(11, 20, 55, 0.35);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(19, 34, 92, 0.3);
   border-radius: var(--radius);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(204, 0, 0, 0.3);
-  background: rgba(25, 25, 25, 0.6);
+  border-color: rgba(0, 240, 255, 0.3);
+  background: rgba(11, 20, 55, 0.5);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
 }
 
-/* Shimmer Effect */
+/* Starfield Shimmer Effect */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.15), transparent);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite linear;
+  animation: shimmer 2.5s infinite linear;
 }
 
-/* Custom Scrollbar */
+/* Custom UCL Styled Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: #020512;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #262626;
+  background: #13225c;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #cc0000;
+  background: #2500f5;
 }
 
-/* Typography & Layout */
-h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.025em;
+/* Typography & Layout - UEFA Space Grotesk Title Styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.01em;
   font-weight: 700;
 }
 
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #cc0000 0%, #990000 100%);
-  box-shadow: 0 4px 15px rgba(204, 0, 0, 0.3);
+  background: linear-gradient(135deg, #0b1437 0%, #13225c 50%, #00f0ff 100%);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.2);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: #ffffff;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary-gradient:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(204, 0, 0, 0.4);
+  box-shadow: 0 6px 25px rgba(0, 240, 255, 0.35);
+  border-color: #00f0ff;
 }
 
 .btn-primary-gradient:active {
   transform: translateY(0);
 }
-

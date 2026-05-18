@@ -39,7 +39,7 @@ export const ControlBar = ({
           danger
             ? 'bg-rose-500 text-white border-rose-400/50 hover:bg-rose-600 shadow-lg shadow-rose-500/20'
             : active
-              ? `${accent || 'bg-white/10 text-white border-white/20'} hover:bg-white/20 shadow-lg shadow-white/5`
+              ? `${accent || 'bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 shadow-lg shadow-primary/10'}`
               : 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20'
         } transform hover:-translate-y-1 active:scale-95`}
       >

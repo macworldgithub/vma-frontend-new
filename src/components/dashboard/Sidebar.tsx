@@ -34,13 +34,13 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="flex h-full w-64 flex-col border-r border-white/5 bg-black backdrop-blur-xl">
+    <div className="flex h-full w-64 flex-col border-r border-[#13225c]/50 bg-[#020512] backdrop-blur-xl">
       <div className="flex h-20 items-center px-6">
         <div className="flex flex-col">
           <span className="text-lg font-black text-white uppercase italic tracking-tighter leading-none">
             Patterson Cheney
           </span>
-          <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">
+          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mt-1 shadow-sm shadow-primary/5">
             VMA Platform
           </span>
         </div>

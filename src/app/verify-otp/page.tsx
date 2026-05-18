@@ -84,8 +84,8 @@ function VerifyOtpContent() {
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
 
         <div>
-          <div className="inline-block p-3 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-            <div className="w-12 h-12 flex items-center justify-center text-primary font-bold text-2xl">OTP</div>
+          <div className="inline-block p-3 rounded-xl bg-accent/10 border border-accent/30 mb-4 shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">
+            <div className="w-12 h-12 flex items-center justify-center text-accent font-black text-2xl tracking-tighter">OTP</div>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Verify Identity</h1>
           <p className="mt-2 text-sm font-semibold text-muted-foreground uppercase tracking-widest">

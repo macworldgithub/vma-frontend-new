@@ -45,14 +45,15 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10 pb-20">
       {/* Premium Header Section */}
-      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-slate-900 to-slate-950 border border-white/5 p-10 lg:p-14">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/4" />
+      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/10 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/5 blur-[100px] rounded-full translate-y-1/3 -translate-x-1/4" />
         
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
           <div className="space-y-4">
-            <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full w-fit">
-              <Shield className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Enterprise Secure Platform</span>
+            <div className="flex items-center gap-3 px-4 py-2 bg-accent/5 border border-accent/20 rounded-full w-fit shadow-md shadow-accent/5">
+              <Shield className="h-4 w-4 text-accent" />
+              <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Enterprise Secure Platform</span>
             </div>
             <h1 className="text-5xl lg:text-6xl font-black text-white uppercase italic tracking-tighter leading-tight">
               Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
