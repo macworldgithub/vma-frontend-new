@@ -78,4 +78,9 @@ export const meetingService = {
     const response = await api.get(`/meetings/${id}/chat`);
     return response.data;
   },
+
+  cancelMeeting: async (id: string): Promise<Meeting> => {
+    const response = await api.post(`/meetings/${id}/cancel`);
+    return response.data;
+  },
 };
