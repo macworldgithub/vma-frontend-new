@@ -4,7 +4,7 @@ import React from 'react';
 import { 
   Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, 
   MessageSquare, PhoneOff, Lock, Unlock, LogOut,
-  Settings, Users, Shield
+  Settings, Users, Shield, UserPlus
 } from 'lucide-react';
 
 interface ControlBarProps {
@@ -18,6 +18,7 @@ interface ControlBarProps {
   onToggleVideo: () => void;
   onToggleScreenShare: () => void;
   onToggleChat: () => void;
+  onCopyLink: () => void;
   onLeave: () => void;
   onEndMeeting: () => void;
   onToggleLock: () => void;
@@ -27,6 +28,7 @@ export const ControlBar = ({
   audioEnabled, videoEnabled, screenSharing, chatOpen,
   isHost, isLocked,
   onToggleAudio, onToggleVideo, onToggleScreenShare, onToggleChat,
+  onCopyLink,
   onLeave, onEndMeeting, onToggleLock,
 }: ControlBarProps) => {
   
@@ -97,6 +99,14 @@ export const ControlBar = ({
             accent={chatOpen ? 'bg-primary/20 text-primary border-primary/30' : ''}
           >
             <MessageSquare className="h-6 w-6" />
+          </ControlBtn>
+
+          <ControlBtn 
+            active={false} 
+            onClick={onCopyLink} 
+            label="Invite"
+          >
+            <UserPlus className="h-6 w-6" />
           </ControlBtn>
 
           {isHost && (
