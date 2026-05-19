@@ -34,7 +34,7 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
   };
 
   return (
-    <div className="w-96 h-full flex flex-col glass border-l border-white/5 relative z-40 bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300">
+    <div className="w-full sm:w-96 h-full flex flex-col glass border-l border-white/5 fixed sm:static inset-y-0 right-0 z-50 sm:z-40 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/5">
         <div className="flex items-center gap-3">

@@ -46,12 +46,12 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase">Staff Profile</h1>
           <p className="text-muted-foreground font-medium uppercase tracking-widest text-sm">Account Management</p>
         </div>
-        <Button variant="outline" onClick={logout} className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:border-destructive/40">
+        <Button variant="outline" onClick={logout} className="border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 w-full sm:w-auto">
           Sign Out
         </Button>
       </div>
@@ -77,7 +77,7 @@ export default function ProfilePage() {
         <div className="md:col-span-2">
           <div className="glass p-8 rounded-2xl relative overflow-hidden h-full">
             <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-wider border-b border-white/5 pb-4">Personal Information</h3>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

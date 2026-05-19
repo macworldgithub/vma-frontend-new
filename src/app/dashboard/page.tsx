@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { 
-  Plus, Video, Calendar as CalendarIcon, 
+import {
+  Plus, Video, Calendar as CalendarIcon,
   RefreshCw, User, Shield, Activity, Users,
   Search, SlidersHorizontal, ChevronRight
 } from 'lucide-react';
@@ -45,104 +45,104 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10 pb-20">
       {/* Premium Header Section */}
-      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5 animate-pulse-glow">
+      <div className="relative overflow-hidden sm:rounded-[40px] bg-linear-to-br from-card via-[#020512] to-[#0b1437] border border-primary/10 p-6 sm:p-10 lg:p-14 shadow-2xl shadow-primary/5 animate-pulse-glow">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/10 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/5 blur-[100px] rounded-full translate-y-1/3 -translate-x-1/4" />
-        
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 px-4 py-2 bg-accent/5 border border-accent/20 rounded-full w-fit shadow-md shadow-accent/5">
-              <Shield className="h-4 w-4 text-accent" />
-              <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Enterprise Secure Platform</span>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-10">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 bg-accent/5 border border-accent/20 rounded-full w-fit shadow-md shadow-accent/5">
+              <Shield className="h-3.5 w-3.5 text-accent" />
+              <span className="text-[8px] sm:text-[10px] font-black text-accent uppercase tracking-[0.2em]">Enterprise Secure Platform</span>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
+            <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
               Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
             </h1>
-            <p className="text-lg text-slate-400 font-medium max-w-xl">
+            <p className="text-xs sm:text-base lg:text-lg text-slate-400 font-medium max-w-xl">
               You have <span className="text-white font-bold">{meetings.filter(m => m.status === 'SCHEDULED').length} sessions</span> scheduled for today. Ready to initialize your next meeting?
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-             <Button 
-                className="h-16 px-8 rounded-2xl gap-3 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20"
-                onClick={() => setIsModalOpen(true)}
-             >
-                <Plus className="h-6 w-6" />
-                NEW SESSION
-             </Button>
-             <Button 
-                variant="outline" 
-                className="h-16 px-8 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 gap-3 text-sm font-black uppercase tracking-widest"
-                onClick={() => router.push('/dashboard/calendar')}
-             >
-                <CalendarIcon className="h-5 w-5" />
-                CALENDAR
-             </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
+            <Button
+              className="h-11 sm:h-14 px-4 sm:px-6 rounded-xl sm:rounded-2xl gap-2.5 sm:gap-3 text-sm sm:text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 w-full sm:w-auto justify-center"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Plus className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+              NEW SESSION
+            </Button>
+            <Button
+              variant="outline"
+              className="h-11 sm:h-14 px-4 sm:px-6 rounded-xl sm:rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 gap-2.5 sm:gap-3 text-xs sm:text-sm font-black uppercase tracking-widest w-full sm:w-auto justify-center"
+              onClick={() => router.push('/dashboard/calendar')}
+            >
+              <CalendarIcon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+              CALENDAR
+            </Button>
           </div>
         </div>
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-14 relative z-10 border-t border-white/5 pt-10">
-           <div className="space-y-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                 <Activity className="h-3 w-3 text-emerald-500" />
-                 Platform Status
-              </p>
-              <p className="text-xl font-black text-white uppercase tracking-tight">System Optimal</p>
-           </div>
-           <div className="space-y-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                 <Video className="h-3 w-3 text-primary" />
-                 Total Hosted
-              </p>
-              <p className="text-xl font-black text-white uppercase tracking-tight">{meetings.length} Sessions</p>
-           </div>
-           <div className="space-y-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                 <Users className="h-3 w-3 text-blue-500" />
-                 Live Nodes
-              </p>
-              <p className="text-xl font-black text-white uppercase tracking-tight">AU-Regional</p>
-           </div>
-           <div className="space-y-1">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                 <RefreshCw className="h-3 w-3 text-amber-500" />
-                 Last Sync
-              </p>
-              <p className="text-xl font-black text-white uppercase tracking-tight">Realtime</p>
-           </div>
+          <div className="space-y-1">
+            <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Activity className="h-3 w-3 text-emerald-500" />
+              Platform Status
+            </p>
+            <p className="text-base sm:text-xl font-black text-white uppercase tracking-tight">System Optimal</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Video className="h-3 w-3 text-primary" />
+              Total Hosted
+            </p>
+            <p className="text-base sm:text-xl font-black text-white uppercase tracking-tight">{meetings.length} Sessions</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Users className="h-3 w-3 text-blue-500" />
+              Live Nodes
+            </p>
+            <p className="text-base sm:text-xl font-black text-white uppercase tracking-tight">AU-Regional</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <RefreshCw className="h-3 w-3 text-amber-500" />
+              Last Sync
+            </p>
+            <p className="text-base sm:text-xl font-black text-white uppercase tracking-tight">Realtime</p>
+          </div>
         </div>
       </div>
 
       {/* Toolbar & Filter */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-         <div className="relative group flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-            <input 
-              type="text" 
-              placeholder="SEARCH SESSIONS BY TITLE OR CODE..." 
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-[10px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all"
-            />
-         </div>
-         
-         <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={fetchMeetings} className="rounded-xl border-white/5 bg-white/5">
-              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-            <div className="h-10 w-[1px] bg-white/10 mx-2" />
-            <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-all">
-               <SlidersHorizontal className="h-4 w-4" />
-               FILTERS
-            </button>
-         </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 px-2">
+        <div className="relative group flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            placeholder="SEARCH SESSIONS BY TITLE OR CODE..."
+            className="w-full bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl pl-10 sm:pl-12 pr-4 sm:pr-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-white uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={fetchMeetings} className="rounded-lg sm:rounded-xl border-white/5 bg-white/5 h-9 sm:h-10 px-3 sm:px-4">
+            <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+          <div className="h-8 sm:h-10 w-px bg-white/10 mx-1 sm:mx-2" />
+          <button className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-all">
+            <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            FILTERS
+          </button>
+        </div>
       </div>
 
       {/* Meetings Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-64 glass rounded-[32px] animate-pulse border-white/5 bg-white/5" />
+            <div key={i} className="h-64 glass rounded-4xl animate-pulse border-white/5 bg-white/5" />
           ))}
         </div>
       ) : meetings.length > 0 ? (
@@ -154,14 +154,14 @@ export default function DashboardPage() {
       ) : (
         <div className="flex flex-col items-center justify-center py-24 glass rounded-[40px] border-white/5 text-center">
           <div className="relative mb-8">
-             <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-             <div className="relative h-24 w-24 bg-slate-900 rounded-[32px] border border-white/10 flex items-center justify-center">
-                <Video className="h-10 w-10 text-slate-600" />
-             </div>
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+            <div className="relative h-24 w-24 bg-slate-900 rounded-4xl border border-white/10 flex items-center justify-center">
+              <Video className="h-10 w-10 text-slate-600" />
+            </div>
           </div>
-          <h3 className="text-3xl font-black text-white uppercase tracking-tighter">No Sessions Found</h3>
+          <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">No Sessions Found</h3>
           <p className="text-slate-400 mt-2 font-medium max-w-sm">Your meeting history is empty. Start your first high-performance session now.</p>
-          <Button className="mt-10 h-14 px-8 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => setIsModalOpen(true)}>
+          <Button className="mt-10 h-14 px-3 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => setIsModalOpen(true)}>
             INITIALIZE FIRST SESSION
             <ChevronRight className="h-5 w-5" />
           </Button>
@@ -169,9 +169,9 @@ export default function DashboardPage() {
       )}
 
       {/* New Meeting Modal */}
-      <NewMeetingModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <NewMeetingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         onSuccess={handleMeetingCreated}
       />
     </div>

@@ -104,29 +104,29 @@ export default function MyMeetingsPage() {
     switch (status) {
       case 'LIVE':
         return (
-          <span className="flex items-center gap-1.5 text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)] animate-pulse">
+          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)] animate-pulse">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             LIVE MATCH
           </span>
         );
       case 'SCHEDULED':
         return (
-          <span className="flex items-center gap-1.5 text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/30">
-            <Calendar className="h-3 w-3" />
+          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/30">
+            <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             UPCOMING
           </span>
         );
       case 'ENDED':
         return (
-          <span className="flex items-center gap-1.5 text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest bg-white/5 text-slate-400 border border-white/5">
-            <CheckCircle2 className="h-3 w-3" />
+          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-white/5 text-slate-400 border border-white/5">
+            <CheckCircle2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             COMPLETED
           </span>
         );
       case 'CANCELLED':
         return (
-          <span className="flex items-center gap-1.5 text-[9px] px-2.5 py-1 rounded-full font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">
-            <XCircle className="h-3 w-3" />
+          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <XCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             CANCELLED
           </span>
         );
@@ -156,36 +156,36 @@ export default function MyMeetingsPage() {
     <div className="space-y-10 pb-20 relative min-h-screen">
 
       {/* Premium Header Block */}
-      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5 animate-pulse-glow">
+      <div className="relative overflow-hidden rounded-[24px] sm:rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-6 sm:p-10 lg:p-14 shadow-2xl shadow-primary/5 animate-pulse-glow">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/10 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/5 blur-[100px] rounded-full translate-y-1/3 -translate-x-1/4" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="space-y-4">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8">
+          <div className="space-y-3 sm:space-y-4">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 text-xs font-black text-primary uppercase tracking-widest hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black text-primary uppercase tracking-widest hover:text-white transition-colors"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5" />
               BACK TO ARENA
             </Link>
-            <h1 className="text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">
               SESSION <span className="text-primary">LOGS</span>
             </h1>
-            <p className="text-lg text-slate-400 font-medium">
+            <p className="text-xs sm:text-lg text-slate-400 font-medium">
               Manage scheduled matches, initialize lobbies, and audit historical communication telemetry.
             </p>
           </div>
 
           {/* Quick Stats Panel */}
-          <div className="flex gap-4">
-            <div className="glass px-6 py-4 rounded-2xl border-white/5 text-center min-w-[120px]">
-              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Total Matches</span>
-              <p className="text-3xl font-black text-white mt-1">{meetings.length}</p>
+          <div className="flex w-full sm:w-auto gap-3 sm:gap-4">
+            <div className="glass px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-white/5 text-center flex-1 sm:flex-none min-w-0 sm:min-w-[120px]">
+              <span className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest">Total Matches</span>
+              <p className="text-2xl sm:text-3xl font-black text-white mt-1">{meetings.length}</p>
             </div>
-            <div className="glass px-6 py-4 rounded-2xl border-white/5 text-center min-w-[120px]">
-              <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Active Live</span>
-              <p className="text-3xl font-black text-emerald-400 mt-1">
+            <div className="glass px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-white/5 text-center flex-1 sm:flex-none min-w-0 sm:min-w-[120px]">
+              <span className="text-[8px] sm:text-[9px] font-black text-emerald-400 uppercase tracking-widest">Active Live</span>
+              <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1">
                 {meetings.filter(m => m.status === 'LIVE').length}
               </p>
             </div>
@@ -198,26 +198,26 @@ export default function MyMeetingsPage() {
 
         {/* Search */}
         <div className="relative flex-1 max-w-xl">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           <input
             type="text"
             placeholder="SEARCH SESSIONS BY TITLE OR JOIN CODE..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#050b21]/60 border border-[#13225c] rounded-2xl pl-12 pr-6 py-4 text-xs font-black text-white placeholder:text-slate-500 uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300"
+            className="w-full bg-[#050b21]/60 border border-[#13225c] rounded-xl sm:rounded-2xl pl-10 sm:pl-12 pr-4 sm:pr-6 py-3 sm:py-4 text-[10px] sm:text-xs font-black text-white placeholder:text-slate-500 uppercase tracking-widest focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-300"
           />
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <SlidersHorizontal className="h-4 w-4 text-muted-foreground mr-2 hidden md:block" />
+        <div className="flex gap-1.5 sm:gap-2 items-center overflow-x-auto whitespace-nowrap pb-2 lg:pb-0 scrollbar-hide max-w-full">
+          <SlidersHorizontal className="h-4 w-4 text-muted-foreground mr-2 hidden md:block flex-shrink-0" />
           {(['ALL', 'LIVE', 'SCHEDULED', 'ENDED', 'CANCELLED'] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setStatusFilter(filter)}
-              className={`px-4 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${statusFilter === filter
-                  ? 'border-primary bg-primary/10 text-primary shadow-md shadow-primary/10'
-                  : 'border-[#13225c] bg-[#050b21]/30 text-slate-400 hover:border-white/20 hover:text-white'
+              className={`px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border text-[8px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 flex-shrink-0 ${statusFilter === filter
+                ? 'border-primary bg-primary/10 text-primary shadow-md shadow-primary/10'
+                : 'border-[#13225c] bg-[#050b21]/30 text-slate-400 hover:border-white/20 hover:text-white'
                 }`}
             >
               {filter === 'ALL' ? 'ALL SESSIONS' : filter === 'ENDED' ? 'COMPLETED' : filter}
@@ -230,7 +230,7 @@ export default function MyMeetingsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="glass rounded-[24px] border-white/5 h-64 p-6 space-y-6 shimmer relative overflow-hidden" />
+            <div key={i} className="glass rounded-[20px] sm:rounded-[24px] border-white/5 h-64 p-4 sm:p-6 space-y-6 shimmer relative overflow-hidden" />
           ))}
         </div>
       ) : filteredMeetings.length > 0 ? (
@@ -241,20 +241,20 @@ export default function MyMeetingsPage() {
             return (
               <div
                 key={meeting._id}
-                className="glass-card group relative overflow-hidden rounded-[24px] p-6 flex flex-col justify-between h-full min-h-[220px]"
+                className="glass-card group relative overflow-hidden rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col justify-between h-full min-h-[200px] sm:min-h-[220px]"
               >
 
                 {/* Visual Status Indicator Line */}
                 <div className={`absolute top-0 left-0 w-full h-[3px] opacity-35 group-hover:opacity-100 transition-opacity duration-300 ${meeting.status === 'LIVE' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.5)]' :
-                    meeting.status === 'SCHEDULED' ? 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.5)]' :
-                      meeting.status === 'ENDED' ? 'bg-slate-700' : 'bg-rose-500'
+                  meeting.status === 'SCHEDULED' ? 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.5)]' :
+                    meeting.status === 'ENDED' ? 'bg-slate-700' : 'bg-rose-500'
                   }`} />
 
                 <div className="space-y-4">
                   {/* Top Row: Date, Badge */}
                   <div className="flex justify-between items-start gap-4">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <CalendarDays className="h-3.5 w-3.5 text-accent" />
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                      <CalendarDays className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-accent" />
                       <span>{formatDate(meeting.startTime)}</span>
                     </div>
                     {getStatusBadge(meeting.status)}
@@ -262,11 +262,11 @@ export default function MyMeetingsPage() {
 
                   {/* Meeting Title & Code */}
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold uppercase text-white tracking-tight leading-tight group-hover:text-primary transition-colors duration-300">
+                    <h3 className="text-base sm:text-xl font-black uppercase text-white tracking-tight leading-tight group-hover:text-primary transition-colors duration-300">
                       {meeting.title}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-slate-400 bg-white/5 border border-white/5 px-2 py-0.5 rounded tracking-widest font-mono">
+                      <span className="text-[8px] sm:text-[10px] font-black text-slate-400 bg-white/5 border border-white/5 px-2 py-0.5 rounded tracking-widest font-mono">
                         {meeting.meetingCode}
                       </span>
                       <button
@@ -286,8 +286,8 @@ export default function MyMeetingsPage() {
 
                 {/* Bottom Row: Details and Actions */}
                 <div className="flex items-center justify-between gap-4 mt-6 pt-5 border-t border-white/5">
-                  <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest">
-                    <Clock className="h-4 w-4 text-primary" />
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">
+                    <Clock className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-primary" />
                     <span>{formatTime(meeting.startTime)}</span>
                   </div>
 
@@ -299,9 +299,9 @@ export default function MyMeetingsPage() {
                         variant="secondary"
                         size="sm"
                         onClick={() => loadChatHistory(meeting)}
-                        className="rounded-xl px-3 h-10 gap-1.5 text-[9px] font-black tracking-widest uppercase border border-white/5 bg-white/5"
+                        className="rounded-lg sm:rounded-xl px-2.5 sm:px-3 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase border border-white/5 bg-white/5"
                       >
-                        <MessageSquare className="h-3.5 w-3.5" />
+                        <MessageSquare className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
                         TELEMETRY
                       </Button>
                     )}
@@ -312,9 +312,9 @@ export default function MyMeetingsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="rounded-xl px-4 h-10 gap-1.5 text-[9px] font-black tracking-widest uppercase shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-emerald-500 hover:text-white"
+                          className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-emerald-500 hover:text-white"
                         >
-                          <Play className="h-3.5 w-3.5 fill-current" />
+                          <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
                           ENTER MATCH
                         </Button>
                       </Link>
@@ -328,18 +328,18 @@ export default function MyMeetingsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleCancelSession(meeting._id)}
-                              className="rounded-xl px-3 h-10 text-rose-400 border-rose-500/20 hover:bg-rose-500/10"
+                              className="rounded-lg sm:rounded-xl px-2 sm:px-3 h-8 sm:h-10 text-rose-400 border-rose-500/20 hover:bg-rose-500/10"
                               title="Cancel Session"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 sm:h-4 w-3.5 sm:w-4" />
                             </Button>
                             <Button
                               variant="primary"
                               size="sm"
                               onClick={() => handleStartSession(meeting)}
-                              className="rounded-xl px-4 h-10 gap-1.5 text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20"
+                              className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20"
                             >
-                              <Play className="h-3.5 w-3.5 fill-current" />
+                              <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
                               START MATCH
                             </Button>
                           </>
@@ -348,7 +348,7 @@ export default function MyMeetingsPage() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              className="rounded-xl px-4 h-10 gap-1.5 text-[9px] font-black tracking-widest uppercase"
+                              className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase"
                             >
                               <ExternalLink className="h-3.5 w-3.5" />
                               LOBBY
@@ -458,8 +458,8 @@ export default function MyMeetingsPage() {
                         </span>
                       </div>
                       <div className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
-                          ? 'bg-primary/10 border-primary/20 text-white rounded-tr-none'
-                          : 'bg-[#0b1437]/50 border-[#13225c] text-slate-200 rounded-tl-none'
+                        ? 'bg-primary/10 border-primary/20 text-white rounded-tr-none'
+                        : 'bg-[#0b1437]/50 border-[#13225c] text-slate-200 rounded-tl-none'
                         }`}>
                         {msg.content}
                       </div>

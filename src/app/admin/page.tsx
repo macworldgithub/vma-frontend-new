@@ -83,10 +83,10 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="relative">
           <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-          <h1 className="text-4xl font-black text-white uppercase tracking-tighter relative flex items-center gap-3">
+          <h1 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-tighter relative flex items-center gap-3">
             Admin <span className="text-primary">Console</span>
           </h1>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">
+          <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">
             OmniSuiteAI Platform Intelligence • AU Regional Data
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-1 p-1 bg-white/5 rounded-2xl w-fit">
+        <div className="flex flex-wrap gap-1 p-1 bg-white/5 rounded-2xl w-full sm:w-fit justify-center sm:justify-start">
           {[
             { id: 'analytics', label: 'Analytics', icon: Activity },
             { id: 'users', label: 'User Directory', icon: Users },
@@ -119,9 +119,9 @@ export default function AdminPage() {
             <button
               key={item.id}
               onClick={() => setTab(item.id as any)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${tab === item.id
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'text-muted-foreground hover:text-white hover:bg-white/5'
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all ${tab === item.id
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'text-muted-foreground hover:text-white hover:bg-white/5'
                 }`}
             >
               <item.icon className="h-3 w-3" />
@@ -236,8 +236,8 @@ export default function AdminPage() {
                           </td>
                           <td className="p-6">
                             <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter ${u.role === 'admin'
-                                ? 'bg-primary/20 text-primary border border-primary/20 shadow-lg shadow-primary/10'
-                                : 'bg-white/5 text-muted-foreground border border-white/5'
+                              ? 'bg-primary/20 text-primary border border-primary/20 shadow-lg shadow-primary/10'
+                              : 'bg-white/5 text-muted-foreground border border-white/5'
                               }`}>
                               {u.role}
                             </span>

@@ -19,10 +19,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'h-9 px-3 text-sm',
-      md: 'h-11 px-6 text-base',
-      lg: 'h-14 px-8 text-lg',
-      icon: 'h-10 w-10',
+      sm: 'h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm',
+      md: 'h-10 sm:h-11 px-4 sm:px-6 text-sm sm:text-base',
+      lg: 'h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg',
+      icon: 'h-8 w-8 sm:h-10 sm:w-10',
     };
 
     const variantStyles = variants[variant];

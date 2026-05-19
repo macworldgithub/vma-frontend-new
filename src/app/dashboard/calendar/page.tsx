@@ -90,7 +90,7 @@ export default function CalendarPage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
+          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">
             Staff <span className="text-primary">Schedule</span>
           </h1>
           <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-xs mt-1">

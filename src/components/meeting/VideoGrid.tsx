@@ -111,7 +111,7 @@ export const VideoGrid = ({ peers, localStream, localUserName, localAudioEnabled
   };
 
   return (
-    <div className="h-full w-full p-6 md:p-8 flex items-center justify-center bg-[#050810]">
+    <div className="h-full w-full p-4 sm:p-6 md:p-8 flex items-center justify-center bg-[#050810] overflow-y-auto">
       <div className={`grid gap-6 w-full ${getGridClass()} transition-all duration-700 ease-in-out`}>
         {/* Local video */}
         <VideoTile

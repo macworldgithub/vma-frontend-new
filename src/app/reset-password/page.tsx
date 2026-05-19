@@ -57,7 +57,7 @@ function ResetPasswordContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden animate-scale-in">
+      <div className="w-full max-w-md space-y-8 glass p-6 sm:p-10 rounded-2xl relative overflow-hidden animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
 
         <div className="text-center relative">
@@ -68,8 +68,8 @@ function ResetPasswordContent() {
               </svg>
             </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase">Set New Password</h1>
-          <p className="mt-2 text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase">Set New Password</h1>
+          <p className="mt-2 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-widest">
             Update credentials for <span className="text-primary">{email}</span>
           </p>
         </div>

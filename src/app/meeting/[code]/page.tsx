@@ -110,15 +110,15 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col lg:flex-row items-stretch justify-center p-0 overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col lg:flex-row items-stretch justify-center p-0 lg:h-screen lg:overflow-hidden overflow-y-auto">
       {/* Left Panel: Video Preview */}
-      <div className="flex-1 relative flex items-center justify-center p-6 md:p-12 bg-gradient-to-br from-slate-950 to-slate-900">
-        <div className="absolute top-12 left-12 z-20">
+      <div className="flex-1 relative flex items-center justify-center p-6 md:p-12 bg-gradient-to-br from-slate-950 to-slate-900 min-h-[450px] lg:min-h-0 pt-20 lg:pt-12">
+        <div className="absolute top-6 left-6 md:top-12 md:left-12 z-20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-black text-xl shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">PC</div>
             <div>
-              <h2 className="text-white font-black uppercase tracking-tight leading-none">Patterson Cheney</h2>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Virtual Lobby • Secure Session</p>
+              <h2 className="text-white font-black uppercase tracking-tight leading-none text-sm md:text-base">Patterson Cheney</h2>
+              <p className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Virtual Lobby • Secure Session</p>
             </div>
           </div>
         </div>
@@ -136,43 +136,43 @@ export default function JoinPage() {
               />
               {!videoEnabled && (
                 <div className="text-center space-y-4">
-                  <div className="h-24 w-24 rounded-full bg-white/5 flex items-center justify-center mx-auto border border-white/5">
-                    <VideoOff className="h-10 w-10 text-slate-600" />
+                  <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-white/5 flex items-center justify-center mx-auto border border-white/5">
+                    <VideoOff className="h-6 w-6 sm:h-10 sm:w-10 text-slate-600" />
                   </div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Camera is deactivated</p>
+                  <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Camera is deactivated</p>
                 </div>
               )}
 
               {/* Video Overlay Controls */}
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 z-10">
-                <div className="glass-dark px-6 py-3 rounded-full flex items-center gap-8 border border-white/10 shadow-2xl backdrop-blur-xl">
+              <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 sm:gap-6 z-10 w-[95%] sm:w-auto justify-center">
+                <div className="glass-dark px-4 sm:px-6 py-2.5 sm:py-3 rounded-full flex items-center gap-4 sm:gap-8 border border-white/10 shadow-2xl backdrop-blur-xl max-w-full">
                   <button
                     onClick={toggleAudio}
                     className={`group flex flex-col items-center gap-1 transition-all ${audioEnabled ? 'text-white' : 'text-rose-500'}`}
                   >
-                    <div className={`p-3 rounded-xl transition-all ${audioEnabled ? 'bg-white/5 group-hover:bg-white/10' : 'bg-rose-500/10 group-hover:bg-rose-500/20'}`}>
-                      {audioEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+                    <div className={`p-2.5 sm:p-3 rounded-xl transition-all ${audioEnabled ? 'bg-white/5 group-hover:bg-white/10' : 'bg-rose-500/10 group-hover:bg-rose-500/20'}`}>
+                      {audioEnabled ? <Mic className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <MicOff className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
                     </div>
-                    <span className="text-[8px] font-black uppercase tracking-widest">{audioEnabled ? 'ON' : 'OFF'}</span>
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest">{audioEnabled ? 'ON' : 'OFF'}</span>
                   </button>
 
                   <button
                     onClick={toggleVideo}
                     className={`group flex flex-col items-center gap-1 transition-all ${videoEnabled ? 'text-white' : 'text-rose-500'}`}
                   >
-                    <div className={`p-3 rounded-xl transition-all ${videoEnabled ? 'bg-white/5 group-hover:bg-white/10' : 'bg-rose-500/10 group-hover:bg-rose-500/20'}`}>
-                      {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                    <div className={`p-2.5 sm:p-3 rounded-xl transition-all ${videoEnabled ? 'bg-white/5 group-hover:bg-white/10' : 'bg-rose-500/10 group-hover:bg-rose-500/20'}`}>
+                      {videoEnabled ? <Video className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <VideoOff className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
                     </div>
-                    <span className="text-[8px] font-black uppercase tracking-widest">{videoEnabled ? 'ON' : 'OFF'}</span>
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest">{videoEnabled ? 'ON' : 'OFF'}</span>
                   </button>
 
-                  <div className="w-[1px] h-8 bg-white/10 mx-2" />
+                  <div className="w-[1px] h-6 sm:h-8 bg-white/10 mx-1 sm:mx-2" />
 
                   <button className="group flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-all">
-                    <div className="p-3 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all">
-                      <Settings className="h-5 w-5" />
+                    <div className="p-2.5 sm:p-3 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all">
+                      <Settings className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                     </div>
-                    <span className="text-[8px] font-black uppercase tracking-widest">SETUP</span>
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest">SETUP</span>
                   </button>
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default function JoinPage() {
       </div>
 
       {/* Right Panel: Information */}
-      <div className="w-full lg:w-[480px] glass p-10 lg:p-16 flex flex-col justify-center border-l border-white/5 relative bg-slate-950/50 backdrop-blur-3xl animate-fade-in-up">
+      <div className="w-full lg:w-[480px] glass p-6 sm:p-10 lg:p-16 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-white/5 relative bg-slate-950/50 backdrop-blur-3xl animate-fade-in-up">
         <div className="space-y-12 relative z-10">
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full w-fit">
