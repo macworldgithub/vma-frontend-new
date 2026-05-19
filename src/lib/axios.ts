@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
@@ -27,9 +28,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('vma_token');
-        // Optional: redirect to login
-        // window.location.href = '/login';
+        useAuthStore.getState().logout();
       }
     }
     return Promise.reject(error);
@@ -37,3 +36,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+

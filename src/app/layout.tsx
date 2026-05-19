@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { AuthGuard } from "@/components/AuthGuard";
 
 const outfit = Outfit({
   variable: "--font-sans",
@@ -24,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${spaceGrotesk.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthGuard>{children}</AuthGuard>
+      </body>
     </html>
   );
 }
+

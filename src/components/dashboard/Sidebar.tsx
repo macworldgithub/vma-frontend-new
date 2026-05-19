@@ -18,7 +18,7 @@ import { useAuthStore } from '@/store/authStore';
 export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, token, logout } = useAuthStore();
 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
@@ -66,25 +66,29 @@ export const Sidebar = () => {
       </nav>
 
       <div className="border-t border-white/5 p-4">
-        <Link
-          href="/dashboard/profile"
-          className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-all group"
-        >
-          <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic shadow-lg shadow-primary/5 group-hover:border-primary/40 transition-all">
-            {user?.name?.[0] || 'U'}
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-bold text-white group-hover:text-primary transition-colors">{user?.name}</p>
-            <p className="truncate text-[10px] font-black text-muted-foreground uppercase tracking-widest">{user?.role}</p>
-          </div>
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all uppercase tracking-tighter"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </button>
+        {token && (
+          <>
+            <Link
+              href="/dashboard/profile"
+              className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-all group"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic shadow-lg shadow-primary/5 group-hover:border-primary/40 transition-all">
+                {user?.name?.[0] || 'U'}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="truncate text-sm font-bold text-white group-hover:text-primary transition-colors">{user?.name}</p>
+                <p className="truncate text-[10px] font-black text-muted-foreground uppercase tracking-widest">{user?.role}</p>
+              </div>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all uppercase tracking-tighter"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
