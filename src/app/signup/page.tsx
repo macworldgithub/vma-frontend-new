@@ -54,14 +54,14 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden">
+      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
         
         <div className="text-center relative">
           <div className="inline-block p-3 rounded-xl bg-accent/10 border border-accent/30 mb-4 shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">
             <div className="w-12 h-12 flex items-center justify-center text-accent font-black text-2xl tracking-tighter">PC</div>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-white uppercase italic">
+          <h1 className="text-4xl font-black tracking-tight text-white uppercase">
             Patterson Cheney
           </h1>
           <p className="mt-2 text-sm font-semibold text-muted-foreground uppercase tracking-[0.2em]">

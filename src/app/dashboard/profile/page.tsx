@@ -48,7 +48,7 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Staff Profile</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase">Staff Profile</h1>
           <p className="text-muted-foreground font-medium uppercase tracking-widest text-sm">Account Management</p>
         </div>
         <Button variant="outline" onClick={logout} className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:border-destructive/40">
@@ -62,7 +62,7 @@ export default function ProfilePage() {
           <div className="glass p-8 rounded-2xl text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
             <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-primary/20 shadow-xl shadow-primary/5">
-              <span className="text-4xl font-black text-primary uppercase italic">
+              <span className="text-4xl font-black text-primary uppercase">
                 {profile?.name?.charAt(0) || 'U'}
               </span>
             </div>
@@ -93,7 +93,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">Account Role</label>
-                  <p className="text-primary font-black bg-primary/5 p-3 rounded-lg border border-primary/10 uppercase italic">{profile?.role}</p>
+                  <p className="text-primary font-black bg-primary/5 p-3 rounded-lg border border-primary/10 uppercase">{profile?.role}</p>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">Member Since</label>

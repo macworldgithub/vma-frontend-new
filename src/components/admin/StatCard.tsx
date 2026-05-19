@@ -23,7 +23,7 @@ export const StatCard = ({ label, value, icon: Icon, description, trend, color =
             {label}
           </p>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-black text-white italic tracking-tighter">
+            <h3 className="text-3xl font-black text-white tracking-tighter">
               {value}
             </h3>
             {trend && (

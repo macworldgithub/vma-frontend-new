@@ -39,11 +39,11 @@ function CallbackContent() {
           <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-destructive/20">
             <span className="text-destructive text-2xl font-black">!</span>
           </div>
-          <h1 className="text-2xl font-black text-white uppercase italic mb-2">Connection Failed</h1>
+          <h1 className="text-2xl font-black text-white uppercase mb-2">Connection Failed</h1>
           <p className="text-muted-foreground mb-6">{error}</p>
           <button 
             onClick={() => router.push('/dashboard/calendar')}
-            className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-all uppercase italic"
+            className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-all uppercase"
           >
             Back to Calendar
           </button>
@@ -57,7 +57,7 @@ function CallbackContent() {
       <div className="glass p-10 rounded-2xl max-w-md w-full relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
         <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-6" />
-        <h1 className="text-2xl font-black text-white uppercase italic mb-2">Connecting Account</h1>
+        <h1 className="text-2xl font-black text-white uppercase mb-2">Connecting Account</h1>
         <p className="text-muted-foreground uppercase tracking-widest text-xs font-bold">
           Finalizing secure handshake with Google...
         </p>

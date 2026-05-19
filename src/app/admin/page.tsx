@@ -83,7 +83,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="relative">
           <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-          <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter relative flex items-center gap-3">
+          <h1 className="text-4xl font-black text-white uppercase tracking-tighter relative flex items-center gap-3">
             Admin <span className="text-primary">Console</span>
           </h1>
           <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">
@@ -135,7 +135,7 @@ export default function AdminPage() {
             {[1, 2, 3].map(i => <div key={i} className="h-32 glass rounded-2xl border-white/5" />)}
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="animate-fade-in-up">
             {tab === 'analytics' && (
               <div className="space-y-8">
                 {/* Stats Overview */}
@@ -190,7 +190,7 @@ export default function AdminPage() {
               <div className="glass rounded-3xl overflow-hidden border-white/5 relative">
                 <div className="p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-black text-white uppercase italic">Staff <span className="text-primary">Directory</span></h3>
+                    <h3 className="text-lg font-black text-white uppercase">Staff <span className="text-primary">Directory</span></h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Manage User Access & Roles</p>
                   </div>
                   <div className="relative group">
@@ -235,7 +235,7 @@ export default function AdminPage() {
                             </div>
                           </td>
                           <td className="p-6">
-                            <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter italic ${u.role === 'admin'
+                            <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter ${u.role === 'admin'
                                 ? 'bg-primary/20 text-primary border border-primary/20 shadow-lg shadow-primary/10'
                                 : 'bg-white/5 text-muted-foreground border border-white/5'
                               }`}>

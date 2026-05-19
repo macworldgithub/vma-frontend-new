@@ -34,7 +34,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
   };
 
   return (
-    <div className="glass group relative overflow-hidden rounded-2xl border-white/5 transition-all hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5">
+    <div className="glass group relative overflow-hidden rounded-2xl border-white/5 hover-float">
       {/* Dynamic Status Border */}
       <div className={`absolute top-0 left-0 w-full h-1 opacity-20 group-hover:opacity-100 transition-opacity ${
         meeting.status === 'LIVE' ? 'bg-emerald-500' : 'bg-primary'
@@ -43,7 +43,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       <div className="p-6 space-y-5">
         <div className="flex justify-between items-start gap-4">
           <div className="space-y-1">
-            <h3 className="font-black text-lg text-white uppercase italic tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+            <h3 className="font-black text-lg text-white uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1">
               {meeting.title}
             </h3>
             <div className="flex items-center gap-2">

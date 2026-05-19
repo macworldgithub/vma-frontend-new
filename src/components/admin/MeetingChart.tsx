@@ -21,7 +21,7 @@ export const MeetingChart = ({ data }: MeetingChartProps) => {
     <div className="glass p-6 rounded-2xl border-white/5 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-black text-white uppercase italic tracking-tight">
+          <h3 className="text-lg font-black text-white uppercase tracking-tight">
             Platform <span className="text-primary">Activity</span>
           </h3>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">

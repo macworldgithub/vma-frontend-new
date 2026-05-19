@@ -49,7 +49,7 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal }: {
         <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
           <div className="relative">
              <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-             <div className="relative h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-primary italic shadow-2xl">
+             <div className="relative h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-primary shadow-2xl">
               {userName?.[0]?.toUpperCase() || '?'}
             </div>
           </div>
@@ -72,7 +72,7 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal }: {
         <div className="glass-dark px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
           <div className="flex items-center gap-2">
              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-             <span className="text-[10px] font-black text-white uppercase italic tracking-wider">
+             <span className="text-[10px] font-black text-white uppercase tracking-wider">
                {userName} {isLocal && <span className="text-primary ml-1">(HOST)</span>}
              </span>
           </div>

@@ -74,7 +74,7 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
                       {msg.userName[0].toUpperCase()}
                     </div>
                   )}
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider italic">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">
                     {isMe ? 'YOU' : msg.userName}
                   </span>
                 </div>

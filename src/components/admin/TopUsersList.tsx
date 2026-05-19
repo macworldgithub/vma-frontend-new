@@ -11,7 +11,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
     <div className="glass p-6 rounded-2xl border-white/5 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-black text-white uppercase italic tracking-tight">
+          <h3 className="text-lg font-black text-white uppercase tracking-tight">
             Top <span className="text-primary">Hosts</span>
           </h3>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
@@ -34,7 +34,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
                   <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-colors">
                     <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-white italic border-2 border-slate-950">
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-white border-2 border-slate-950">
                     {i + 1}
                   </div>
                 </div>
@@ -48,7 +48,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xl font-black text-primary italic leading-none">
+                <div className="text-xl font-black text-primary leading-none">
                   {u.meetingsHosted}
                 </div>
                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">

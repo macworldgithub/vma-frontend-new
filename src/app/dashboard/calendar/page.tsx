@@ -90,7 +90,7 @@ export default function CalendarPage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter">
+          <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
             Staff <span className="text-primary">Schedule</span>
           </h1>
           <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-xs mt-1">
@@ -132,7 +132,7 @@ export default function CalendarPage() {
             <CalendarIcon className="h-10 w-10 text-primary opacity-40" />
           </div>
           <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-black text-white uppercase italic">No Calendar Connected</h2>
+            <h2 className="text-2xl font-black text-white uppercase">No Calendar Connected</h2>
             <p className="text-muted-foreground font-medium mt-2">
               Link your Patterson Cheney staff account to automatically ingest meetings into the VMA platform.
             </p>
@@ -143,7 +143,7 @@ export default function CalendarPage() {
         </div>
       ) : events.length === 0 ? (
         <div className="glass p-12 rounded-3xl text-center space-y-4">
-          <p className="text-muted-foreground font-medium italic">No upcoming meetings found in your calendar.</p>
+          <p className="text-muted-foreground font-medium">No upcoming meetings found in your calendar.</p>
           <Button variant="outline" onClick={handleSync} disabled={isSyncing}>
             Force Refresh
           </Button>
@@ -158,14 +158,14 @@ export default function CalendarPage() {
             {events.map((event) => (
               <div
                 key={event._id}
-                className="glass-card p-6 rounded-2xl group border-white/5 hover:border-primary/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
+                className="glass-card p-6 rounded-2xl group border-white/5 hover-float flex flex-col md:flex-row md:items-center justify-between gap-6"
               >
                 <div className="flex gap-6 items-start">
                   <div className="flex flex-col items-center justify-center bg-white/5 rounded-xl px-4 py-3 border border-white/5 min-w-[80px]">
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">
                       {new Date(event.startTime).toLocaleDateString('en-AU', { month: 'short' })}
                     </span>
-                    <span className="text-2xl font-black text-white italic leading-none">
+                    <span className="text-2xl font-black text-white leading-none">
                       {new Date(event.startTime).getDate()}
                     </span>
                   </div>
@@ -180,7 +180,7 @@ export default function CalendarPage() {
                         {' - '}
                         {new Date(event.endTime).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true })}
                       </p>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-black uppercase tracking-tighter italic">
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-black uppercase tracking-tighter">
                         {event.platform}
                       </span>
                     </div>

@@ -156,7 +156,7 @@ export default function MyMeetingsPage() {
     <div className="space-y-10 pb-20 relative min-h-screen">
 
       {/* Premium Header Block */}
-      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5">
+      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5 animate-pulse-glow">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/10 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/5 blur-[100px] rounded-full translate-y-1/3 -translate-x-1/4" />
 
@@ -169,10 +169,10 @@ export default function MyMeetingsPage() {
               <ArrowLeft className="h-4 w-4" />
               BACK TO ARENA
             </Link>
-            <h1 className="text-5xl lg:text-6xl font-black text-white uppercase italic tracking-tighter leading-tight">
+            <h1 className="text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
               SESSION <span className="text-primary">LOGS</span>
             </h1>
-            <p className="text-lg text-slate-400 font-medium italic">
+            <p className="text-lg text-slate-400 font-medium">
               Manage scheduled matches, initialize lobbies, and audit historical communication telemetry.
             </p>
           </div>
@@ -228,13 +228,13 @@ export default function MyMeetingsPage() {
 
       {/* Sessions Content */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="glass rounded-[24px] border-white/5 h-64 p-6 space-y-6 shimmer relative overflow-hidden" />
           ))}
         </div>
       ) : filteredMeetings.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           {filteredMeetings.map((meeting) => {
             const isHost = meeting.hostId === user?.id;
 
@@ -262,7 +262,7 @@ export default function MyMeetingsPage() {
 
                   {/* Meeting Title & Code */}
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold uppercase italic text-white tracking-tight leading-tight group-hover:text-primary transition-colors duration-300">
+                    <h3 className="text-xl font-bold uppercase text-white tracking-tight leading-tight group-hover:text-primary transition-colors duration-300">
                       {meeting.title}
                     </h3>
                     <div className="flex items-center gap-2">
@@ -371,8 +371,8 @@ export default function MyMeetingsPage() {
             <Video className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-2xl font-black text-white uppercase italic tracking-tight">Lobby Queue Empty</h3>
-            <p className="text-slate-400 font-medium italic">
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Lobby Queue Empty</h3>
+            <p className="text-slate-400 font-medium">
               No meetings found matching your filters. Ready to establish your next secure interactive session?
             </p>
           </div>
@@ -403,7 +403,7 @@ export default function MyMeetingsPage() {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <span className="text-[9px] font-black text-accent uppercase tracking-widest">Communication Audits</span>
-                  <h2 className="text-2xl font-bold uppercase italic text-white tracking-tight">{activeChatSession.title}</h2>
+                  <h2 className="text-2xl font-bold uppercase text-white tracking-tight">{activeChatSession.title}</h2>
                 </div>
                 <button
                   onClick={() => setActiveChatSession(null)}
@@ -473,7 +473,7 @@ export default function MyMeetingsPage() {
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-black text-white uppercase tracking-wider">No Messages Audited</h4>
-                    <p className="text-xs text-slate-400 italic">No chat messages were recorded in this room.</p>
+                    <p className="text-xs text-slate-400">No chat messages were recorded in this room.</p>
                   </div>
                 </div>
               )}

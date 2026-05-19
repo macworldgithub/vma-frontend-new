@@ -193,7 +193,7 @@ export default function MeetingRoomPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-tight">Session <span className="text-emerald-400">Concluded</span></h2>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Session <span className="text-emerald-400">Concluded</span></h2>
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Secure Tunnel Successfully Terminated</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
@@ -218,7 +218,7 @@ export default function MeetingRoomPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-tight">Access <span className="text-rose-500">Revoked</span></h2>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Access <span className="text-rose-500">Revoked</span></h2>
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Permissions terminated by host</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">

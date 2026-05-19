@@ -101,7 +101,7 @@ export default function JoinPage() {
           <div className="inline-block p-4 rounded-full bg-rose-500/10 text-rose-500 mb-2">
             <AlertCircle className="h-10 w-10" />
           </div>
-          <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">Session Expired</h1>
+          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Session Expired</h1>
           <p className="text-slate-400 font-medium">{error}</p>
           <Button onClick={() => router.push('/dashboard')} className="w-full h-12 uppercase font-black tracking-widest text-[10px]">Return to Dashboard</Button>
         </div>
@@ -115,15 +115,15 @@ export default function JoinPage() {
       <div className="flex-1 relative flex items-center justify-center p-6 md:p-12 bg-gradient-to-br from-slate-950 to-slate-900">
         <div className="absolute top-12 left-12 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-black text-xl italic shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">PC</div>
+            <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent font-black text-xl shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">PC</div>
             <div>
-              <h2 className="text-white font-black uppercase italic tracking-tight leading-none">Patterson Cheney</h2>
+              <h2 className="text-white font-black uppercase tracking-tight leading-none">Patterson Cheney</h2>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Virtual Lobby • Secure Session</p>
             </div>
           </div>
         </div>
 
-        <div className="w-full max-w-4xl relative aspect-video group">
+        <div className="w-full max-w-4xl relative aspect-video group animate-float">
           <div className="absolute inset-0 bg-primary/10 rounded-3xl blur-3xl opacity-20 group-hover:opacity-30 transition-opacity" />
           
           <div className="relative h-full w-full rounded-3xl bg-slate-900 overflow-hidden border border-white/5 shadow-2xl flex items-center justify-center">
@@ -181,17 +181,17 @@ export default function JoinPage() {
       </div>
 
       {/* Right Panel: Information */}
-      <div className="w-full lg:w-[480px] glass p-10 lg:p-16 flex flex-col justify-center border-l border-white/5 relative bg-slate-950/50 backdrop-blur-3xl">
+      <div className="w-full lg:w-[480px] glass p-10 lg:p-16 flex flex-col justify-center border-l border-white/5 relative bg-slate-950/50 backdrop-blur-3xl animate-fade-in-up">
         <div className="space-y-12 relative z-10">
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full w-fit">
               <Shield className="h-3 w-3 text-emerald-500" />
-              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic">Encryption Active</span>
+              <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Encryption Active</span>
             </div>
-            <h1 className="text-4xl font-black text-white leading-tight uppercase italic tracking-tighter">
+            <h1 className="text-4xl font-black text-white leading-tight uppercase tracking-tighter">
               Ready to <span className="text-primary">Join?</span>
             </h1>
-            <p className="text-lg text-slate-400 font-medium italic">
+            <p className="text-lg text-slate-400 font-medium">
               "{meeting?.title}"
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function JoinPage() {
                          </div>
                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Participants</span>
                       </div>
-                      <span className="text-sm font-black text-white italic">{meeting?.participantCount || 0} / {meeting?.maxParticipants}</span>
+                      <span className="text-sm font-black text-white">{meeting?.participantCount || 0} / {meeting?.maxParticipants}</span>
                    </div>
 
                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 group hover:border-primary/20 transition-all">
@@ -217,7 +217,7 @@ export default function JoinPage() {
                          </div>
                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Session Type</span>
                       </div>
-                      <span className="text-sm font-black text-white italic uppercase">{meeting?.status}</span>
+                      <span className="text-sm font-black text-white uppercase">{meeting?.status}</span>
                    </div>
                 </div>
              </div>
@@ -234,7 +234,7 @@ export default function JoinPage() {
           </div>
 
           <div className="space-y-4 pt-4">
-            <Button className="w-full gap-3 text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 font-black uppercase italic tracking-widest" onClick={handleJoin}>
+            <Button className="w-full gap-3 text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 font-black uppercase tracking-widest" onClick={handleJoin}>
               ENTER MEETING ROOM
               <ArrowRight className="h-6 w-6" />
             </Button>
@@ -249,7 +249,7 @@ export default function JoinPage() {
 
         {/* Branding background text */}
         <div className="absolute bottom-0 right-0 opacity-[0.02] pointer-events-none select-none overflow-hidden translate-y-1/2 translate-x-1/4">
-          <h2 className="text-[200px] font-black italic uppercase leading-none">VMA</h2>
+          <h2 className="text-[200px] font-black uppercase leading-none">VMA</h2>
         </div>
       </div>
     </div>

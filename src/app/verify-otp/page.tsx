@@ -64,14 +64,14 @@ function VerifyOtpContent() {
   if (success) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden text-center">
+        <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden text-center animate-scale-in">
           <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
           <div className="inline-block p-4 rounded-full bg-emerald-500/10 text-emerald-500 mb-4 border border-emerald-500/20">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-8 h-8">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h2 className="text-2xl font-black text-white uppercase italic">Account Verified!</h2>
+          <h2 className="text-2xl font-black text-white uppercase">Account Verified!</h2>
           <p className="text-muted-foreground font-medium">Your account has been created successfully. Redirecting you to login...</p>
         </div>
       </div>
@@ -80,14 +80,14 @@ function VerifyOtpContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden text-center">
+      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden text-center animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
 
         <div>
           <div className="inline-block p-3 rounded-xl bg-accent/10 border border-accent/30 mb-4 shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">
             <div className="w-12 h-12 flex items-center justify-center text-accent font-black text-2xl tracking-tighter">OTP</div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Verify Identity</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase">Verify Identity</h1>
           <p className="mt-2 text-sm font-semibold text-muted-foreground uppercase tracking-widest">
             Code sent to <span className="text-primary">{email}</span>
           </p>

@@ -144,7 +144,7 @@ export const ControlBar = ({
       {/* Branding Subtitle */}
       <div className="flex items-center justify-center gap-2 mt-4 opacity-40">
          <Shield className="h-3 w-3 text-primary" />
-         <span className="text-[8px] font-black text-white uppercase tracking-[0.4em] italic">OmniSuiteAI Secure Realtime Pipeline</span>
+         <span className="text-[8px] font-black text-white uppercase tracking-[0.4em]">OmniSuiteAI Secure Realtime Pipeline</span>
       </div>
     </div>
   );

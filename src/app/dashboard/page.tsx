@@ -45,7 +45,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10 pb-20">
       {/* Premium Header Section */}
-      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5">
+      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#050b21] via-[#020512] to-[#0b1437] border border-primary/10 p-10 lg:p-14 shadow-2xl shadow-primary/5 animate-pulse-glow">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/10 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-accent/5 blur-[100px] rounded-full translate-y-1/3 -translate-x-1/4" />
         
@@ -55,17 +55,17 @@ export default function DashboardPage() {
               <Shield className="h-4 w-4 text-accent" />
               <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Enterprise Secure Platform</span>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-black text-white uppercase italic tracking-tighter leading-tight">
+            <h1 className="text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
               Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
             </h1>
-            <p className="text-lg text-slate-400 font-medium italic max-w-xl">
+            <p className="text-lg text-slate-400 font-medium max-w-xl">
               You have <span className="text-white font-bold">{meetings.filter(m => m.status === 'SCHEDULED').length} sessions</span> scheduled for today. Ready to initialize your next meeting?
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
              <Button 
-                className="h-16 px-8 rounded-2xl gap-3 text-lg font-black uppercase italic tracking-widest shadow-xl shadow-primary/20"
+                className="h-16 px-8 rounded-2xl gap-3 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20"
                 onClick={() => setIsModalOpen(true)}
              >
                 <Plus className="h-6 w-6" />
@@ -89,28 +89,28 @@ export default function DashboardPage() {
                  <Activity className="h-3 w-3 text-emerald-500" />
                  Platform Status
               </p>
-              <p className="text-xl font-black text-white uppercase italic tracking-tight">System Optimal</p>
+              <p className="text-xl font-black text-white uppercase tracking-tight">System Optimal</p>
            </div>
            <div className="space-y-1">
               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                  <Video className="h-3 w-3 text-primary" />
                  Total Hosted
               </p>
-              <p className="text-xl font-black text-white uppercase italic tracking-tight">{meetings.length} Sessions</p>
+              <p className="text-xl font-black text-white uppercase tracking-tight">{meetings.length} Sessions</p>
            </div>
            <div className="space-y-1">
               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                  <Users className="h-3 w-3 text-blue-500" />
                  Live Nodes
               </p>
-              <p className="text-xl font-black text-white uppercase italic tracking-tight">AU-Regional</p>
+              <p className="text-xl font-black text-white uppercase tracking-tight">AU-Regional</p>
            </div>
            <div className="space-y-1">
               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                  <RefreshCw className="h-3 w-3 text-amber-500" />
                  Last Sync
               </p>
-              <p className="text-xl font-black text-white uppercase italic tracking-tight">Realtime</p>
+              <p className="text-xl font-black text-white uppercase tracking-tight">Realtime</p>
            </div>
         </div>
       </div>
@@ -140,13 +140,13 @@ export default function DashboardPage() {
 
       {/* Meetings Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-64 glass rounded-[32px] animate-pulse border-white/5 bg-white/5" />
           ))}
         </div>
       ) : meetings.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
           {meetings.map((meeting: any) => (
             <MeetingCard key={meeting._id} meeting={meeting} />
           ))}
@@ -159,9 +159,9 @@ export default function DashboardPage() {
                 <Video className="h-10 w-10 text-slate-600" />
              </div>
           </div>
-          <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">No Sessions Found</h3>
-          <p className="text-slate-400 mt-2 font-medium italic max-w-sm">Your meeting history is empty. Start your first high-performance session now.</p>
-          <Button className="mt-10 h-14 px-8 rounded-2xl gap-3 font-black uppercase italic tracking-widest shadow-xl shadow-primary/20" onClick={() => setIsModalOpen(true)}>
+          <h3 className="text-3xl font-black text-white uppercase tracking-tighter">No Sessions Found</h3>
+          <p className="text-slate-400 mt-2 font-medium max-w-sm">Your meeting history is empty. Start your first high-performance session now.</p>
+          <Button className="mt-10 h-14 px-8 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => setIsModalOpen(true)}>
             INITIALIZE FIRST SESSION
             <ChevronRight className="h-5 w-5" />
           </Button>

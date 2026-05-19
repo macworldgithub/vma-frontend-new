@@ -37,7 +37,7 @@ export const Sidebar = () => {
     <div className="flex h-full w-64 flex-col border-r border-[#13225c]/50 bg-[#020512] backdrop-blur-xl">
       <div className="flex h-20 items-center px-6">
         <div className="flex flex-col">
-          <span className="text-lg font-black text-white uppercase italic tracking-tighter leading-none">
+          <span className="text-lg font-black text-white uppercase tracking-tighter leading-none">
             Patterson Cheney
           </span>
           <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mt-1 shadow-sm shadow-primary/5">
@@ -72,7 +72,7 @@ export const Sidebar = () => {
               href="/dashboard/profile"
               className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-all group"
             >
-              <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic shadow-lg shadow-primary/5 group-hover:border-primary/40 transition-all">
+              <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black shadow-lg shadow-primary/5 group-hover:border-primary/40 transition-all">
                 {user?.name?.[0] || 'U'}
               </div>
               <div className="flex-1 overflow-hidden">

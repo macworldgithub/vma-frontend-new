@@ -10,7 +10,7 @@ export const RecentMeetingsTable = ({ meetings }: RecentMeetingsTableProps) => {
   return (
     <div className="glass rounded-2xl overflow-hidden border-white/5">
       <div className="p-6 border-b border-white/5">
-        <h3 className="text-lg font-black text-white uppercase italic tracking-tight">
+        <h3 className="text-lg font-black text-white uppercase tracking-tight">
           Recent <span className="text-primary">Logs</span>
         </h3>
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">

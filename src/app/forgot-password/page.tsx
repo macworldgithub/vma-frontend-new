@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden">
+      <div className="w-full max-w-md space-y-8 glass p-10 rounded-2xl relative overflow-hidden animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
 
         <div className="text-center relative">
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
               </svg>
             </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Reset Password</h1>
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase">Reset Password</h1>
           <p className="mt-2 text-sm font-semibold text-muted-foreground uppercase tracking-widest">
             {isSent ? 'Verification code sent' : 'Enter your staff email'}
           </p>

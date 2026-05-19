@@ -38,13 +38,13 @@ export const NewMeetingModal = ({ isOpen, onClose, onSuccess }: NewMeetingModalP
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       
-      <div className="relative glass w-full max-w-xl rounded-[32px] border-white/5 overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="relative glass w-full max-w-xl rounded-[32px] border-white/5 overflow-hidden animate-scale-in">
         <div className="p-8 space-y-8">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
-              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">
+              <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
                 Initialize <span className="text-primary">Session</span>
               </h2>
               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">OmniSuiteAI Realtime Infrastructure</p>
@@ -67,7 +67,7 @@ export const NewMeetingModal = ({ isOpen, onClose, onSuccess }: NewMeetingModalP
                 <Video className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-black text-white uppercase italic tracking-tighter">Instant</h3>
+                <h3 className="font-black text-white uppercase tracking-tighter">Instant</h3>
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Start a session immediately</p>
               </div>
             </button>
@@ -84,7 +84,7 @@ export const NewMeetingModal = ({ isOpen, onClose, onSuccess }: NewMeetingModalP
                 <Calendar className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-black text-white uppercase italic tracking-tighter">Scheduled</h3>
+                <h3 className="font-black text-white uppercase tracking-tighter">Scheduled</h3>
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">Plan for a future session</p>
               </div>
             </button>
@@ -125,7 +125,7 @@ export const NewMeetingModal = ({ isOpen, onClose, onSuccess }: NewMeetingModalP
           </div>
 
           <Button 
-            className="w-full h-16 rounded-2xl gap-3 text-lg font-black uppercase italic tracking-widest shadow-xl shadow-primary/20"
+            className="w-full h-16 rounded-2xl gap-3 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20"
             onClick={handleCreate}
             isLoading={isLoading}
           >
