@@ -78,27 +78,42 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
 
       // 2. Get Local Stream with fallback logic
       let stream: MediaStream | null = null;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: initialVideo,
-          audio: initialAudio,
-        });
-      } catch (err: any) {
-        console.warn('VMA: Initial media capture failed, trying fallback...', err.name);
-        
-        // If both failed, try audio only
+      
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('VMA: Browser media API not available. This happens on HTTP (non-localhost) or if the browser blocks it.');
+        stream = new MediaStream();
+      } else if (!initialVideo && !initialAudio) {
+        // If both are explicitly false, don't request media right now to avoid TypeError.
+        stream = new MediaStream();
+      } else {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-        } catch {
-          // If audio only failed, try video only
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          } catch {
-            console.error('VMA: No camera or microphone found. Joining with no media.');
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: initialVideo,
+            audio: initialAudio,
+          });
+        } catch (err: any) {
+          console.warn('VMA: Initial media capture failed, trying fallback...', err.name);
+          
+          if (initialVideo && initialAudio) {
+            // If both were requested and failed, try audio only
+            try {
+              stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+            } catch {
+              // If audio only failed, try video only
+              try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+              } catch {
+                console.error('VMA: No camera or microphone found or permission denied. Joining with no media.');
+                stream = new MediaStream();
+              }
+            }
+          } else {
+            console.error('VMA: Requested media not found or permission denied. Joining with no media.');
             stream = new MediaStream();
           }
         }
       }
+
       setLocalStream(stream);
       localStreamRef.current = stream;
 
@@ -116,7 +131,10 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
 
       socket?.on('offer', async (data) => {
         const { fromSocketId, fromUserId, fromUserName, signal } = data;
-        const pc = await createPeerConnection(fromSocketId, { userId: fromUserId, userName: fromUserName });
+        let pc = peerConnections.current.get(fromSocketId);
+        if (!pc) {
+          pc = await createPeerConnection(fromSocketId, { userId: fromUserId, userName: fromUserName });
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(signal));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -184,5 +202,33 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
     };
   }, [socket, roomId, userId, userName, initialAudio, initialVideo, createPeerConnection]);
 
-  return { peers, localStream };
+  const updateLocalStreamTrack = useCallback(async (newTrack: MediaStreamTrack) => {
+    if (!localStreamRef.current) return;
+    
+    const existingTrack = localStreamRef.current.getTracks().find(t => t.kind === newTrack.kind);
+    if (existingTrack) {
+      localStreamRef.current.removeTrack(existingTrack);
+      existingTrack.stop();
+    }
+    localStreamRef.current.addTrack(newTrack);
+    setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+
+    for (const [targetSocketId, pc] of Array.from(peerConnections.current.entries())) {
+      const sender = pc.getSenders().find(s => s.track?.kind === newTrack.kind || s.track === null);
+      if (sender) {
+        await sender.replaceTrack(newTrack);
+      } else {
+        pc.addTrack(newTrack, localStreamRef.current!);
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socket?.emit('offer', { targetSocketId, signal: pc.localDescription, roomId });
+        } catch (e) {
+          console.error('Renegotiation failed', e);
+        }
+      }
+    }
+  }, [socket, roomId]);
+
+  return { peers, localStream, updateLocalStreamTrack };
 };

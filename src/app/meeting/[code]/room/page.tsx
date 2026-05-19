@@ -37,6 +37,7 @@ export default function MeetingRoomPage() {
   const [screenSharing, setScreenSharing] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [showCopied, setShowCopied] = useState(false);
 
   const screenStreamRef = useRef<MediaStream | null>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -98,7 +99,7 @@ export default function MeetingRoomPage() {
   }, [token, roomId]);
 
   // WebRTC hook
-  const { peers, localStream } = useWebRTC({
+  const { peers, localStream, updateLocalStreamTrack } = useWebRTC({
     roomId,
     socket,
     userId: user?.id || '',
@@ -108,28 +109,48 @@ export default function MeetingRoomPage() {
   });
 
   // Toggle audio
-  const toggleAudio = useCallback(() => {
+  const toggleAudio = useCallback(async () => {
     if (localStream) {
       const track = localStream.getAudioTracks()[0];
       if (track) {
         track.enabled = !track.enabled;
         setAudioEnabled(track.enabled);
         socket?.emit('media-state-change', { roomId, audioEnabled: track.enabled, videoEnabled });
+      } else {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const newTrack = stream.getAudioTracks()[0];
+          await updateLocalStreamTrack(newTrack);
+          setAudioEnabled(true);
+          socket?.emit('media-state-change', { roomId, audioEnabled: true, videoEnabled });
+        } catch (err) {
+          console.error('Failed to get audio track', err);
+        }
       }
     }
-  }, [localStream, socket, roomId, videoEnabled]);
+  }, [localStream, socket, roomId, videoEnabled, updateLocalStreamTrack]);
 
   // Toggle video
-  const toggleVideo = useCallback(() => {
+  const toggleVideo = useCallback(async () => {
     if (localStream) {
       const track = localStream.getVideoTracks()[0];
       if (track) {
         track.enabled = !track.enabled;
         setVideoEnabled(track.enabled);
         socket?.emit('media-state-change', { roomId, audioEnabled, videoEnabled: track.enabled });
+      } else {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const newTrack = stream.getVideoTracks()[0];
+          await updateLocalStreamTrack(newTrack);
+          setVideoEnabled(true);
+          socket?.emit('media-state-change', { roomId, audioEnabled, videoEnabled: true });
+        } catch (err) {
+          console.error('Failed to get video track', err);
+        }
       }
     }
-  }, [localStream, socket, roomId, audioEnabled]);
+  }, [localStream, socket, roomId, audioEnabled, updateLocalStreamTrack]);
 
   // Toggle screen share
   const toggleScreenShare = useCallback(async () => {
@@ -157,6 +178,13 @@ export default function MeetingRoomPage() {
   const sendChat = useCallback((message: string) => {
     socket?.emit('chat-message', { roomId, message });
   }, [socket, roomId]);
+
+  // Copy Link
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 3000);
+  }, []);
 
   // Leave meeting
   const leaveMeeting = useCallback(() => {
@@ -236,6 +264,12 @@ export default function MeetingRoomPage() {
 
   return (
     <div className="h-screen bg-slate-950 flex flex-col overflow-hidden">
+      {showCopied && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[100] glass-dark px-6 py-3 rounded-full border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-300">
+          <Shield className="h-4 w-4" />
+          Secure Link Copied
+        </div>
+      )}
       <div className="flex-1 flex overflow-hidden relative">
         <div className={`flex-1 transition-all ${chatOpen ? 'mr-0' : ''}`}>
           <VideoGrid
@@ -265,6 +299,7 @@ export default function MeetingRoomPage() {
           onToggleVideo={toggleVideo}
           onToggleScreenShare={toggleScreenShare}
           onToggleChat={() => setChatOpen(!chatOpen)}
+          onCopyLink={copyLink}
           onLeave={leaveMeeting}
           onEndMeeting={endMeeting}
           onToggleLock={toggleLock}
