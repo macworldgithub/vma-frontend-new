@@ -181,10 +181,11 @@ export default function MeetingRoomPage() {
 
   // Copy Link
   const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href);
+    const link = `${window.location.origin}/meeting/${code}`;
+    navigator.clipboard.writeText(link);
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 3000);
-  }, []);
+  }, [code]);
 
   // Leave meeting
   const leaveMeeting = useCallback(() => {

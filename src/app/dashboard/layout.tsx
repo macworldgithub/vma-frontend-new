@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Sidebar } from '@/components/dashboard/Sidebar';
-import { Menu } from 'lucide-react';
+import React, { useState } from "react";
+import { Sidebar } from "@/components/dashboard/Sidebar";
+import { Menu } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -18,7 +18,7 @@ export default function DashboardLayout({
         {/* Mobile Header */}
         <header className="flex h-16 items-center justify-between border-b border-[#13225c]/30 bg-[#020512]/80 px-6 backdrop-blur-xl lg:hidden z-30">
           <div className="flex flex-col">
-            <span className="text-sm font-black text-white uppercase italic tracking-tighter leading-none">
+            <span className="text-sm font-black text-white uppercase tracking-tighter leading-none">
               Patterson Cheney
             </span>
             <span className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mt-0.5">
@@ -35,9 +35,7 @@ export default function DashboardLayout({
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          <div className="h-full px-4 sm:px-6 lg:px-8 py-6">
-            {children}
-          </div>
+          <div className="h-full px-4 sm:px-6 lg:px-8 py-6">{children}</div>
         </main>
       </div>
     </div>
