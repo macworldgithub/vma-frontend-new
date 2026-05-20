@@ -70,6 +70,9 @@ export default function MeetingRoomPage() {
     const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
       auth: { token },
       transports: ['websocket'],
+      extraHeaders: {
+        'ngrok-skip-browser-warning': 'true',
+      },
     });
 
     s.on('connect', () => console.log('Socket connected'));
