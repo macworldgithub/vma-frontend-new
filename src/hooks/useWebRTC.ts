@@ -242,7 +242,7 @@ useEffect(() => {
       const pc = await createPeerConnection(socketId, { userId: newUserId, userName: newUserName });
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      socket.emit('offer', { targetSocketId: socketId, signal: offer, roomId });
+      socket?.emit('offer', { targetSocketId: socketId, signal: offer, roomId });
     });
 
     socket?.on('offer', async (data) => {
@@ -255,7 +255,7 @@ useEffect(() => {
       await pc.setRemoteDescription(new RTCSessionDescription(signal));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      socket.emit('answer', { targetSocketId: fromSocketId, signal: answer, roomId });
+      socket?.emit('answer', { targetSocketId: fromSocketId, signal: answer, roomId });
     });
 
     socket?.on('answer', async (data) => {

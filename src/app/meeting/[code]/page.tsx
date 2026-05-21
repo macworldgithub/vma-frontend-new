@@ -29,6 +29,7 @@ export default function JoinPage() {
   const isScheduled = meeting?.status === 'SCHEDULED';
 
   useEffect(() => {
+    if (!code) return; // Guard against undefined code on initial render
     const fetchMeeting = async () => {
       try {
         const response = await api.get(`/meetings/join/${code}`);

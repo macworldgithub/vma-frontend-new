@@ -44,6 +44,7 @@ export default function MeetingRoomPage() {
 
   // Fetch meeting info
   useEffect(() => {
+    if (!code) return; // Guard against undefined code on initial render
     const init = async () => {
       try {
         const { data } = await api.get(`/meetings/join/${code}`);
