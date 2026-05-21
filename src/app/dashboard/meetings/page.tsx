@@ -26,6 +26,7 @@ export default function MyMeetingsPage() {
   // Historical Chat Drawer States
   const [activeChatSession, setActiveChatSession] = useState<Meeting | null>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  console.log(chatMessages, "111")
   const [isLoadingChat, setIsLoadingChat] = useState(false);
 
   useEffect(() => {
@@ -439,29 +440,34 @@ export default function MyMeetingsPage() {
                 </div>
               ) : chatMessages.length > 0 ? (
                 chatMessages.map((msg, index) => {
-                  const isUser = msg.senderId === user?.id;
+                  const isUser = msg.userId === user?.id;
 
                   return (
                     <div
-                      key={index}
-                      className={`flex flex-col max-w-[80%] ${isUser ? 'ml-auto items-end' : 'items-start'}`}
+                      key={msg._id || index}
+                      className={`flex flex-col max-w-[80%] ${isUser ? 'ml-auto items-end' : 'items-start'
+                        }`}
                     >
                       <div className="flex items-center gap-1.5 mb-1 px-1">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          {msg.senderName}
+                          {msg.userName}
                         </span>
-                        {msg.role === 'admin' && (
-                          <Shield className="h-3 w-3 text-accent" />
-                        )}
+
                         <span className="text-[8px] text-slate-500 font-mono">
-                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(msg.sentAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </span>
                       </div>
-                      <div className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
-                        ? 'bg-primary/10 border-primary/20 text-white rounded-tr-none'
-                        : 'bg-[#0b1437]/50 border-[#13225c] text-slate-200 rounded-tl-none'
-                        }`}>
-                        {msg.content}
+
+                      <div
+                        className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
+                            ? 'bg-primary/10 border-primary/20 text-white rounded-tr-none'
+                            : 'bg-[#0b1437]/50 border-[#13225c] text-slate-200 rounded-tl-none'
+                          }`}
+                      >
+                        {msg.message}
                       </div>
                     </div>
                   );

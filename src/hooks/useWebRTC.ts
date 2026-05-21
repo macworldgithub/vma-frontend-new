@@ -235,101 +235,7 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
 
 useEffect(() => {
   const init = async () => {
-    // 1. Get ICE Servers
-    try {
-      const { data } = await api.get('/meetings/ice-servers');
-      console.log('[WebRTC] ICE Servers received:', data.iceServers);
-      iceServers.current = data.iceServers;
-    } catch (err) {
-      console.warn('[WebRTC] Failed to get ICE servers, using default STUN server', err);
-      iceServers.current = [{ urls: ['stun:stun.l.google.com:19302'] }];
-    }
-
-    // 2. Get Local Stream with fallback logic
-    let stream: MediaStream | null = null;
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('[VMA] Browser media API not available. This happens on HTTP (non-localhost) or if the browser blocks it.');
-      stream = new MediaStream();
-    } else if (!initialVideo && !initialAudio) {
-      console.log('[WebRTC] Both video and audio disabled, creating empty stream');
-      stream = new MediaStream();
-    } else {
-      try {
-        console.log(`[WebRTC] Requesting media: video = ${initialVideo}, audio = ${initialAudio}`);
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: initialVideo ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false,
-          audio: initialAudio ? { echoCancellation: true, noiseSuppression: true } : false,
-        });
-        console.log(`[WebRTC] ✅ Local stream obtained with tracks:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
-      } catch (err: any) {
-        console.warn(`[VMA] Initial media capture failed: ${err.name} - ${err.message}`);
-
-        if (initialVideo && initialAudio) {
-          try {
-            console.log('[WebRTC] Fallback 1: trying audio only (no constraints)');
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: false,
-              audio: true
-            });
-            console.log(`[WebRTC] ✅ Audio-only stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
-          } catch (audioErr: any) {
-            console.warn(`[VMA] Audio-only failed: ${audioErr.name} - ${audioErr.message}`);
-
-            try {
-              console.log('[WebRTC] Fallback 2: trying video only');
-              stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-                audio: false
-              });
-              console.log(`[WebRTC] ✅ Video-only stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
-            } catch (videoErr: any) {
-              console.error(`[VMA] Video-only also failed: ${videoErr.name} - ${videoErr.message}`);
-              console.error('[VMA] Possible causes:');
-              console.error('  1. Camera/microphone is already in use by another app');
-              console.error('  2. Browser permission is denied (check browser settings)');
-              console.error('  3. No camera/microphone device found');
-              console.error('  4. Device permissions not granted');
-              console.error('  5. HTTPS required (or using localhost)');
-              stream = new MediaStream();
-            }
-          }
-        } else if (initialAudio) {
-          try {
-            console.log('[WebRTC] Fallback: trying audio only (audio was requested)');
-            stream = await navigator.mediaDevices.getUserMedia({
-              audio: true
-            });
-            console.log(`[WebRTC] ✅ Audio stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
-          } catch (audioErr: any) {
-            console.error(`[VMA] Audio capture failed: ${audioErr.name} - ${audioErr.message}`);
-            stream = new MediaStream();
-          }
-        } else if (initialVideo) {
-          try {
-            console.log('[WebRTC] Fallback: trying video only (video was requested)');
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { width: { ideal: 1280 }, height: { ideal: 720 } }
-            });
-            console.log(`[WebRTC] ✅ Video stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
-          } catch (videoErr: any) {
-            console.error(`[VMA] Video capture failed: ${videoErr.name} - ${videoErr.message}`);
-            stream = new MediaStream();
-          }
-        } else {
-          stream = new MediaStream();
-        }
-      }
-    }
-
-    setLocalStream(stream);
-    localStreamRef.current = stream;
-
-    // 3. Join Room
-    console.log(`[WebRTC] Joining room ${roomId} as ${userName}`);
-    socket?.emit('join-room', { roomId, userId, userName });
-
-    // 4. Handle signaling
+    // 1. Register all signaling event handlers FIRST (before join-room so no events are missed)
     socket?.on('user-joined', async (data) => {
       console.log('[WebRTC] User joined:', data);
       const { socketId, userId: newUserId, userName: newUserName } = data;
@@ -413,7 +319,103 @@ useEffect(() => {
         return newPeers;
       });
     });
-    };
+
+    // 2. Join Room IMMEDIATELY — handlers are registered above so no events are missed.
+    //    Joining here (before async ICE/media ops) ensures the socket is in the Socket.IO
+    //    room right away so real-time chat messages are delivered without delay.
+    console.log(`[WebRTC] Joining room ${roomId} as ${userName}`);
+    socket?.emit('join-room', { roomId, userId, userName });
+
+    // 3. Get ICE Servers
+    try {
+      const { data } = await api.get('/meetings/ice-servers');
+      console.log('[WebRTC] ICE Servers received:', data.iceServers);
+      iceServers.current = data.iceServers;
+    } catch (err) {
+      console.warn('[WebRTC] Failed to get ICE servers, using default STUN server', err);
+      iceServers.current = [{ urls: ['stun:stun.l.google.com:19302'] }];
+    }
+
+    // 4. Get Local Stream with fallback logic
+    let stream: MediaStream | null = null;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error('[VMA] Browser media API not available. This happens on HTTP (non-localhost) or if the browser blocks it.');
+      stream = new MediaStream();
+    } else if (!initialVideo && !initialAudio) {
+      console.log('[WebRTC] Both video and audio disabled, creating empty stream');
+      stream = new MediaStream();
+    } else {
+      try {
+        console.log(`[WebRTC] Requesting media: video = ${initialVideo}, audio = ${initialAudio}`);
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: initialVideo ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false,
+          audio: initialAudio ? { echoCancellation: true, noiseSuppression: true } : false,
+        });
+        console.log(`[WebRTC] ✅ Local stream obtained with tracks:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
+      } catch (err: any) {
+        console.warn(`[VMA] Initial media capture failed: ${err.name} - ${err.message}`);
+
+        if (initialVideo && initialAudio) {
+          try {
+            console.log('[WebRTC] Fallback 1: trying audio only (no constraints)');
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: false,
+              audio: true
+            });
+            console.log(`[WebRTC] ✅ Audio-only stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
+          } catch (audioErr: any) {
+            console.warn(`[VMA] Audio-only failed: ${audioErr.name} - ${audioErr.message}`);
+
+            try {
+              console.log('[WebRTC] Fallback 2: trying video only');
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+              });
+              console.log(`[WebRTC] ✅ Video-only stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
+            } catch (videoErr: any) {
+              console.error(`[VMA] Video-only also failed: ${videoErr.name} - ${videoErr.message}`);
+              console.error('[VMA] Possible causes:');
+              console.error('  1. Camera/microphone is already in use by another app');
+              console.error('  2. Browser permission is denied (check browser settings)');
+              console.error('  3. No camera/microphone device found');
+              console.error('  4. Device permissions not granted');
+              console.error('  5. HTTPS required (or using localhost)');
+              stream = new MediaStream();
+            }
+          }
+        } else if (initialAudio) {
+          try {
+            console.log('[WebRTC] Fallback: trying audio only (audio was requested)');
+            stream = await navigator.mediaDevices.getUserMedia({
+              audio: true
+            });
+            console.log(`[WebRTC] ✅ Audio stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
+          } catch (audioErr: any) {
+            console.error(`[VMA] Audio capture failed: ${audioErr.name} - ${audioErr.message}`);
+            stream = new MediaStream();
+          }
+        } else if (initialVideo) {
+          try {
+            console.log('[WebRTC] Fallback: trying video only (video was requested)');
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
+            console.log(`[WebRTC] ✅ Video stream obtained:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
+          } catch (videoErr: any) {
+            console.error(`[VMA] Video capture failed: ${videoErr.name} - ${videoErr.message}`);
+            stream = new MediaStream();
+          }
+        } else {
+          stream = new MediaStream();
+        }
+      }
+    }
+
+    setLocalStream(stream);
+    localStreamRef.current = stream;
+  };
 
 if (socket && roomId) {
   init();

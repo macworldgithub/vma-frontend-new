@@ -84,6 +84,11 @@ export default function MeetingRoomPage() {
     s.on('chat-history', (history: ChatMessage[]) => {
       setChatMessages(history);
     });
+    // After socket fully joins the Socket.IO room, re-fetch history to catch
+    // any messages sent in the brief window between connect and join-room.
+    s.on('room-joined', () => {
+      s.emit('get-chat-history', { roomId });
+    });
 
     // Meeting lifecycle events
     s.on('meeting-ended', () => setMeetingEnded(true));
