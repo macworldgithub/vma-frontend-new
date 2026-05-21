@@ -106,7 +106,7 @@ export default function MyMeetingsPage() {
         return (
           <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)] animate-pulse">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            LIVE MATCH
+            LIVE
           </span>
         );
       case 'SCHEDULED':
@@ -167,20 +167,20 @@ export default function MyMeetingsPage() {
               className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black text-primary uppercase tracking-widest hover:text-white transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              BACK TO ARENA
+              BACK TO YOUR DASHBOARD
             </Link>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white uppercase tracking-tighter leading-tight">
               SESSION <span className="text-primary">LOGS</span>
             </h1>
             <p className="text-xs sm:text-lg text-slate-400 font-medium">
-              Manage scheduled matches, initialize lobbies, and audit historical communication telemetry.
+              Manage scheduled meetings, initialize sessions, and audit historical communication telemetry.
             </p>
           </div>
 
           {/* Quick Stats Panel */}
           <div className="flex w-full sm:w-auto gap-3 sm:gap-4">
             <div className="glass px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-white/5 text-center flex-1 sm:flex-none min-w-0 sm:min-w-[120px]">
-              <span className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest">Total Matches</span>
+              <span className="text-[8px] sm:text-[9px] font-black text-muted-foreground uppercase tracking-widest">Total Meetings</span>
               <p className="text-2xl sm:text-3xl font-black text-white mt-1">{meetings.length}</p>
             </div>
             <div className="glass px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-white/5 text-center flex-1 sm:flex-none min-w-0 sm:min-w-[120px]">
@@ -315,7 +315,7 @@ export default function MyMeetingsPage() {
                           className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-emerald-500 hover:text-white"
                         >
                           <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
-                          ENTER MATCH
+                          ENTER MEETING
                         </Button>
                       </Link>
                     )}

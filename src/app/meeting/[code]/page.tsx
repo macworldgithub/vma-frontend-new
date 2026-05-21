@@ -8,24 +8,34 @@ import {
   CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/axios';
 
 export default function JoinPage() {
   const router = useRouter();
   const { code } = useParams();
+  const { user } = useAuthStore();
   const [meeting, setMeeting] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
 
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const isHost = user?.id === meeting?.hostId;
+  const isScheduled = meeting?.status === 'SCHEDULED';
+
   useEffect(() => {
     const fetchMeeting = async () => {
       try {
         const response = await api.get(`/meetings/join/${code}`);
+        if (response.data.status === 'ENDED') {
+          setError('This meeting has already ended.');
+          return;
+        }
         setMeeting(response.data);
       } catch (err) {
         setError('The requested session could not be found or has been concluded.');
@@ -35,6 +45,28 @@ export default function JoinPage() {
     };
     fetchMeeting();
   }, [code]);
+
+  // Polling for guests if the meeting is scheduled
+  useEffect(() => {
+    if (!meeting || !isScheduled || isHost) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await api.get(`/meetings/join/${code}`);
+        if (response.data.status === 'LIVE') {
+          setMeeting(response.data);
+          clearInterval(pollInterval);
+        } else if (response.data.status === 'ENDED') {
+          setError('This meeting has already ended.');
+          clearInterval(pollInterval);
+        }
+      } catch (err) {
+        console.error('Failed to poll meeting status:', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [meeting, isScheduled, isHost, code]);
 
   useEffect(() => {
     const startPreview = async () => {
@@ -79,9 +111,22 @@ export default function JoinPage() {
     }
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     sessionStorage.setItem('vma_pref_audio', audioEnabled.toString());
     sessionStorage.setItem('vma_pref_video', videoEnabled.toString());
+    
+    if (isScheduled && isHost) {
+      setIsStarting(true);
+      try {
+        await api.post(`/meetings/${meeting.meetingId}/start`);
+      } catch (err) {
+        console.error('Failed to start meeting:', err);
+        alert('Could not start meeting. Please try again.');
+        setIsStarting(false);
+        return;
+      }
+    }
+    
     router.push(`/meeting/${code}/room`);
   };
 
@@ -234,10 +279,24 @@ export default function JoinPage() {
           </div>
 
           <div className="space-y-4 pt-4">
-            <Button className="w-full gap-3 text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 font-black uppercase tracking-widest" onClick={handleJoin}>
-              ENTER MEETING ROOM
-              <ArrowRight className="h-6 w-6" />
-            </Button>
+            {isScheduled && !isHost ? (
+              <Button 
+                className="w-full gap-3 text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 font-black uppercase tracking-widest bg-slate-800/80 border-slate-700/50 text-slate-400 cursor-not-allowed hover:bg-slate-800/80 active:scale-100" 
+                disabled
+              >
+                <div className="h-2 w-2 rounded-full bg-slate-500 animate-ping mr-1" />
+                Waiting for host to start...
+              </Button>
+            ) : (
+              <Button 
+                className="w-full gap-3 text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 font-black uppercase tracking-widest" 
+                onClick={handleJoin}
+                isLoading={isStarting}
+              >
+                {isScheduled && isHost ? 'Start & Enter Meeting' : 'Enter Meeting Room'}
+                <ArrowRight className="h-6 w-6" />
+              </Button>
+            )}
             <button 
               onClick={() => router.push('/dashboard')}
               className="w-full py-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] hover:text-white transition-colors"
