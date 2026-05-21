@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { calendarService } from '@/services/calendarService';
 import { Loader2 } from 'lucide-react';
@@ -9,6 +9,8 @@ function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+
+  const calledRef = useRef(false);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -19,6 +21,9 @@ function CallbackContent() {
         setError('Missing authorization data');
         return;
       }
+
+      if (calledRef.current) return;
+      calledRef.current = true;
 
       try {
         await calendarService.connectGoogle(code, state);
