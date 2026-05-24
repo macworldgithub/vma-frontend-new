@@ -149,7 +149,7 @@
 // };
 'use client';
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useReducer, useCallback } from 'react';
 import { MicOff, VideoOff, MoreVertical, Maximize2 } from 'lucide-react';
 
 interface Peer {
@@ -185,35 +185,37 @@ const VideoTile = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Helper — attempt playback, ignore expected autoplay errors
+  // useReducer as a forceUpdate — increments a counter to trigger re-render
+  // when tracks are added to the stream without the stream reference changing
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+
   const tryPlay = useCallback((el: HTMLMediaElement) => {
     el.play().catch(err => {
       if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
-        console.warn('[VideoTile] play() failed:', err.name, err.message);
+        console.warn('[VideoTile] play() error:', err.name);
       }
     });
   }, []);
 
-  // ── Bind video srcObject ──────────────────────────────────────────────────
+  // ── Video: bind srcObject + listen for new tracks ─────────────────────────
   useEffect(() => {
     const videoEl = videoRef.current;
-    if (!videoEl) return;
-
-    if (!stream) {
-      videoEl.srcObject = null;
+    if (!videoEl || !stream) {
+      if (videoEl) videoEl.srcObject = null;
       return;
     }
 
-    // Assign stream — do NOT call setState here to avoid cascading renders
     videoEl.srcObject = stream;
 
-    // Play if there's already a live video track
+    // Play immediately if video track already exists
     if (stream.getVideoTracks().some(t => t.readyState === 'live')) {
       tryPlay(videoEl);
     }
 
-    // When a new track is added later (remote video lands after audio), try playing
-    const onAddTrack = () => {
+    const onAddTrack = (e: MediaStreamTrackEvent) => {
+      console.log('[VideoTile] addtrack:', e.track.kind, e.track.readyState);
+      // Re-render so showVideo is recomputed with the new track
+      forceUpdate();
       tryPlay(videoEl);
     };
 
@@ -221,18 +223,25 @@ const VideoTile = ({
     return () => stream.removeEventListener('addtrack', onAddTrack);
   }, [stream, tryPlay]);
 
-  // ── Bind audio srcObject for remote peers ────────────────────────────────
+  // ── Audio: separate element for remote peers ──────────────────────────────
   useEffect(() => {
     const audioEl = audioRef.current;
     if (!audioEl || !stream || isLocal) return;
     audioEl.srcObject = stream;
     tryPlay(audioEl);
+
+    // Re-attach if audio track arrives late
+    const onAddTrack = (e: MediaStreamTrackEvent) => {
+      if (e.track.kind === 'audio') {
+        audioEl.srcObject = stream;
+        tryPlay(audioEl);
+      }
+    };
+    stream.addEventListener('addtrack', onAddTrack);
+    return () => stream.removeEventListener('addtrack', onAddTrack);
   }, [stream, isLocal, tryPlay]);
 
-  // ── Determine render mode without state ──────────────────────────────────
-  // Read directly from the stream object — no useState needed here.
-  // The parent re-renders this tile whenever stream/videoEnabled change, which
-  // is the only time the answer could differ.
+  // ── Compute visibility at render time (after forceUpdate) ─────────────────
   const streamHasLiveVideo = stream
     ? stream.getVideoTracks().some(t => t.readyState === 'live' && t.enabled)
     : false;
@@ -241,12 +250,10 @@ const VideoTile = ({
   return (
     <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 aspect-video flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
 
-      {/* Audio for remote peers */}
       {!isLocal && (
         <audio ref={audioRef} autoPlay playsInline className="hidden" />
       )}
 
-      {/* Video element — always in the DOM when stream exists; CSS controls visibility */}
       {stream && (
         <video
           ref={videoRef}
@@ -261,7 +268,6 @@ const VideoTile = ({
         />
       )}
 
-      {/* Avatar fallback */}
       {!showVideo && (
         <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
           <div className="relative">
@@ -276,7 +282,6 @@ const VideoTile = ({
         </div>
       )}
 
-      {/* Top Controls Overlay */}
       <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <button className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 transition-all">
           <Maximize2 className="h-3.5 w-3.5" />
@@ -286,7 +291,6 @@ const VideoTile = ({
         </button>
       </div>
 
-      {/* Bottom Info Overlay */}
       <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
         <div className="glass-dark px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
           <div className="flex items-center gap-2">
@@ -310,7 +314,6 @@ const VideoTile = ({
         </div>
       </div>
 
-      {/* Active speaker ring */}
       <div className="absolute inset-0 border-2 border-primary opacity-0 pointer-events-none transition-opacity duration-300 rounded-3xl" />
     </div>
   );
