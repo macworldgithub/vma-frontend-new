@@ -149,7 +149,7 @@
 // };
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { MicOff, VideoOff, MoreVertical, Maximize2 } from 'lucide-react';
 
 interface Peer {
@@ -175,114 +175,93 @@ const VideoTile = ({
   audioEnabled,
   videoEnabled,
   isLocal,
-  socketId,
 }: {
   stream: MediaStream | null;
   userName: string;
   audioEnabled: boolean;
   videoEnabled: boolean;
   isLocal?: boolean;
-  socketId?: string;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [hasVideoTrack, setHasVideoTrack] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
 
-  // Assign stream to video element - run whenever stream or its tracks change
+  // Helper — attempt playback, ignore expected autoplay errors
+  const tryPlay = useCallback((el: HTMLMediaElement) => {
+    el.play().catch(err => {
+      if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+        console.warn('[VideoTile] play() failed:', err.name, err.message);
+      }
+    });
+  }, []);
+
+  // ── Bind video srcObject ──────────────────────────────────────────────────
   useEffect(() => {
     const videoEl = videoRef.current;
-    if (!videoEl || !stream) return;
+    if (!videoEl) return;
 
-    // Always reassign - React's reconciler won't do this for us
-    if (videoEl.srcObject !== stream) {
-      videoEl.srcObject = stream;
+    if (!stream) {
+      videoEl.srcObject = null;
+      return;
     }
 
-    // Check if stream has active video tracks
-    const checkVideoTracks = () => {
-      const videoTracks = stream.getVideoTracks();
-      const active = videoTracks.length > 0 && videoTracks.some(t => t.readyState === 'live' && t.enabled);
-      setHasVideoTrack(active);
-    };
+    // Assign stream — do NOT call setState here to avoid cascading renders
+    videoEl.srcObject = stream;
 
-    checkVideoTracks();
-
-    // Listen for track additions/removals on the stream
-    const handleAddTrack = () => {
-      checkVideoTracks();
-      // Re-assign srcObject to force video element to pick up new tracks
-      if (videoEl.srcObject !== stream) {
-        videoEl.srcObject = stream;
-      }
-      videoEl.play().catch(() => {});
-    };
-
-    const handleRemoveTrack = () => {
-      checkVideoTracks();
-    };
-
-    stream.addEventListener('addtrack', handleAddTrack);
-    stream.addEventListener('removetrack', handleRemoveTrack);
-
-    // Attempt to play
-    videoEl.play().catch(() => {});
-
-    return () => {
-      stream.removeEventListener('addtrack', handleAddTrack);
-      stream.removeEventListener('removetrack', handleRemoveTrack);
-    };
-  }, [stream]);
-
-  // Handle video playing state
-  const handleVideoPlaying = () => setVideoPlaying(true);
-  const handleVideoWaiting = () => setVideoPlaying(false);
-  const handleVideoStalled = () => {
-    // Try to restart playback
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
+    // Play if there's already a live video track
+    if (stream.getVideoTracks().some(t => t.readyState === 'live')) {
+      tryPlay(videoEl);
     }
-  };
 
-  // Assign audio stream for remote peers
+    // When a new track is added later (remote video lands after audio), try playing
+    const onAddTrack = () => {
+      tryPlay(videoEl);
+    };
+
+    stream.addEventListener('addtrack', onAddTrack);
+    return () => stream.removeEventListener('addtrack', onAddTrack);
+  }, [stream, tryPlay]);
+
+  // ── Bind audio srcObject for remote peers ────────────────────────────────
   useEffect(() => {
     const audioEl = audioRef.current;
     if (!audioEl || !stream || isLocal) return;
-    if (audioEl.srcObject !== stream) {
-      audioEl.srcObject = stream;
-    }
-    audioEl.play().catch(() => {});
-  }, [stream, isLocal]);
+    audioEl.srcObject = stream;
+    tryPlay(audioEl);
+  }, [stream, isLocal, tryPlay]);
 
-  // Determine whether to show video: need enabled flag + an active track in the stream
-  const streamHasVideoTrack = stream
+  // ── Determine render mode without state ──────────────────────────────────
+  // Read directly from the stream object — no useState needed here.
+  // The parent re-renders this tile whenever stream/videoEnabled change, which
+  // is the only time the answer could differ.
+  const streamHasLiveVideo = stream
     ? stream.getVideoTracks().some(t => t.readyState === 'live' && t.enabled)
     : false;
-
-  const showVideo = videoEnabled && stream && (streamHasVideoTrack || hasVideoTrack);
+  const showVideo = videoEnabled && streamHasLiveVideo;
 
   return (
     <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 aspect-video flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
-      {!isLocal && stream && (
-        <audio ref={audioRef} autoPlay playsInline />
+
+      {/* Audio for remote peers */}
+      {!isLocal && (
+        <audio ref={audioRef} autoPlay playsInline className="hidden" />
       )}
 
-      {/* Video element — always rendered when stream exists, visibility controlled by CSS */}
+      {/* Video element — always in the DOM when stream exists; CSS controls visibility */}
       {stream && (
         <video
           ref={videoRef}
           autoPlay
           playsInline
-          muted={isLocal}
-          key={`video-${socketId || 'local'}-${stream.id}`}
-          onPlaying={handleVideoPlaying}
-          onWaiting={handleVideoWaiting}
-          onStalled={handleVideoStalled}
-          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isLocal ? 'scale-x-[-1]' : ''} ${showVideo ? 'block' : 'hidden'}`}
+          muted={!!isLocal}
+          className={[
+            'w-full h-full object-cover transition-transform duration-700 group-hover:scale-105',
+            isLocal ? 'scale-x-[-1]' : '',
+            showVideo ? 'block' : 'hidden',
+          ].join(' ')}
         />
       )}
 
-      {/* Avatar fallback — shown when no video */}
+      {/* Avatar fallback */}
       {!showVideo && (
         <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
           <div className="relative">
@@ -307,17 +286,16 @@ const VideoTile = ({
         </button>
       </div>
 
-      {/* Bottom Information Overlay */}
+      {/* Bottom Info Overlay */}
       <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
         <div className="glass-dark px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
             <span className="text-[10px] font-black text-white uppercase italic tracking-wider">
-              {userName} {isLocal && <span className="text-primary ml-1">(HOST)</span>}
+              {userName}{isLocal && <span className="text-primary ml-1">(HOST)</span>}
             </span>
           </div>
         </div>
-
         <div className="flex items-center gap-2 pointer-events-auto">
           {!audioEnabled && (
             <div className="h-9 w-9 rounded-xl bg-rose-500/10 border border-rose-500/20 backdrop-blur-md flex items-center justify-center">
@@ -332,7 +310,7 @@ const VideoTile = ({
         </div>
       </div>
 
-      {/* Active Speaker Border */}
+      {/* Active speaker ring */}
       <div className="absolute inset-0 border-2 border-primary opacity-0 pointer-events-none transition-opacity duration-300 rounded-3xl" />
     </div>
   );
@@ -345,7 +323,7 @@ export const VideoGrid = ({
   localAudioEnabled,
   localVideoEnabled,
 }: VideoGridProps) => {
-  const peerArray = Array.from(peers.values());
+  const peerArray  = Array.from(peers.values());
   const totalCount = peerArray.length + 1;
 
   const getGridClass = () => {
@@ -357,10 +335,7 @@ export const VideoGrid = ({
 
   return (
     <div className="h-full w-full p-6 md:p-8 flex items-center justify-center bg-[#050810]">
-      <div
-        className={`grid gap-6 w-full ${getGridClass()} transition-all duration-700 ease-in-out`}
-      >
-        {/* Local video */}
+      <div className={`grid gap-6 w-full ${getGridClass()} transition-all duration-700 ease-in-out`}>
         <VideoTile
           stream={localStream}
           userName={localUserName}
@@ -368,15 +343,13 @@ export const VideoGrid = ({
           videoEnabled={localVideoEnabled}
           isLocal
         />
-        {/* Remote peers */}
-        {peerArray.map((peer) => (
+        {peerArray.map(peer => (
           <VideoTile
             key={peer.socketId}
             stream={peer.stream}
             userName={peer.userName}
             audioEnabled={peer.audioEnabled}
             videoEnabled={peer.videoEnabled}
-            socketId={peer.socketId}
           />
         ))}
       </div>
