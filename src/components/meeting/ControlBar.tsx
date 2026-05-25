@@ -4,7 +4,7 @@ import React from 'react';
 import { 
   Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, 
   MessageSquare, PhoneOff, Lock, Unlock, LogOut,
-  Settings, Users, Shield, UserPlus
+  Settings, Users, Shield, UserPlus, FileText
 } from 'lucide-react';
 
 interface ControlBarProps {
@@ -12,12 +12,14 @@ interface ControlBarProps {
   videoEnabled: boolean;
   screenSharing: boolean;
   chatOpen: boolean;
+  transcriptOpen: boolean;
   isHost: boolean;
   isLocked: boolean;
   onToggleAudio: () => void;
   onToggleVideo: () => void;
   onToggleScreenShare: () => void;
   onToggleChat: () => void;
+  onToggleTranscript: () => void;
   onCopyLink: () => void;
   onLeave: () => void;
   onEndMeeting: () => void;
@@ -25,9 +27,9 @@ interface ControlBarProps {
 }
 
 export const ControlBar = ({
-  audioEnabled, videoEnabled, screenSharing, chatOpen,
+  audioEnabled, videoEnabled, screenSharing, chatOpen, transcriptOpen,
   isHost, isLocked,
-  onToggleAudio, onToggleVideo, onToggleScreenShare, onToggleChat,
+  onToggleAudio, onToggleVideo, onToggleScreenShare, onToggleChat, onToggleTranscript,
   onCopyLink,
   onLeave, onEndMeeting, onToggleLock,
 }: ControlBarProps) => {
@@ -99,6 +101,15 @@ export const ControlBar = ({
             accent={chatOpen ? 'bg-primary/20 text-primary border-primary/30' : ''}
           >
             <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
+          </ControlBtn>
+
+          <ControlBtn 
+            active={transcriptOpen} 
+            onClick={onToggleTranscript} 
+            label="Transcript"
+            accent={transcriptOpen ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : ''}
+          >
+            <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
           </ControlBtn>
 
           <ControlBtn 

@@ -8,6 +8,9 @@ import { useWebRTC } from '@/hooks/useWebRTC';
 import { VideoGrid } from '@/components/meeting/VideoGrid';
 import { ControlBar } from '@/components/meeting/ControlBar';
 import { ChatPanel } from '@/components/meeting/ChatPanel';
+import { TranscriptPanel } from '@/components/meeting/TranscriptPanel';
+import { ClosedCaptions } from '@/components/meeting/ClosedCaptions';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import api from '@/lib/axios';
 import { Shield } from 'lucide-react';
 
@@ -38,6 +41,11 @@ export default function MeetingRoomPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showCopied, setShowCopied] = useState(false);
+
+  const [transcriptionEnabled, setTranscriptionEnabled] = useState(true);
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
+  const [transcripts, setTranscripts] = useState<any[]>([]);
+  const [activeSubtitle, setActiveSubtitle] = useState({ speaker: '', text: '' });
 
   const screenStreamRef = useRef<MediaStream | null>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -85,10 +93,25 @@ export default function MeetingRoomPage() {
     s.on('chat-history', (history: ChatMessage[]) => {
       setChatMessages(history);
     });
+
+    // Transcript events
+    s.on('new-transcript', (t: any) => {
+      setTranscripts((prev) => [...prev, t]);
+      // Clear interim subtitle when final transcription arrives
+      setActiveSubtitle({ speaker: '', text: '' });
+    });
+    s.on('new-transcript-interim', (data: { userId: string; userName: string; text: string }) => {
+      setActiveSubtitle({ speaker: data.userName, text: data.text });
+    });
+    s.on('transcript-history', (history: any[]) => {
+      setTranscripts(history);
+    });
+
     // After socket fully joins the Socket.IO room, re-fetch history to catch
     // any messages sent in the brief window between connect and join-room.
     s.on('room-joined', () => {
       s.emit('get-chat-history', { roomId });
+      s.emit('get-transcript-history', { roomId });
     });
 
     // Meeting lifecycle events
@@ -115,6 +138,20 @@ export default function MeetingRoomPage() {
     userName: user?.name || 'Guest',
     initialAudio: audioEnabled,
     initialVideo: videoEnabled,
+  });
+
+  // Speech Recognition hook
+  useSpeechRecognition({
+    roomId,
+    audioEnabled,
+    transcriptionEnabled,
+    onInterimResult: useCallback((text: string) => {
+      socket?.emit('submit-transcript-interim', { roomId, text });
+      setActiveSubtitle({ speaker: user?.name || 'You', text });
+    }, [socket, roomId, user]),
+    onFinalResult: useCallback((text: string) => {
+      socket?.emit('submit-transcript', { roomId, text });
+    }, [socket, roomId]),
   });
 
   // Toggle audio
@@ -281,7 +318,7 @@ export default function MeetingRoomPage() {
         </div>
       )}
       <div className="flex-1 flex overflow-hidden relative">
-        <div className={`flex-1 transition-all ${chatOpen ? 'mr-0' : ''}`}>
+        <div className={`flex-1 transition-all ${chatOpen || transcriptOpen ? 'mr-0' : ''}`}>
           <VideoGrid
             peers={peers}
             localStream={localStream}
@@ -298,17 +335,36 @@ export default function MeetingRoomPage() {
             currentUserId={user?.id || ''}
           />
         )}
+        {transcriptOpen && (
+          <TranscriptPanel
+            transcripts={transcripts}
+            onClose={() => setTranscriptOpen(false)}
+            currentUserId={user?.id || ''}
+          />
+        )}
+        <ClosedCaptions
+          speakerName={activeSubtitle.speaker}
+          text={activeSubtitle.text}
+        />
         <ControlBar
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
           screenSharing={screenSharing}
           chatOpen={chatOpen}
+          transcriptOpen={transcriptOpen}
           isHost={isHost}
           isLocked={isLocked}
           onToggleAudio={toggleAudio}
           onToggleVideo={toggleVideo}
           onToggleScreenShare={toggleScreenShare}
-          onToggleChat={() => setChatOpen(!chatOpen)}
+          onToggleChat={() => {
+            setChatOpen(!chatOpen);
+            setTranscriptOpen(false);
+          }}
+          onToggleTranscript={() => {
+            setTranscriptOpen(!transcriptOpen);
+            setChatOpen(false);
+          }}
           onCopyLink={copyLink}
           onLeave={leaveMeeting}
           onEndMeeting={endMeeting}
