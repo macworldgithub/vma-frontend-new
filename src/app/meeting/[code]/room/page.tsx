@@ -76,7 +76,8 @@ export default function MeetingRoomPage() {
   useEffect(() => {
     if (!token || !roomId) return;
 
-    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
+    // const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
+    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'https://vma-backend.omnisuiteai.com', {
       auth: { token },
       transports: ['websocket'],
       extraHeaders: {
