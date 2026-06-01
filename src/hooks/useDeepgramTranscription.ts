@@ -9,6 +9,7 @@ interface UseDeepgramTranscriptionProps {
   audioEnabled: boolean;
   transcriptionEnabled: boolean;
   localStream: MediaStream | null;
+  hasPeers: boolean;
 }
 
 /**
@@ -26,6 +27,7 @@ export const useDeepgramTranscription = ({
   audioEnabled,
   transcriptionEnabled,
   localStream,
+  hasPeers,
 }: UseDeepgramTranscriptionProps) => {
   const recorderRef   = useRef<MediaRecorder | null>(null);
   const streamingRef  = useRef(false);
@@ -112,14 +114,14 @@ export const useDeepgramTranscription = ({
 
   // ── React to audio/transcription toggle or dependency changes ─────────
   useEffect(() => {
-    const shouldStream = audioEnabled && transcriptionEnabled && !!socket && !!localStream;
+    const shouldStream = audioEnabled && transcriptionEnabled && !!socket && !!localStream && hasPeers;
 
     if (shouldStream) {
       if (!streamingRef.current) startTranscription();
     } else {
       if (streamingRef.current) stopTranscription();
     }
-  }, [audioEnabled, transcriptionEnabled, socket, localStream, startTranscription, stopTranscription]);
+  }, [audioEnabled, transcriptionEnabled, socket, localStream, hasPeers, startTranscription, stopTranscription]);
 
   // ── Cleanup on unmount ────────────────────────────────────────────────
   useEffect(() => {
