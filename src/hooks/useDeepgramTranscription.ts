@@ -58,39 +58,44 @@ export const useDeepgramTranscription = ({
     // Tell backend to open a Deepgram stream for this socket
     sock.emit('start-transcription', { roomId: rid });
 
-    // Pick the best supported MIME type (Deepgram accepts webm/ogg/mp4 containers)
-    const mimeType =
-      MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
-      MediaRecorder.isTypeSupported('audio/webm')             ? 'audio/webm'             :
-      MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')  ? 'audio/ogg;codecs=opus'  :
-      '';
+    // Wait for backend to confirm Deepgram connection is OPEN before capturing audio
+    sock.once('transcription-started', () => {
+      if (!streamingRef.current && socketRef.current) {
+        // Pick the best supported MIME type (Deepgram accepts webm/ogg/mp4 containers)
+        const mimeType =
+          MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
+          MediaRecorder.isTypeSupported('audio/webm')             ? 'audio/webm'             :
+          MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')  ? 'audio/ogg;codecs=opus'  :
+          '';
 
-    try {
-      const audioOnlyStream = new MediaStream(audioTracks);
-      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
-      const recorder = new MediaRecorder(audioOnlyStream, options);
+        try {
+          const audioOnlyStream = new MediaStream(audioTracks);
+          const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
+          const recorder = new MediaRecorder(audioOnlyStream, options);
 
-      recorder.ondataavailable = (evt) => {
-        if (evt.data.size > 0 && socketRef.current?.connected) {
-          // Convert Blob → ArrayBuffer → send as binary frame
-          evt.data.arrayBuffer().then((buf) => {
-            socketRef.current?.emit('audio-chunk', buf);
-          });
+          recorder.ondataavailable = (evt) => {
+            if (evt.data.size > 0 && socketRef.current?.connected) {
+              // Convert Blob → ArrayBuffer → send as binary frame
+              evt.data.arrayBuffer().then((buf) => {
+                socketRef.current?.emit('audio-chunk', buf);
+              });
+            }
+          };
+
+          recorder.onerror = (err) => {
+            console.error('[Deepgram] MediaRecorder error:', err);
+          };
+
+          recorder.start(250); // emit ondataavailable every 250 ms
+          recorderRef.current = recorder;
+          streamingRef.current = true;
+
+          console.log('[Deepgram] Transcription started — MIME:', mimeType || 'browser default');
+        } catch (err) {
+          console.error('[Deepgram] Failed to start MediaRecorder:', err);
         }
-      };
-
-      recorder.onerror = (err) => {
-        console.error('[Deepgram] MediaRecorder error:', err);
-      };
-
-      recorder.start(250); // emit ondataavailable every 250 ms
-      recorderRef.current = recorder;
-      streamingRef.current = true;
-
-      console.log('[Deepgram] Transcription started — MIME:', mimeType || 'browser default');
-    } catch (err) {
-      console.error('[Deepgram] Failed to start MediaRecorder:', err);
-    }
+      }
+    });
   }, []); // stable — reads via refs
 
   // ── Stop capturing & notify backend ───────────────────────────────────
