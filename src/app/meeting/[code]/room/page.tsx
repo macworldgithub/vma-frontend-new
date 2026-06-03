@@ -10,7 +10,7 @@ import { ControlBar } from '@/components/meeting/ControlBar';
 import { ChatPanel } from '@/components/meeting/ChatPanel';
 import { TranscriptPanel } from '@/components/meeting/TranscriptPanel';
 import { ClosedCaptions } from '@/components/meeting/ClosedCaptions';
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { useDeepgramTranscription } from '@/hooks/useDeepgramTranscription';
 import api from '@/lib/axios';
 import { Shield } from 'lucide-react';
 
@@ -76,7 +76,8 @@ export default function MeetingRoomPage() {
   useEffect(() => {
     if (!token || !roomId) return;
 
-    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
+    // const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000', {
+    const s = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'https://vma-backend.omnisuiteai.com', {
       auth: { token },
       transports: ['websocket'],
       extraHeaders: {
@@ -140,18 +141,16 @@ export default function MeetingRoomPage() {
     initialVideo: videoEnabled,
   });
 
-  // Speech Recognition hook
-  useSpeechRecognition({
+  // Deepgram transcription — captures each participant's audio and sends
+  // chunks to the backend which streams them to Deepgram and broadcasts
+  // 'new-transcript' / 'new-transcript-interim' events to the entire room.
+  useDeepgramTranscription({
     roomId,
+    socket,
     audioEnabled,
     transcriptionEnabled,
-    onInterimResult: useCallback((text: string) => {
-      socket?.emit('submit-transcript-interim', { roomId, text });
-      setActiveSubtitle({ speaker: user?.name || 'You', text });
-    }, [socket, roomId, user]),
-    onFinalResult: useCallback((text: string) => {
-      socket?.emit('submit-transcript', { roomId, text });
-    }, [socket, roomId]),
+    localStream,
+    hasPeers: peers.size > 0,
   });
 
   // Toggle audio

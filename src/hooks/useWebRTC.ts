@@ -601,10 +601,34 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
   }, [peers, localStream]);
 
   const createPeerConnection = useCallback((targetSocketId: string, remoteUser: { userId: string, userName: string }) => {
+    // Build a reliable ICE server list:
+    // - Always include Google STUN servers (works on localhost & most networks)
+    // - Only include TURN servers if they look properly configured
+    const reliableServers: RTCIceServer[] = [
+      { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+    ];
+
+    if (iceServers.current) {
+      for (const server of iceServers.current) {
+        const urls = Array.isArray(server.urls) ? server.urls : [server.urls];
+        const hasTurn = urls.some((u: string) => u.startsWith('turn:') || u.startsWith('turns:'));
+        // Only add TURN servers that have credentials configured
+        if (hasTurn && server.username && server.credential) {
+          reliableServers.push(server);
+        }
+        // Add any additional STUN servers
+        const stunUrls = urls.filter((u: string) => u.startsWith('stun:'));
+        if (stunUrls.length > 0 && !hasTurn) {
+          reliableServers.push({ urls: stunUrls });
+        }
+      }
+    }
+
+    console.log('[WebRTC] Using ICE servers:', JSON.stringify(reliableServers.map(s => s.urls)));
+
     const pc = new RTCPeerConnection({
-      iceServers: iceServers.current && iceServers.current.length > 0
-        ? iceServers.current
-        : [{ urls: ['stun:stun.l.google.com:19302'] }],
+      iceServers: reliableServers,
+      iceCandidatePoolSize: 4,
     });
 
     peerConnections.current.set(targetSocketId, pc);
@@ -653,12 +677,34 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
     pc.onconnectionstatechange = () => {
       console.log(`[WebRTC] Connection state for ${targetSocketId}:`, pc.connectionState);
       if (pc.connectionState === 'failed') {
-        console.error(`[WebRTC] Connection FAILED for ${targetSocketId}`);
+        console.warn(`[WebRTC] Connection FAILED for ${targetSocketId} — attempting ICE restart`);
+        // Attempt an ICE restart by creating a new offer with iceRestart: true
+        pc.createOffer({ iceRestart: true })
+          .then(offer => pc.setLocalDescription(offer))
+          .then(() => {
+            if (pc.localDescription) {
+              socket?.emit('offer', {
+                targetSocketId,
+                signal: pc.localDescription,
+                roomId,
+              });
+              console.log(`[WebRTC] ICE restart offer sent to ${targetSocketId}`);
+            }
+          })
+          .catch(err => console.error('[WebRTC] ICE restart failed:', err));
       }
     };
 
     pc.oniceconnectionstatechange = () => {
       console.log(`[WebRTC] ICE connection state for ${targetSocketId}:`, pc.iceConnectionState);
+      if (pc.iceConnectionState === 'disconnected') {
+        // Give it a moment to recover before logging a warning
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'disconnected') {
+            console.warn(`[WebRTC] ICE still disconnected for ${targetSocketId} after timeout`);
+          }
+        }, 5000);
+      }
     };
 
     return pc;
