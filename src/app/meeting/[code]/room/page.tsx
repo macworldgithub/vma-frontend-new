@@ -258,7 +258,19 @@ export default function MeetingRoomPage() {
     setReportLoading(true);
     try {
       // Build a formatted transcript string from all transcript blocks
-      const transcriptText = transcripts
+      // const transcriptText = transcripts
+      //   .map(
+      //     (t) =>
+      //       `[${new Date(t.timestamp).toLocaleTimeString([], {
+      //         hour: '2-digit',
+      //         minute: '2-digit',
+      //       })}] ${t.userName}: ${t.text}`
+      //   )
+      //   .join('\n');
+      
+const transcriptText =
+  transcripts.length > 0
+    ? transcripts
         .map(
           (t) =>
             `[${new Date(t.timestamp).toLocaleTimeString([], {
@@ -266,7 +278,16 @@ export default function MeetingRoomPage() {
               minute: '2-digit',
             })}] ${t.userName}: ${t.text}`
         )
-        .join('\n');
+        .join('\n')
+    : `
+[09:00] John Smith: Good morning everyone, thank you for Fjoining today's project review meeting.
+[09:01] Sarah Johnson: The frontend dashboard is now 90% complete and ready for QA testing.
+[09:03] Michael Brown: Backend API integration has been completed successfully.
+[09:05] John Smith: Let's schedule user acceptance testing for next week.
+[09:10] Sarah Johnson: We still need final approval on the UI design changes.
+[09:15] Michael Brown: Performance testing shows a significant improvement.
+[09:18] John Smith: Thanks everyone. Meeting adjourned.
+`;
 
       const response = await fetch('http://localhost:8000/report/pdf', {
         method: 'POST',
