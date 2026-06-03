@@ -60,13 +60,13 @@
 //         if (window.__webrtcDebug && window.__webrtcDebug.peerConnections) {
 //           const pcs = window.__webrtcDebug.peerConnections;
 //           console.log("📊 Found " + pcs.size + " peer connections");
-          
+
 //           for (const [socketId, pc] of pcs.entries()) {
 //             console.log("\\n🔗 Peer: " + socketId);
 //             console.log("  Connection State: " + pc.connectionState);
 //             console.log("  ICE Connection: " + pc.iceConnectionState);
 //             console.log("  Signaling State: " + pc.signalingState);
-            
+
 //             const senders = pc.getSenders();
 //             console.log("  Senders: " + senders.length);
 //             senders.forEach((s, i) => {
@@ -74,7 +74,7 @@
 //                 console.log("    " + (i + 1) + ". " + s.track.kind + " - " + s.track.label + " (Enabled: " + s.track.enabled + ")");
 //               }
 //             });
-            
+
 //             const receivers = pc.getReceivers();
 //             console.log("  Receivers: " + receivers.length);
 //             receivers.forEach((r, i) => {
@@ -631,6 +631,10 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
       iceCandidatePoolSize: 4,
     });
 
+    if (peerConnections.current.has(targetSocketId)) {
+      console.warn(`[WebRTC] Closing leaked peer connection for ${targetSocketId}`);
+      peerConnections.current.get(targetSocketId)?.close();
+    }
     peerConnections.current.set(targetSocketId, pc);
 
     // Add local tracks to peer connection
@@ -816,6 +820,12 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
         if (!pc) {
           pc = createPeerConnection(fromSocketId, { userId: fromUserId, userName: fromUserName });
         }
+
+        if (pc.signalingState !== 'stable') {
+          console.warn(`[WebRTC] Glare detected! Ignoring offer from ${fromSocketId} because state is ${pc.signalingState}`);
+          return;
+        }
+
         await pc.setRemoteDescription(new RTCSessionDescription(signal));
         // Flush any ICE candidates that arrived before the remote description was set
         await flushPendingCandidates(fromSocketId, pc);
@@ -829,6 +839,10 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
         const { fromSocketId, signal } = data;
         const pc = peerConnections.current.get(fromSocketId);
         if (pc) {
+          if (pc.signalingState !== 'have-local-offer') {
+            console.warn(`[WebRTC] Ignoring answer from ${fromSocketId} because state is ${pc.signalingState}`);
+            return;
+          }
           await pc.setRemoteDescription(new RTCSessionDescription(signal));
           // Flush any ICE candidates that arrived before the remote description was set
           await flushPendingCandidates(fromSocketId, pc);
