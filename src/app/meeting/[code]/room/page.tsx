@@ -12,7 +12,7 @@ import { TranscriptPanel } from '@/components/meeting/TranscriptPanel';
 import { ClosedCaptions } from '@/components/meeting/ClosedCaptions';
 import { useDeepgramTranscription } from '@/hooks/useDeepgramTranscription';
 import api from '@/lib/axios';
-import { Shield } from 'lucide-react';
+import { Shield, FileDown, Loader2, ArrowLeft } from 'lucide-react';
 
 interface ChatMessage {
   id?: string;
@@ -30,10 +30,13 @@ export default function MeetingRoomPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [roomId, setRoomId] = useState('');
   const [meetingId, setMeetingId] = useState('');
+  const [meetingTitle, setMeetingTitle] = useState('');
   const [hostId, setHostId] = useState('');
   const [isLocked, setIsLocked] = useState(false);
   const [meetingEnded, setMeetingEnded] = useState(false);
   const [kicked, setKicked] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportDownloaded, setReportDownloaded] = useState(false);
 
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
@@ -58,6 +61,7 @@ export default function MeetingRoomPage() {
         const { data } = await api.get(`/meetings/join/${code}`);
         setRoomId(data.roomId);
         setMeetingId(data.meetingId);
+        setMeetingTitle(data.title || '');
         setHostId(data.hostId);
 
         // Read preferences from pre-join
@@ -248,13 +252,61 @@ export default function MeetingRoomPage() {
     socket?.emit('toggle-lock', { roomId });
   }, [socket, roomId]);
 
-  // Redirects on meeting end or kick
+  // Generate PDF report from transcript
+  const generateReport = useCallback(async () => {
+    if (reportLoading) return;
+    setReportLoading(true);
+    try {
+      // Build a formatted transcript string from all transcript blocks
+      const transcriptText = transcripts
+        .map(
+          (t) =>
+            `[${new Date(t.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}] ${t.userName}: ${t.text}`
+        )
+        .join('\n');
+
+      const response = await fetch('http://localhost:8000/report/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcript: transcriptText,
+          meeting_title: meetingTitle || 'Untitled Meeting',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate report');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      // Extract filename from Content-Disposition header or use default
+      const disposition = response.headers.get('Content-Disposition');
+      const filenameMatch = disposition?.match(/filename="(.+?)"/);
+      a.download = filenameMatch ? filenameMatch[1] : 'VMA_Report.pdf';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setReportDownloaded(true);
+    } catch (err) {
+      console.error('Failed to generate report:', err);
+      alert('Failed to generate the meeting report. Please try again.');
+    } finally {
+      setReportLoading(false);
+    }
+  }, [transcripts, meetingTitle, reportLoading]);
+
+  // Redirect only kicked users automatically; meeting-ended users stay to download report
   useEffect(() => {
-    if (meetingEnded || kicked) {
+    if (kicked) {
       const timeout = setTimeout(() => router.push('/dashboard'), 3000);
       return () => clearTimeout(timeout);
     }
-  }, [meetingEnded, kicked, router]);
+  }, [kicked, router]);
 
   if (meetingEnded) {
     return (
@@ -271,11 +323,45 @@ export default function MeetingRoomPage() {
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Secure Tunnel Successfully Terminated</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
-            The meeting data has been encrypted and archived. Redirecting to your dashboard command center...
+            The meeting data has been encrypted and archived. Download the meeting report or return to your dashboard.
           </div>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 animate-[progress_3s_linear_forwards]" />
-          </div>
+
+          {/* Generate Report Button */}
+          <button
+            onClick={generateReport}
+            disabled={reportLoading}
+            className={`w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${
+              reportDownloaded
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10 hover:bg-emerald-500/30'
+                : 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30 hover:-translate-y-0.5'
+            } ${reportLoading ? 'opacity-70 cursor-wait' : 'active:scale-[0.98]'}`}
+          >
+            {reportLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Generating Report...
+              </>
+            ) : reportDownloaded ? (
+              <>
+                <FileDown className="h-5 w-5" />
+                Download Again
+              </>
+            ) : (
+              <>
+                <FileDown className="h-5 w-5" />
+                Download Meeting Report
+              </>
+            )}
+          </button>
+
+          {/* Return to Dashboard */}
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="w-full py-3 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] hover:text-white transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );
