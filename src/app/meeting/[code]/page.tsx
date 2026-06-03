@@ -26,6 +26,15 @@ export default function JoinPage() {
   const router = useRouter();
   const { code } = useParams();
   const { user } = useAuthStore();
+
+  // ── Hydration guard ──────────────────────────────────────────────────────
+  // Zustand persist reads localStorage (client-only).  `user` is null on the
+  // server but populated on the client, so `isHost` would differ between the
+  // two renders and trigger Next.js's hydration error which crashes the
+  // router and shows a 404.  We render a static skeleton until mounted.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const [meeting, setMeeting] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -144,7 +153,9 @@ export default function JoinPage() {
     router.push(`/meeting/${code}/room`);
   };
 
-  if (isLoading) {
+  // Show identical skeleton on server + initial client paint, then also
+  // while the meeting API call is in flight.
+  if (!mounted || isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
         <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />

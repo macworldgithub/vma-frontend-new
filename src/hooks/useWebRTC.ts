@@ -758,7 +758,13 @@ export const useWebRTC = ({ roomId, socket, userId, userName, initialAudio, init
           console.log(`[WebRTC] Requesting media: video = ${initialVideo}, audio = ${initialAudio}`);
           stream = await navigator.mediaDevices.getUserMedia({
             video: initialVideo ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false,
-            audio: initialAudio ? { echoCancellation: true, noiseSuppression: true } : false,
+            audio: initialAudio ? {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+              channelCount: 1,
+              sampleRate: 48000,
+            } : false,
           });
           console.log(`[WebRTC] ✅ Local stream obtained with tracks:`, stream.getTracks().map(t => `${t.kind}(${t.enabled})`).join(', '));
         } catch (err: any) {

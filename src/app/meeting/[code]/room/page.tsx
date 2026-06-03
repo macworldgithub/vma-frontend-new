@@ -27,6 +27,16 @@ export default function MeetingRoomPage() {
   const router = useRouter();
   const { user, token } = useAuthStore();
 
+  // ── Hydration guard ────────────────────────────────────────────────────
+  // Zustand's `persist` middleware reads localStorage, which doesn't exist
+  // on the server.  This means `user` / `token` are always null on the
+  // first server render but populated on the client, causing a hydration
+  // mismatch that crashes the Next.js router and shows a blank 404 page.
+  // Rendering a static skeleton until the component has mounted ensures
+  // both sides produce identical HTML on the very first paint.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const [socket, setSocket] = useState<Socket | null>(null);
   const [roomId, setRoomId] = useState('');
   const [meetingId, setMeetingId] = useState('');
@@ -267,19 +277,19 @@ export default function MeetingRoomPage() {
       //       })}] ${t.userName}: ${t.text}`
       //   )
       //   .join('\n');
-      
-const transcriptText =
-  transcripts.length > 0
-    ? transcripts
-        .map(
-          (t) =>
-            `[${new Date(t.timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}] ${t.userName}: ${t.text}`
-        )
-        .join('\n')
-    : `
+
+      const transcriptText =
+        transcripts.length > 0
+          ? transcripts
+            .map(
+              (t) =>
+                `[${new Date(t.timestamp).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}] ${t.userName}: ${t.text}`
+            )
+            .join('\n')
+          : `
 [09:00] John Smith: Good morning everyone, thank you for Fjoining today's project review meeting.
 [09:01] Sarah Johnson: The frontend dashboard is now 90% complete and ready for QA testing.
 [09:03] Michael Brown: Backend API integration has been completed successfully.
@@ -329,6 +339,17 @@ const transcriptText =
     }
   }, [kicked, router]);
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
+        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] animate-pulse">
+          Initializing Secure Session...
+        </p>
+      </div>
+    );
+  }
+
   if (meetingEnded) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
@@ -351,11 +372,10 @@ const transcriptText =
           <button
             onClick={generateReport}
             disabled={reportLoading}
-            className={`w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${
-              reportDownloaded
+            className={`w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${reportDownloaded
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10 hover:bg-emerald-500/30'
                 : 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30 hover:-translate-y-0.5'
-            } ${reportLoading ? 'opacity-70 cursor-wait' : 'active:scale-[0.98]'}`}
+              } ${reportLoading ? 'opacity-70 cursor-wait' : 'active:scale-[0.98]'}`}
           >
             {reportLoading ? (
               <>

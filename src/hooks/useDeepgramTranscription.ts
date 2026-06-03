@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
 interface UseDeepgramTranscriptionProps {
@@ -117,6 +117,26 @@ export const useDeepgramTranscription = ({
     console.log('[Deepgram] Transcription stopped');
   }, []); // stable — reads via refs
 
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  // ── Listen for unexpected disconnects from Deepgram ───────────────────
+  useEffect(() => {
+    const sock = socketRef.current;
+    if (!sock) return;
+
+    const handleDisconnect = () => {
+      console.warn('[Deepgram] Backend disconnected stream. Restarting...');
+      stopTranscription();
+      // Trigger a restart after a short delay to ensure clean teardown
+      setTimeout(() => setRetryTrigger((r) => r + 1), 1000);
+    };
+
+    sock.on('transcription-disconnected', handleDisconnect);
+    return () => {
+      sock.off('transcription-disconnected', handleDisconnect);
+    };
+  }, [socket, stopTranscription]);
+
   // ── React to audio/transcription toggle or dependency changes ─────────
   useEffect(() => {
     const shouldStream = audioEnabled && transcriptionEnabled && !!socket && !!localStream && hasPeers;
@@ -126,7 +146,7 @@ export const useDeepgramTranscription = ({
     } else {
       if (streamingRef.current) stopTranscription();
     }
-  }, [audioEnabled, transcriptionEnabled, socket, localStream, hasPeers, startTranscription, stopTranscription]);
+  }, [audioEnabled, transcriptionEnabled, socket, localStream, hasPeers, startTranscription, stopTranscription, retryTrigger]);
 
   // ── Cleanup on unmount ────────────────────────────────────────────────
   useEffect(() => {
