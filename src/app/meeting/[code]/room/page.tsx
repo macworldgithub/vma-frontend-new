@@ -289,7 +289,7 @@ const transcriptText =
 [09:18] John Smith: Thanks everyone. Meeting adjourned.
 `;
 
-      const response = await fetch('http://localhost:8000/report/pdf', {
+      const response = await fetch('https://vma-microservice.omnisuiteai.com/report/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -300,7 +300,7 @@ const transcriptText =
 
       if (!response.ok) throw new Error('Failed to generate report');
 
-      const blob = await response.blob();
+      const blob = await response.blob()
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
