@@ -153,7 +153,6 @@
 //     return () => { stopTranscription(); };
 //   }, [stopTranscription]);
 // };
-
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -165,23 +164,56 @@ interface UseDeepgramTranscriptionProps {
   audioEnabled: boolean;
   transcriptionEnabled: boolean;
   localStream: MediaStream | null;
-  // NOTE: `hasPeers` removed — transcription must work independently of
-  // peer-connection timing so both the first and second user get captions.
+  hasPeers: boolean;
+}
+
+const TARGET_SAMPLE_RATE = 16000;     // must match backend
+const PROCESSOR_BUFFER_SIZE = 4096;   // ≈85 ms @ 48 kHz
+
+// ── PCM helpers ───────────────────────────────────────────────────────
+function floatToInt16(input: Float32Array): Int16Array {
+  const out = new Int16Array(input.length);
+  for (let i = 0; i < input.length; i++) {
+    const s = Math.max(-1, Math.min(1, input[i]));
+    out[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+  }
+  return out;
+}
+
+/** Block-averaging downsampler — good enough for speech, cheap. */
+function downsample(buffer: Float32Array, srcRate: number, dstRate: number): Float32Array {
+  if (srcRate === dstRate) return buffer;
+  if (srcRate < dstRate) return buffer; // do not upsample
+  const ratio = srcRate / dstRate;
+  const newLength = Math.floor(buffer.length / ratio);
+  const result = new Float32Array(newLength);
+  let offsetResult = 0;
+  let offsetBuffer = 0;
+  while (offsetResult < newLength) {
+    const nextOffsetBuffer = Math.floor((offsetResult + 1) * ratio);
+    let sum = 0;
+    let count = 0;
+    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+      sum += buffer[i];
+      count++;
+    }
+    result[offsetResult] = count > 0 ? sum / count : 0;
+    offsetResult++;
+    offsetBuffer = nextOffsetBuffer;
+  }
+  return result;
 }
 
 /**
- * Captures the local user's microphone audio via MediaRecorder and streams
- * 250 ms binary chunks to the NestJS backend over Socket.IO.
+ * Captures the local user's microphone audio with the Web Audio API, downsamples
+ * it to 16 kHz mono Int16 PCM, and streams those raw PCM frames to the backend.
  *
- * Architecture (two independent lifecycles):
- *   1. **Deepgram connection** — opened when `transcriptionEnabled` is true,
- *      closed when false or on unmount. Survives mute/unmute.
- *   2. **MediaRecorder** — started when audio is enabled AND Deepgram is ready,
- *      stopped on mute (cheap, no network cost), restarted on unmute.
- *
- * This separation prevents the expensive Deepgram WebSocket teardown/setup
- * cycle on every mute toggle and eliminates the race where the recorder
- * starts before Deepgram is ready.
+ * Why PCM and not MediaRecorder?
+ *   • MediaRecorder produces a WebM/Opus container. ONLY the first chunk
+ *     carries the header. If that header chunk is delayed, dropped, or arrives
+ *     before Deepgram's WebSocket is fully open, every subsequent chunk fails
+ *     to decode and the user gets ZERO transcripts for the whole session.
+ *   • Raw PCM has no container — every chunk is independently decodable.
  */
 export const useDeepgramTranscription = ({
   roomId,
@@ -189,242 +221,242 @@ export const useDeepgramTranscription = ({
   audioEnabled,
   transcriptionEnabled,
   localStream,
+  hasPeers,
 }: UseDeepgramTranscriptionProps) => {
-  // ── Refs for latest values (avoid stale closures) ─────────────────
-  const socketRef = useRef(socket);
+  // Audio graph
+  const audioContextRef  = useRef<AudioContext | null>(null);
+  const sourceNodeRef    = useRef<MediaStreamAudioSourceNode | null>(null);
+  const processorNodeRef = useRef<ScriptProcessorNode | null>(null);
+  const silentGainRef    = useRef<GainNode | null>(null);
+
+  // Lifecycle flags
+  const streamingRef = useRef(false);   // PCM pump active
+  const startingRef  = useRef(false);   // currently negotiating start
+
+  // Always-current refs so callbacks never close over stale state
+  const socketRef      = useRef(socket);
   const localStreamRef = useRef(localStream);
-  const roomIdRef = useRef(roomId);
-  const audioEnabledRef = useRef(audioEnabled);
-  const transcriptionEnabledRef = useRef(transcriptionEnabled);
+  const roomIdRef      = useRef(roomId);
 
-  useEffect(() => { socketRef.current = socket; }, [socket]);
+  useEffect(() => { socketRef.current      = socket;      }, [socket]);
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
-  useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
-  useEffect(() => { audioEnabledRef.current = audioEnabled; }, [audioEnabled]);
-  useEffect(() => { transcriptionEnabledRef.current = transcriptionEnabled; }, [transcriptionEnabled]);
+  useEffect(() => { roomIdRef.current      = roomId;      }, [roomId]);
 
-  // ── Internal state ────────────────────────────────────────────────
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const deepgramReadyRef = useRef(false);
-  const openingRef = useRef(false); // prevents duplicate open attempts
   const [retryTrigger, setRetryTrigger] = useState(0);
 
-  // Track which audio track the recorder is capturing so we can detect
-  // when the track changes (device switch, re-enable mic, etc.)
-  const activeTrackIdRef = useRef<string | null>(null);
-
-  // ── MediaRecorder helpers ─────────────────────────────────────────
-
-  const stopRecorder = useCallback(() => {
-    if (!recorderRef.current) return;
+  // ── Teardown the Web Audio graph ──────────────────────────────────────
+  const teardownAudio = useCallback(() => {
     try {
-      if (recorderRef.current.state !== 'inactive') {
-        recorderRef.current.stop();
+      if (processorNodeRef.current) {
+        processorNodeRef.current.onaudioprocess = null as any;
+        processorNodeRef.current.disconnect();
       }
-    } catch (err) {
-      console.warn('[Deepgram] Error stopping MediaRecorder:', err);
-    }
-    recorderRef.current = null;
-    activeTrackIdRef.current = null;
-    console.log('[Deepgram] MediaRecorder stopped');
+    } catch {}
+    try { sourceNodeRef.current?.disconnect(); }    catch {}
+    try { silentGainRef.current?.disconnect(); }    catch {}
+    try {
+      const ctx = audioContextRef.current;
+      if (ctx && ctx.state !== 'closed') ctx.close();
+    } catch {}
+    processorNodeRef.current = null;
+    sourceNodeRef.current    = null;
+    silentGainRef.current    = null;
+    audioContextRef.current  = null;
   }, []);
 
-  const startRecorder = useCallback(() => {
-    // Guard: don't start if already recording or prerequisites missing
-    if (recorderRef.current) return;
+  // ── Start streaming PCM to the backend ────────────────────────────────
+  const startTranscription = useCallback(async () => {
+    if (startingRef.current || streamingRef.current) return;
 
+    const sock   = socketRef.current;
     const stream = localStreamRef.current;
-    const sock = socketRef.current;
-    if (!stream || !sock?.connected || !deepgramReadyRef.current) return;
+    const rid    = roomIdRef.current;
 
-    const audioTracks = stream.getAudioTracks().filter(t => t.readyState === 'live');
+    if (!sock || !stream) return;
+
+    const audioTracks = stream.getAudioTracks();
     if (!audioTracks.length) {
-      console.warn('[Deepgram] No live audio tracks on localStream — cannot start recorder');
+      console.warn('[Deepgram] No audio tracks on localStream');
       return;
     }
 
-    // Pick the best MIME type (Deepgram accepts webm/ogg/mp4 containers)
-    const mimeType =
-      MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' :
-      MediaRecorder.isTypeSupported('audio/webm')             ? 'audio/webm'             :
-      MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')  ? 'audio/ogg;codecs=opus'  :
-      '';
+    startingRef.current = true;
+
+    // 1. Wait for the backend to confirm Deepgram WebSocket is OPEN.
+    //    Register listeners BEFORE emitting so we can't race the response.
+    const waitForBackend = new Promise<void>((resolve, reject) => {
+      let settled = false;
+
+      const onStarted = () => {
+        if (settled) return;
+        settled = true;
+        sock.off('transcription-error', onError);
+        resolve();
+      };
+      const onError = (err: any) => {
+        if (settled) return;
+        settled = true;
+        sock.off('transcription-started', onStarted);
+        reject(new Error(err?.message || 'Backend rejected transcription'));
+      };
+
+      sock.once('transcription-started', onStarted);
+      sock.once('transcription-error',   onError);
+
+      setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        sock.off('transcription-started', onStarted);
+        sock.off('transcription-error',   onError);
+        reject(new Error('Timed out waiting for transcription-started'));
+      }, 8000);
+    });
+
+    sock.emit('start-transcription', { roomId: rid });
 
     try {
-      const audioOnlyStream = new MediaStream(audioTracks);
-      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
-      const recorder = new MediaRecorder(audioOnlyStream, options);
-
-      recorder.ondataavailable = (evt) => {
-        if (evt.data.size > 0 && socketRef.current?.connected && deepgramReadyRef.current) {
-          evt.data.arrayBuffer().then((buf) => {
-            socketRef.current?.emit('audio-chunk', buf);
-          });
-        }
-      };
-
-      recorder.onerror = (err) => {
-        console.error('[Deepgram] MediaRecorder error:', err);
-        // Try to restart after a brief pause
-        stopRecorder();
-        setTimeout(() => {
-          if (audioEnabledRef.current && deepgramReadyRef.current && transcriptionEnabledRef.current) {
-            startRecorder();
-          }
-        }, 500);
-      };
-
-      // When an audio track ends (device unplugged, track stopped externally),
-      // stop the recorder so the next effect cycle can restart with a new track.
-      audioTracks[0].addEventListener('ended', () => {
-        console.warn('[Deepgram] Audio track ended — stopping recorder');
-        stopRecorder();
-      });
-
-      recorder.start(250);
-      recorderRef.current = recorder;
-      activeTrackIdRef.current = audioTracks[0].id;
-
-      console.log('[Deepgram] MediaRecorder started — MIME:', mimeType || 'browser default', '— Track:', audioTracks[0].label);
+      await waitForBackend;
     } catch (err) {
-      console.error('[Deepgram] Failed to create/start MediaRecorder:', err);
-    }
-  }, [stopRecorder]);
-
-  // ── Deepgram connection helpers ───────────────────────────────────
-
-  const closeDeepgram = useCallback(() => {
-    stopRecorder();
-
-    if (deepgramReadyRef.current || openingRef.current) {
-      socketRef.current?.emit('stop-transcription', { roomId: roomIdRef.current });
-      console.log('[Deepgram] Sent stop-transcription to backend');
-    }
-
-    deepgramReadyRef.current = false;
-    openingRef.current = false;
-  }, [stopRecorder]);
-
-  const openDeepgram = useCallback(() => {
-    const sock = socketRef.current;
-    if (!sock?.connected || deepgramReadyRef.current || openingRef.current) return;
-
-    openingRef.current = true;
-    console.log('[Deepgram] Requesting backend to open Deepgram stream…');
-
-    // Clean up any leftover listeners from previous attempts
-    sock.off('transcription-started');
-    sock.off('transcription-error');
-
-    const timeoutId = setTimeout(() => {
-      console.error('[Deepgram] Backend did not confirm Deepgram stream within 12 s');
-      openingRef.current = false;
-      sock.off('transcription-started');
-      sock.off('transcription-error');
-      // Retry
-      setTimeout(() => setRetryTrigger(r => r + 1), 2000);
-    }, 12_000);
-
-    sock.once('transcription-started', () => {
-      clearTimeout(timeoutId);
-      sock.off('transcription-error');
-      openingRef.current = false;
-      deepgramReadyRef.current = true;
-      console.log('[Deepgram] Backend confirmed Deepgram connection is ready');
-
-      // If audio is already enabled, start the recorder immediately
-      if (audioEnabledRef.current && localStreamRef.current) {
-        startRecorder();
-      }
-    });
-
-    sock.once('transcription-error', (err: any) => {
-      clearTimeout(timeoutId);
-      sock.off('transcription-started');
-      openingRef.current = false;
-      console.error('[Deepgram] Backend reported error opening Deepgram:', err);
-      // Retry after a delay
-      setTimeout(() => setRetryTrigger(r => r + 1), 3000);
-    });
-
-    sock.emit('start-transcription', { roomId: roomIdRef.current });
-  }, [startRecorder]);
-
-  // ── Effect: Manage Deepgram connection lifecycle ──────────────────
-  // Opens when transcription is enabled, closes when disabled.
-  useEffect(() => {
-    if (!socket) {
-      // Socket gone — clean everything
-      if (deepgramReadyRef.current || openingRef.current) {
-        stopRecorder();
-        deepgramReadyRef.current = false;
-        openingRef.current = false;
-      }
+      console.error('[Deepgram] Backend confirmation failed:', err);
+      startingRef.current = false;
+      // Make sure the backend cleans up any half-open stream, then retry
+      sock.emit('stop-transcription', { roomId: rid });
+      setTimeout(() => setRetryTrigger((r) => r + 1), 2000);
       return;
     }
 
-    if (transcriptionEnabled) {
-      if (!deepgramReadyRef.current && !openingRef.current) {
-        openDeepgram();
+    // 2. Build the Web Audio capture graph.
+    try {
+      const AudioCtxClass: typeof AudioContext =
+        (window.AudioContext || (window as any).webkitAudioContext);
+      const ctx = new AudioCtxClass();
+
+      // Some browsers (Chrome with no user gesture, Safari) start suspended.
+      if (ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch {}
       }
-    } else {
-      closeDeepgram();
+
+      // Build a dedicated MediaStream around just the audio tracks. Sharing
+      // the original stream with WebRTC's RTCPeerConnection is fine — tracks
+      // can have multiple consumers.
+      const micStream = new MediaStream(audioTracks);
+      const source = ctx.createMediaStreamSource(micStream);
+
+      // ScriptProcessorNode is deprecated but universally supported. It is
+      // sufficient for ~85 ms latency speech capture. An AudioWorklet upgrade
+      // is straightforward later if needed.
+      const processor = ctx.createScriptProcessor(PROCESSOR_BUFFER_SIZE, 1, 1);
+
+      // ScriptProcessorNode only runs when connected to ctx.destination.
+      // Route through a zero-gain node so the mic doesn't loop back to speakers.
+      const silentGain = ctx.createGain();
+      silentGain.gain.value = 0;
+
+      processor.onaudioprocess = (e) => {
+        if (!streamingRef.current) return;
+        const s = socketRef.current;
+        if (!s?.connected) return;
+
+        const input = e.inputBuffer.getChannelData(0);
+        const downsampled = downsample(input, ctx.sampleRate, TARGET_SAMPLE_RATE);
+        const pcm = floatToInt16(downsampled);
+
+        // Send the underlying ArrayBuffer — socket.io preserves binary as-is.
+        s.emit('audio-chunk', pcm.buffer);
+      };
+
+      source.connect(processor);
+      processor.connect(silentGain);
+      silentGain.connect(ctx.destination);
+
+      audioContextRef.current  = ctx;
+      sourceNodeRef.current    = source;
+      processorNodeRef.current = processor;
+      silentGainRef.current    = silentGain;
+
+      streamingRef.current = true;
+      startingRef.current  = false;
+
+      console.log(
+        `[Deepgram] PCM streaming STARTED — ${ctx.sampleRate} Hz → ${TARGET_SAMPLE_RATE} Hz`,
+      );
+    } catch (err) {
+      console.error('[Deepgram] Failed to set up Web Audio pipeline:', err);
+      startingRef.current = false;
+      teardownAudio();
+      sock.emit('stop-transcription', { roomId: rid });
     }
-  }, [socket, transcriptionEnabled, retryTrigger, openDeepgram, closeDeepgram, stopRecorder]);
+  }, [teardownAudio]);
 
-  // ── Effect: Manage MediaRecorder based on audio + readiness ───────
-  // This runs whenever audioEnabled or localStream changes.
-  useEffect(() => {
-    if (!deepgramReadyRef.current) return;
+  // ── Stop streaming & tell backend ─────────────────────────────────────
+  const stopTranscription = useCallback(() => {
+    const wasActive = streamingRef.current || startingRef.current;
 
-    if (audioEnabled && localStream) {
-      // Check if we need to (re)start the recorder
-      const currentTracks = localStream.getAudioTracks().filter(t => t.readyState === 'live');
-      const currentTrackId = currentTracks[0]?.id ?? null;
+    streamingRef.current = false;
+    startingRef.current  = false;
 
-      if (recorderRef.current && activeTrackIdRef.current !== currentTrackId) {
-        // Audio track changed (device switch, re-enabled mic) — restart recorder
-        console.log('[Deepgram] Audio track changed — restarting recorder');
-        stopRecorder();
-      }
+    teardownAudio();
 
-      if (!recorderRef.current) {
-        // Small delay to let tracks settle after a device change
-        const t = setTimeout(() => startRecorder(), 150);
-        return () => clearTimeout(t);
-      }
-    } else {
-      // Audio disabled or no stream — stop recorder but keep Deepgram alive
-      if (recorderRef.current) {
-        stopRecorder();
-      }
+    if (socketRef.current && roomIdRef.current) {
+      socketRef.current.emit('stop-transcription', { roomId: roomIdRef.current });
     }
-  }, [audioEnabled, localStream, startRecorder, stopRecorder]);
 
-  // ── Effect: Handle unexpected Deepgram disconnects ────────────────
+    if (wasActive) console.log('[Deepgram] PCM streaming STOPPED');
+  }, [teardownAudio]);
+
+  // ── Handle backend-initiated disconnects / errors ─────────────────────
   useEffect(() => {
     if (!socket) return;
 
     const handleDisconnect = () => {
-      console.warn('[Deepgram] Backend reported Deepgram stream disconnect — will retry');
-      stopRecorder();
-      deepgramReadyRef.current = false;
-      openingRef.current = false;
-      // Retry after a short delay so teardown completes
-      setTimeout(() => setRetryTrigger(r => r + 1), 1500);
+      console.warn('[Deepgram] Backend stream closed unexpectedly. Restarting…');
+      stopTranscription();
+      setTimeout(() => setRetryTrigger((r) => r + 1), 1500);
+    };
+
+    const handleError = (err: any) => {
+      console.error('[Deepgram] Backend reported error:', err);
+      // On hard errors, stop + retry after a longer delay
+      stopTranscription();
+      setTimeout(() => setRetryTrigger((r) => r + 1), 3000);
     };
 
     socket.on('transcription-disconnected', handleDisconnect);
+    socket.on('transcription-error',        handleError);
+
     return () => {
       socket.off('transcription-disconnected', handleDisconnect);
+      socket.off('transcription-error',        handleError);
     };
-  }, [socket, stopRecorder]);
+  }, [socket, stopTranscription]);
 
-  // ── Cleanup on unmount ────────────────────────────────────────────
+  // ── React to audio/transcription toggles & dependencies ───────────────
   useEffect(() => {
-    return () => {
-      closeDeepgram();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const shouldStream =
+      audioEnabled && transcriptionEnabled && !!socket && !!localStream && hasPeers;
+
+    if (shouldStream) {
+      if (!streamingRef.current && !startingRef.current) {
+        startTranscription();
+      }
+    } else {
+      if (streamingRef.current || startingRef.current) {
+        stopTranscription();
+      }
+    }
+  }, [
+    audioEnabled,
+    transcriptionEnabled,
+    socket,
+    localStream,
+    hasPeers,
+    retryTrigger,
+    startTranscription,
+    stopTranscription,
+  ]);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────────
+  useEffect(() => {
+    return () => { stopTranscription(); };
+  }, [stopTranscription]);
 };
