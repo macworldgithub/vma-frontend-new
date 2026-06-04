@@ -164,7 +164,7 @@ export default function MeetingRoomPage() {
     audioEnabled,
     transcriptionEnabled,
     localStream,
-    hasPeers: peers.size > 0,
+    // hasPeers: peers.size > 0,
   });
 
   // Toggle audio
