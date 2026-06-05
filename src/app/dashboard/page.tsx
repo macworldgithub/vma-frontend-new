@@ -68,7 +68,6 @@ export default function DashboardPage() {
               className="h-11 sm:h-14 px-4 sm:px-6 rounded-xl sm:rounded-2xl gap-2.5 sm:gap-3 text-sm sm:text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 w-full sm:w-auto justify-center"
               onClick={() => setIsModalOpen(true)}
             >
-              <Plus className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
               NEW SESSION
             </Button>
             <Button
