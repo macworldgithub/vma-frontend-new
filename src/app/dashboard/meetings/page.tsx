@@ -105,7 +105,7 @@ export default function MyMeetingsPage() {
     switch (status) {
       case 'LIVE':
         return (
-          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)] animate-pulse">
+          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-primary/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)] animate-pulse">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             LIVE
           </span>
@@ -246,7 +246,7 @@ export default function MyMeetingsPage() {
               >
 
                 {/* Visual Status Indicator Line */}
-                <div className={`absolute top-0 left-0 w-full h-[3px] opacity-35 group-hover:opacity-100 transition-opacity duration-300 ${meeting.status === 'LIVE' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.5)]' :
+                <div className={`absolute top-0 left-0 w-full h-[3px] opacity-35 group-hover:opacity-100 transition-opacity duration-300 ${meeting.status === 'LIVE' ? 'bg-primary shadow-[0_0_8px_rgba(52,211,153,0.5)]' :
                   meeting.status === 'SCHEDULED' ? 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.5)]' :
                     meeting.status === 'ENDED' ? 'bg-slate-700' : 'bg-rose-500'
                   }`} />
@@ -313,7 +313,7 @@ export default function MyMeetingsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-emerald-500 hover:text-white"
+                          className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-primary hover:text-white"
                         >
                           <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
                           ENTER MEETING
@@ -421,7 +421,7 @@ export default function MyMeetingsPage() {
                 <span className="text-[9px] font-black text-slate-400 border border-white/10 px-2 py-0.5 rounded-full">
                   ID: {activeChatSession._id.slice(-6).toUpperCase()}
                 </span>
-                <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+                <span className="text-[9px] font-black text-emerald-400 bg-primary/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-widest">
                   Secure Audited
                 </span>
               </div>
@@ -463,8 +463,8 @@ export default function MyMeetingsPage() {
 
                       <div
                         className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
-                            ? 'bg-primary/10 border-primary/20 text-white rounded-tr-none'
-                            : 'bg-[#0b1437]/50 border-[#13225c] text-slate-200 rounded-tl-none'
+                          ? 'bg-primary/10 border-primary/20 text-white rounded-tr-none'
+                          : 'bg-[#0b1437]/50 border-[#13225c] text-slate-200 rounded-tl-none'
                           }`}
                       >
                         {msg.message}

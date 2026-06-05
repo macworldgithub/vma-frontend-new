@@ -73,13 +73,12 @@ export const ControlBar = ({
       <button
         onClick={onClick}
         title={label}
-        className={`relative h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-xl border ${
-          danger
+        className={`relative h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-xl border ${danger
             ? "bg-rose-500 text-white border-rose-400/50 hover:bg-rose-600 shadow-lg shadow-rose-500/20"
             : active
               ? `${accent || "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 shadow-lg shadow-primary/10"}`
               : "bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20"
-        } transform hover:-translate-y-1 active:scale-95`}
+          } transform hover:-translate-y-1 active:scale-95`}
       >
         {children}
         {badge && (
@@ -105,13 +104,12 @@ export const ControlBar = ({
     <button
       onClick={onClick}
       title={label}
-      className={`w-full px-3 py-2 text-sm rounded-lg flex items-center gap-2 transition-all ${
-        danger
+      className={`w-full px-3 py-2 text-sm rounded-lg flex items-center gap-2 transition-all ${danger
           ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
           : active
             ? `${accent || "bg-primary/20 text-primary hover:bg-primary/30"}`
             : "bg-white/5 text-white hover:bg-white/10"
-      }`}
+        }`}
     >
       {children}
       <span className="font-semibold text-xs uppercase">{label}</span>
@@ -156,7 +154,7 @@ export const ControlBar = ({
             label={screenSharing ? "Stop Sharing" : "Share Screen"}
             accent={
               screenSharing
-                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                ? "bg-primary/20 text-emerald-400 border-emerald-500/30"
                 : ""
             }
           >
@@ -180,7 +178,7 @@ export const ControlBar = ({
             label="Transcript"
             accent={
               transcriptOpen
-                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                ? "bg-primary/20 text-emerald-400 border-emerald-500/30"
                 : ""
             }
           >
@@ -237,7 +235,7 @@ export const ControlBar = ({
           )}
         </div>
 
-     
+
         <div className="lg:hidden relative md:ml-auto">
           <button
             onClick={() => setShowMenu(!showMenu)}
@@ -258,7 +256,7 @@ export const ControlBar = ({
                 }}
                 label={screenSharing ? "Stop Sharing" : "Share Screen"}
                 accent={
-                  screenSharing ? "bg-emerald-500/20 text-emerald-400" : ""
+                  screenSharing ? "bg-primary/20 text-emerald-400" : ""
                 }
               >
                 {screenSharing ? (
@@ -288,7 +286,7 @@ export const ControlBar = ({
                 }}
                 label="Transcript"
                 accent={
-                  transcriptOpen ? "bg-emerald-500/20 text-emerald-400" : ""
+                  transcriptOpen ? "bg-primary/20 text-emerald-400" : ""
                 }
               >
                 <FileText className="h-4 w-4" />

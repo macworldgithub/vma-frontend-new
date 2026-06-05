@@ -56,9 +56,8 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
     <div className="glass group relative overflow-hidden rounded-2xl border-white/5 hover-float">
       {/* Dynamic Status Border */}
       <div
-        className={`absolute top-0 left-0 w-full h-1 opacity-20 group-hover:opacity-100 transition-opacity ${
-          meeting.status === "LIVE" ? "bg-emerald-500" : "bg-primary"
-        }`}
+        className={`absolute top-0 left-0 w-full h-1 opacity-20 group-hover:opacity-100 transition-opacity ${meeting.status === "LIVE" ? "bg-primary" : "bg-primary"
+          }`}
       />
 
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
@@ -72,7 +71,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
                 {meeting.meetingCode}
               </span>
               {meeting.status === "LIVE" && (
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
               )}
             </div>
           </div>
@@ -90,9 +89,9 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
             </div>
             {meeting.startTime
               ? new Date(meeting.startTime).toLocaleDateString("en-AU", {
-                  day: "2-digit",
-                  month: "short",
-                })
+                day: "2-digit",
+                month: "short",
+              })
               : "Instant"}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-tighter">
@@ -101,9 +100,9 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
             </div>
             {meeting.startTime
               ? new Date(meeting.startTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "Now"}
           </div>
         </div>
@@ -120,7 +119,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
                 </div>
               ))}
               {meeting.status === "LIVE" && (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/20 border border-slate-950 flex items-center justify-center text-[7px] sm:text-[8px] font-black text-emerald-400">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/20 border border-slate-950 flex items-center justify-center text-[7px] sm:text-[8px] font-black text-emerald-400">
                   +{meeting.participantCount || 0}
                 </div>
               )}
@@ -167,16 +166,14 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       text-[10px]
       transition-all
       touch-manipulation
-      ${
-        meeting.status === "LIVE"
-          ? "bg-emerald-500 text-white hover:bg-emerald-600"
-          : "border border-white/10 bg-transparent text-white hover:bg-white/10"
-      }
-      ${
-        meeting.status === "ENDED" || meeting.status === "CANCELLED"
-          ? "opacity-50 cursor-not-allowed"
-          : "cursor-pointer"
-      }
+      ${meeting.status === "LIVE"
+                  ? "bg-primary text-black hover:bg-[#00808a]"
+                  : "border border-white/10 bg-transparent text-black hover:bg-white/10"
+                }
+      ${meeting.status === "ENDED" || meeting.status === "CANCELLED"
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
+                }
     `}
             >
               JOIN

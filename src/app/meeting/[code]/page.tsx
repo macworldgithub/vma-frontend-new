@@ -292,7 +292,7 @@ export default function JoinPage() {
       <div className="w-full lg:w-[480px] glass p-6 sm:p-10 lg:p-16 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-white/5 relative bg-slate-950/50 backdrop-blur-3xl animate-fade-in-up">
         <div className="space-y-12 relative z-10">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full w-fit">
+            <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 border border-emerald-500/20 rounded-full w-fit">
               <Shield className="h-3 w-3 text-emerald-500" />
               <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
                 Encryption Active

@@ -57,15 +57,15 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
           className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isLocal ? 'mirror' : ''}`}
         />
       ) : (
-      <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-          <div className="relative h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-primary italic shadow-2xl">
-            {userName?.[0]?.toUpperCase() || '?'}
+        <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+            <div className="relative h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-primary italic shadow-2xl">
+              {userName?.[0]?.toUpperCase() || '?'}
+            </div>
           </div>
+          <p className="mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Camera Deactivated</p>
         </div>
-        <p className="mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Camera Deactivated</p>
-      </div>
       )}
 
       {/* Top Controls Overlay */}
@@ -82,7 +82,7 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
       <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
         <div className="glass-dark px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
             <span className="text-[10px] font-black text-white uppercase italic tracking-wider">
               {userName} {isLocal && <span className="text-primary ml-1">(HOST)</span>}
             </span>
@@ -124,26 +124,26 @@ export const VideoGrid = ({ peers, localStream, localUserName, localAudioEnabled
   return (
     <div className="h-full w-full p-6 md:p-8 flex items-center justify-center bg-[#050810]">
       <div className={`grid gap-6 w-full ${getGridClass()} transition-all duration-700 ease-in-out`}>
-      {/* Local video */}
-      <VideoTile
-        stream={localStream}
-        userName={localUserName}
-        audioEnabled={localAudioEnabled}
-        videoEnabled={localVideoEnabled}
-        isLocal
-      />
-      {/* Remote peers */}
-      {peerArray.map((peer) => (
+        {/* Local video */}
         <VideoTile
-          key={peer.socketId}
-          stream={peer.stream}
-          userName={peer.userName}
-          audioEnabled={peer.audioEnabled}
-          videoEnabled={peer.videoEnabled}
-          socketId={peer.socketId}
+          stream={localStream}
+          userName={localUserName}
+          audioEnabled={localAudioEnabled}
+          videoEnabled={localVideoEnabled}
+          isLocal
         />
-      ))}
-    </div>
+        {/* Remote peers */}
+        {peerArray.map((peer) => (
+          <VideoTile
+            key={peer.socketId}
+            stream={peer.stream}
+            userName={peer.userName}
+            audioEnabled={peer.audioEnabled}
+            videoEnabled={peer.videoEnabled}
+            socketId={peer.socketId}
+          />
+        ))}
+      </div>
     </div >
   );
 };

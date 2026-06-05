@@ -36,7 +36,7 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
           })}] ${t.userName}: ${t.text}`
       )
       .join('\n');
-    
+
     navigator.clipboard.writeText(fullText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -52,7 +52,7 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+          <div className="p-2 rounded-xl bg-primary/10 text-emerald-400">
             <FileText className="h-5 w-5" />
           </div>
           <div>
@@ -107,14 +107,12 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
             return (
               <div key={t.id || i} className="flex flex-col items-start animate-in fade-in duration-200">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black ${
-                    isMe ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
-                  }`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black ${isMe ? 'bg-primary/20 text-emerald-400' : 'bg-primary/20 text-primary'
+                    }`}>
                     {t.userName[0].toUpperCase()}
                   </div>
-                  <span className={`text-[10px] font-black uppercase tracking-wider ${
-                    isMe ? 'text-emerald-400' : 'text-slate-300'
-                  }`}>
+                  <span className={`text-[10px] font-black uppercase tracking-wider ${isMe ? 'text-emerald-400' : 'text-slate-300'
+                    }`}>
                     {isMe ? 'YOU' : t.userName}
                   </span>
                 </div>
@@ -136,7 +134,7 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
       </div>
 
       <div className="p-4 bg-white/5 border-t border-white/5 text-[8px] font-black text-muted-foreground text-center uppercase tracking-widest opacity-30 flex items-center justify-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
         APP-COMPLIANT SECURE STORAGE PIPELINE (AU REGION)
       </div>
     </div>

@@ -34,7 +34,7 @@ export const MeetingChart = ({ data }: MeetingChartProps) => {
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="w-3 h-3 rounded-full bg-primary" />
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Completed</span>
           </div>
         </div>
