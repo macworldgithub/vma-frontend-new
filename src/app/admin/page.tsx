@@ -32,6 +32,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [tab, setTab] = useState<'analytics' | 'users' | 'meetings'>('analytics');
 
   useEffect(() => {
@@ -73,6 +74,46 @@ export default function AdminPage() {
     }
   };
 
+  const handleExportLogs = async () => {
+    setExporting(true);
+    try {
+      const meetingsToExport = await dashboardService.getRecentMeetings(100);
+      const headers = ['Meeting ID', 'Title', 'Status', 'Host ID', 'Meeting Code', 'Duration (seconds)', 'Created At', 'Max Participants'];
+      
+      const csvRows = [
+        headers.join(','),
+        ...meetingsToExport.map(meeting => {
+          const titleEscaped = `"${meeting.title.replace(/"/g, '""')}"`;
+          return [
+            meeting._id,
+            titleEscaped,
+            meeting.meetingCode,
+            meeting.status,
+            meeting.duration || 0,
+            meeting.hostId,
+            meeting.createdAt,
+            meeting.maxParticipants
+          ].join(',');
+        })
+      ];
+      
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `vma_system_meeting_logs_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to export system logs:', err);
+      alert('Failed to export system logs.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -100,8 +141,12 @@ export default function AdminPage() {
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button className="hidden sm:flex gap-2 font-black uppercase tracking-widest text-[10px]">
-            Export System Logs
+          <Button 
+            onClick={handleExportLogs}
+            disabled={exporting}
+            className="hidden sm:flex gap-2 font-black uppercase tracking-widest text-[10px]"
+          >
+            {exporting ? 'Exporting...' : 'Export System Logs'}
           </Button>
         </div>
       </div>
