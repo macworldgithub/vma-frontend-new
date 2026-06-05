@@ -34,7 +34,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
                   <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-colors">
                     <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-white border-2 border-slate-950">
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-black border-2 border-slate-950">
                     {i + 1}
                   </div>
                 </div>
@@ -59,7 +59,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
           ))
         )}
       </div>
-      
+
       <div className="pt-4 border-t border-white/5">
         <button className="w-full text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] hover:text-white transition-colors">
           View All Leaderboard

@@ -114,7 +114,7 @@ export const NewMeetingModal = ({ isOpen, onClose, onSuccess }: NewMeetingModalP
           </div>
 
           <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5 flex items-center gap-3 sm:gap-4">
-            <div className="p-2 rounded-lg bg-primary/10 text-emerald-500">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <Shield className="h-4 w-4" />
             </div>
             <p className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">

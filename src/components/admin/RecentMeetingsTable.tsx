@@ -51,7 +51,7 @@ export const RecentMeetingsTable = ({ meetings }: RecentMeetingsTableProps) => {
                     </div>
                   </td>
                   <td className="p-5">
-                    <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${meeting.status === 'LIVE' ? 'bg-primary/10 text-emerald-500 border border-emerald-500/20' :
+                    <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${meeting.status === 'LIVE' ? 'bg-primary/10 text-primary border border-primary/20' :
                         meeting.status === 'SCHEDULED' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
                           meeting.status === 'ENDED' ? 'bg-white/5 text-slate-400 border border-white/5' :
                             'bg-rose-500/10 text-rose-500 border border-rose-500/20'

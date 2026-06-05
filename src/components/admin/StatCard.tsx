@@ -27,7 +27,7 @@ export const StatCard = ({ label, value, icon: Icon, description, trend, color =
               {value}
             </h3>
             {trend && (
-              <span className={`text-[10px] font-bold ${trend.isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <span className={`text-[10px] font-bold ${trend.isUp ? 'text-primary' : 'text-rose-500'}`}>
                 {trend.isUp ? '↑' : '↓'} {trend.value}%
               </span>
             )}

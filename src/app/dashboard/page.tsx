@@ -85,7 +85,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-14 relative z-10 border-t border-white/5 pt-10">
           <div className="space-y-1">
             <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              <Activity className="h-3 w-3 text-emerald-500" />
+              <Activity className="h-3 w-3 text-primary" />
               Platform Status
             </p>
             <p className="text-base sm:text-xl font-black text-white uppercase tracking-tight">System Optimal</p>

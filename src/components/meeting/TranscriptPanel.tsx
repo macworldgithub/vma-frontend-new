@@ -52,7 +52,7 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/10 text-emerald-400">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary">
             <FileText className="h-5 w-5" />
           </div>
           <div>
@@ -67,7 +67,7 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
               title="Copy full transcript"
               className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all mr-1"
             >
-              {copied ? <Check className="h-4.5 w-4.5 text-emerald-400" /> : <Copy className="h-4.5 w-4.5" />}
+              {copied ? <Check className="h-4.5 w-4.5 text-primary" /> : <Copy className="h-4.5 w-4.5" />}
             </button>
           )}
           <button
@@ -86,7 +86,7 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="SEARCH CONVERSATION..."
-          className="w-full bg-slate-900/50 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-[9px] font-bold text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/30 transition-all"
+          className="w-full bg-slate-900/50 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-[9px] font-bold text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-primary/30 transition-all"
         />
       </div>
 
@@ -107,11 +107,10 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
             return (
               <div key={t.id || i} className="flex flex-col items-start animate-in fade-in duration-200">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black ${isMe ? 'bg-primary/20 text-emerald-400' : 'bg-primary/20 text-primary'
-                    }`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black bg-primary/20 text-primary`}>
                     {t.userName[0].toUpperCase()}
                   </div>
-                  <span className={`text-[10px] font-black uppercase tracking-wider ${isMe ? 'text-emerald-400' : 'text-slate-300'
+                  <span className={`text-[10px] font-black uppercase tracking-wider ${isMe ? 'text-primary' : 'text-slate-300'
                     }`}>
                     {isMe ? 'YOU' : t.userName}
                   </span>

@@ -34,8 +34,8 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       label: "Upcoming",
     },
     LIVE: {
-      color: "text-emerald-400",
-      bg: "bg-emerald-400/10",
+      color: "text-primary",
+      bg: "bg-primary/10",
       label: "Live Now",
     },
     ENDED: { color: "text-slate-500", bg: "bg-white/5", label: "Ended" },
@@ -71,7 +71,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
                 {meeting.meetingCode}
               </span>
               {meeting.status === "LIVE" && (
-                <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
               )}
             </div>
           </div>
@@ -119,7 +119,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
                 </div>
               ))}
               {meeting.status === "LIVE" && (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/20 border border-slate-950 flex items-center justify-center text-[7px] sm:text-[8px] font-black text-emerald-400">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/20 border border-slate-950 flex items-center justify-center text-[7px] sm:text-[8px] font-black text-primary">
                   +{meeting.participantCount || 0}
                 </div>
               )}
@@ -134,7 +134,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
             size="sm"
             className={`rounded-lg sm:rounded-xl px-2.5 sm:px-4 gap-1.5 sm:gap-2 font-black uppercase tracking-widest text-[8px] sm:text-[10px] h-8 sm:h-10 transition-all ${
               meeting.status === "LIVE"
-                ? "shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-emerald-600"
+                ? "shadow-lg shadow-primary/20 border-primary hover:bg-primary/80"
                 : "border-white/10 hover:bg-white/10"
             }`}
             onClick={handleJoin}

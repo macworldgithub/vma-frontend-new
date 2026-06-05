@@ -120,7 +120,7 @@ export default function AdminPage() {
               key={item.id}
               onClick={() => setTab(item.id as any)}
               className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all ${tab === item.id
-                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                ? 'bg-primary text-black shadow-lg shadow-primary/20'
                 : 'text-muted-foreground hover:text-white hover:bg-white/5'
                 }`}
             >
@@ -150,7 +150,7 @@ export default function AdminPage() {
                     label="Active Sessions"
                     value={stats?.realtime.activeRooms || 0}
                     icon={Activity}
-                    color="text-emerald-500"
+                    color="text-primary"
                     description={`${stats?.realtime.participantsOnline || 0} PARTICIPANTS`}
                   />
                   <StatCard
@@ -228,7 +228,7 @@ export default function AdminPage() {
                           </td>
                           <td className="p-6">
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-primary shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-600'}`} />
+                              <div className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.5)]' : 'bg-slate-600'}`} />
                               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                                 {u.isActive ? 'Verified Active' : 'Deactivated'}
                               </span>

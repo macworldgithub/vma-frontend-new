@@ -101,7 +101,7 @@ export default function CalendarPage() {
         <div className="flex items-center gap-3">
           {isConnected ? (
             <>
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
                 <CheckCircle2 className="h-3 w-3" />
                 Linked to Google
               </div>

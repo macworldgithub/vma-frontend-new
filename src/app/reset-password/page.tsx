@@ -82,7 +82,7 @@ function ResetPasswordContent() {
 
         {success ? (
           <div className="text-center py-8 space-y-4 animate-in fade-in zoom-in duration-500">
-            <div className="text-emerald-400 font-bold text-xl uppercase tracking-tighter">Success!</div>
+            <div className="text-primary font-bold text-xl uppercase tracking-tighter">Success!</div>
             <p className="text-muted-foreground text-sm font-medium">Your password has been updated. Redirecting to login...</p>
           </div>
         ) : (

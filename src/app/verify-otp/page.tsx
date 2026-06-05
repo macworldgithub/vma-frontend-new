@@ -66,7 +66,7 @@ function VerifyOtpContent() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8 glass p-6 sm:p-10 rounded-2xl relative overflow-hidden text-center animate-scale-in">
           <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
-          <div className="inline-block p-4 rounded-full bg-primary/10 text-emerald-500 mb-4 border border-emerald-500/20">
+          <div className="inline-block p-4 rounded-full bg-primary/10 text-primary mb-4 border border-primary/20">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-8 h-8">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>

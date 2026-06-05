@@ -105,8 +105,8 @@ export default function MyMeetingsPage() {
     switch (status) {
       case 'LIVE':
         return (
-          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-primary/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_8px_rgba(52,211,153,0.15)] animate-pulse">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <span className="flex items-center gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/30 shadow-[0_0_8px_rgba(0,240,255,0.15)] animate-pulse">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             LIVE
           </span>
         );
@@ -185,8 +185,8 @@ export default function MyMeetingsPage() {
               <p className="text-2xl sm:text-3xl font-black text-white mt-1">{meetings.length}</p>
             </div>
             <div className="glass px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border-white/5 text-center flex-1 sm:flex-none min-w-0 sm:min-w-[120px]">
-              <span className="text-[8px] sm:text-[9px] font-black text-emerald-400 uppercase tracking-widest">Active Live</span>
-              <p className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1">
+              <span className="text-[8px] sm:text-[9px] font-black text-primary uppercase tracking-widest">Active Live</span>
+              <p className="text-2xl sm:text-3xl font-black text-primary mt-1">
                 {meetings.filter(m => m.status === 'LIVE').length}
               </p>
             </div>
@@ -276,7 +276,7 @@ export default function MyMeetingsPage() {
                         title="Copy Code"
                       >
                         {copiedId === meeting._id ? (
-                          <Check className="h-3 w-3 text-emerald-400" />
+                          <Check className="h-3 w-3 text-primary" />
                         ) : (
                           <Copy className="h-3 w-3" />
                         )}
@@ -313,7 +313,7 @@ export default function MyMeetingsPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-emerald-500/20 border-emerald-500 hover:bg-primary hover:text-white"
+                          className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 border-primary hover:bg-primary hover:text-white"
                         >
                           <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
                           ENTER MEETING
@@ -421,7 +421,7 @@ export default function MyMeetingsPage() {
                 <span className="text-[9px] font-black text-slate-400 border border-white/10 px-2 py-0.5 rounded-full">
                   ID: {activeChatSession._id.slice(-6).toUpperCase()}
                 </span>
-                <span className="text-[9px] font-black text-emerald-400 bg-primary/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+                <span className="text-[9px] font-black text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full uppercase tracking-widest">
                   Secure Audited
                 </span>
               </div>

@@ -352,15 +352,15 @@ export default function MeetingRoomPage() {
   if (meetingEnded) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-        <div className="glass max-w-md w-full p-12 rounded-[40px] border-emerald-500/20 text-center space-y-8 animate-in zoom-in-95 duration-500">
+        <div className="glass max-w-md w-full p-12 rounded-[40px] border-primary/20 text-center space-y-8 animate-in zoom-in-95 duration-500">
           <div className="relative inline-block">
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-            <div className="relative p-6 rounded-full bg-primary/10 text-emerald-500">
+            <div className="relative p-6 rounded-full bg-primary/10 text-primary">
               <Shield className="h-12 w-12" />
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Session <span className="text-emerald-400">Concluded</span></h2>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter leading-tight">Session <span className="text-primary">Concluded</span></h2>
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Secure Tunnel Successfully Terminated</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
@@ -372,7 +372,7 @@ export default function MeetingRoomPage() {
             onClick={generateReport}
             disabled={reportLoading}
             className={`w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${reportDownloaded
-              ? 'bg-primary/20 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10 hover:bg-primary/30'
+              ? 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30'
               : 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30 hover:-translate-y-0.5'
               } ${reportLoading ? 'opacity-70 cursor-wait' : 'active:scale-[0.98]'}`}
           >
@@ -437,7 +437,7 @@ export default function MeetingRoomPage() {
   return (
     <div className="h-screen bg-slate-950 flex flex-col overflow-hidden">
       {showCopied && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[100] glass-dark px-6 py-3 rounded-full border-emerald-500/30 bg-primary/10 text-emerald-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-300">
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[100] glass-dark px-6 py-3 rounded-full border-primary/30 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-300">
           <Shield className="h-4 w-4" />
           Secure Link Copied
         </div>

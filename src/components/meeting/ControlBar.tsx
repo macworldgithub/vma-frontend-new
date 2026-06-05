@@ -154,7 +154,7 @@ export const ControlBar = ({
             label={screenSharing ? "Stop Sharing" : "Share Screen"}
             accent={
               screenSharing
-                ? "bg-primary/20 text-emerald-400 border-emerald-500/30"
+                ? "bg-primary/20 text-primary border-primary/30"
                 : ""
             }
           >
@@ -178,7 +178,7 @@ export const ControlBar = ({
             label="Transcript"
             accent={
               transcriptOpen
-                ? "bg-primary/20 text-emerald-400 border-emerald-500/30"
+                ? "bg-primary/20 text-primary border-primary/30"
                 : ""
             }
           >
@@ -256,7 +256,7 @@ export const ControlBar = ({
                 }}
                 label={screenSharing ? "Stop Sharing" : "Share Screen"}
                 accent={
-                  screenSharing ? "bg-primary/20 text-emerald-400" : ""
+                  screenSharing ? "bg-primary/20 text-primary" : ""
                 }
               >
                 {screenSharing ? (
@@ -286,7 +286,7 @@ export const ControlBar = ({
                 }}
                 label="Transcript"
                 accent={
-                  transcriptOpen ? "bg-primary/20 text-emerald-400" : ""
+                  transcriptOpen ? "bg-primary/20 text-primary" : ""
                 }
               >
                 <FileText className="h-4 w-4" />
