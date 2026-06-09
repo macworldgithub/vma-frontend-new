@@ -145,7 +145,7 @@ export default function MeetingRoomPage() {
   }, [token, roomId]);
 
   // WebRTC hook
-  const { peers, localStream, updateLocalStreamTrack } = useWebRTC({
+  const { peers, localStream, updateLocalStreamTrack, raisedHand, toggleRaiseHand } = useWebRTC({
     roomId,
     socket,
     userId: user?.id || '',
@@ -450,6 +450,7 @@ export default function MeetingRoomPage() {
             localUserName={user?.name || 'You'}
             localAudioEnabled={audioEnabled}
             localVideoEnabled={videoEnabled}
+            localRaisedHand={raisedHand}
           />
         </div>
         {chatOpen && (
@@ -494,6 +495,8 @@ export default function MeetingRoomPage() {
           onLeave={leaveMeeting}
           onEndMeeting={endMeeting}
           onToggleLock={toggleLock}
+          raisedHand={raisedHand}
+          onToggleRaiseHand={toggleRaiseHand}
         />
       </div>
     </div>

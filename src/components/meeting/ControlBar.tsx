@@ -19,6 +19,7 @@ import {
   UserPlus,
   FileText,
   MoreVertical,
+  Hand
 } from "lucide-react";
 
 interface ControlBarProps {
@@ -38,6 +39,8 @@ interface ControlBarProps {
   onLeave: () => void;
   onEndMeeting: () => void;
   onToggleLock: () => void;
+  raisedHand: boolean;
+  onToggleRaiseHand: () => void;
 }
 
 export const ControlBar = ({
@@ -57,6 +60,8 @@ export const ControlBar = ({
   onLeave,
   onEndMeeting,
   onToggleLock,
+  raisedHand,
+  onToggleRaiseHand
 }: ControlBarProps) => {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -144,6 +149,19 @@ export const ControlBar = ({
               <VideoOff className="h-5 w-5 sm:h-6 sm:w-6" />
             )}
           </ControlBtn>
+
+          <ControlBtn
+            active={raisedHand}
+            onClick={onToggleRaiseHand}
+            label={raisedHand ? "Lower Hand" : "Raise Hand"}
+            accent={
+              raisedHand
+                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                : ""
+            }
+          >
+            <Hand className="h-5 w-5 sm:h-6 sm:w-6" />
+          </ControlBtn>
         </div>
 
         {/* Feature Controls Group - Hidden on lg and below, shown in menu */}
@@ -207,15 +225,6 @@ export const ControlBar = ({
               )}
             </ControlBtn>
           )}
-
-          <div className="flex flex-col items-center gap-1 sm:gap-2 group">
-            <button className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-white transition-all backdrop-blur-xl">
-              <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
-            </button>
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
-              Settings
-            </span>
-          </div>
         </div>
 
         {/* Exit Controls Group - Middle */}
@@ -324,16 +333,6 @@ export const ControlBar = ({
                   )}
                 </MenuBtn>
               )}
-
-              <div className="border-t border-white/10 my-1" />
-
-              <MenuBtn
-                active={false}
-                onClick={() => setShowMenu(false)}
-                label="Settings"
-              >
-                <Settings className="h-4 w-4" />
-              </MenuBtn>
             </div>
           )}
         </div>
