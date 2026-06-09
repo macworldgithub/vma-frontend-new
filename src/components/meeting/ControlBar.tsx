@@ -19,6 +19,7 @@ import {
   UserPlus,
   FileText,
   MoreVertical,
+  Hand
 } from "lucide-react";
 
 interface ControlBarProps {
@@ -38,6 +39,8 @@ interface ControlBarProps {
   onLeave: () => void;
   onEndMeeting: () => void;
   onToggleLock: () => void;
+  raisedHand: boolean;
+  onToggleRaiseHand: () => void;
 }
 
 export const ControlBar = ({
@@ -57,6 +60,8 @@ export const ControlBar = ({
   onLeave,
   onEndMeeting,
   onToggleLock,
+  raisedHand,
+  onToggleRaiseHand
 }: ControlBarProps) => {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -143,6 +148,19 @@ export const ControlBar = ({
             ) : (
               <VideoOff className="h-5 w-5 sm:h-6 sm:w-6" />
             )}
+          </ControlBtn>
+
+          <ControlBtn
+            active={raisedHand}
+            onClick={onToggleRaiseHand}
+            label={raisedHand ? "Lower Hand" : "Raise Hand"}
+            accent={
+              raisedHand
+                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                : ""
+            }
+          >
+            <Hand className="h-5 w-5 sm:h-6 sm:w-6" />
           </ControlBtn>
         </div>
 
@@ -315,16 +333,6 @@ export const ControlBar = ({
                   )}
                 </MenuBtn>
               )}
-
-              <div className="border-t border-white/10 my-1" />
-
-              <MenuBtn
-                active={false}
-                onClick={() => setShowMenu(false)}
-                label="Settings"
-              >
-                <Settings className="h-4 w-4" />
-              </MenuBtn>
             </div>
           )}
         </div>
