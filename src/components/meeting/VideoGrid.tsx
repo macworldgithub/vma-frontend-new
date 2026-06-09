@@ -1,7 +1,14 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import { MicOff, VideoOff, MoreVertical, Maximize2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  MicOff,
+  VideoOff,
+  MoreVertical,
+  Maximize2,
+  ZoomIn,
+  ZoomOut
+} from 'lucide-react';
 
 interface Peer {
   socketId: string;
@@ -28,8 +35,14 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
   isLocal?: boolean;
   socketId?: string;
 }) => {
+  const [zoom, setZoom] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const tileRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -43,8 +56,26 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
     }
   }, [stream, isLocal]);
 
+  const toggleFullscreen = async () => {
+    if (!tileRef.current) return;
+
+    if (!document.fullscreenElement) {
+      await tileRef.current.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  };
+
+  const zoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.25, 3));
+  };
+
+  const zoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.25, 1));
+  };
+
   return (
-    <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 aspect-video flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
+    <div ref={tileRef} className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 aspect-video flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
       {!isLocal && stream && (
         <audio ref={audioRef} autoPlay playsInline />
       )}
@@ -54,7 +85,10 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
           autoPlay
           playsInline
           key={`video-${socketId || 'local'}`}
-          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isLocal ? 'mirror' : ''}`}
+          className={`w-full h-full object-cover transition-transform duration-300 ${isLocal ? 'mirror' : ''}`}
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+          }}
         />
       ) : (
         <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
@@ -70,10 +104,31 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
 
       {/* Top Controls Overlay */}
       <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <button className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 transition-all">
+
+        <button
+          onClick={zoomOut}
+          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white"
+        >
+          <ZoomOut className="h-3.5 w-3.5" />
+        </button>
+
+        <button
+          onClick={zoomIn}
+          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white"
+        >
+          <ZoomIn className="h-3.5 w-3.5" />
+        </button>
+
+        <button
+          onClick={toggleFullscreen}
+          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white"
+        >
           <Maximize2 className="h-3.5 w-3.5" />
         </button>
-        <button className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 transition-all">
+
+        <button
+          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white"
+        >
           <MoreVertical className="h-3.5 w-3.5" />
         </button>
       </div>

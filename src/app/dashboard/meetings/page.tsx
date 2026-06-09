@@ -341,7 +341,7 @@ export default function MyMeetingsPage() {
                               className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20"
                             >
                               <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
-                              START MATCH
+                              ENTER MEETING
                             </Button>
                           </>
                         ) : (

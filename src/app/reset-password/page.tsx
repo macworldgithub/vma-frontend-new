@@ -93,7 +93,7 @@ function ResetPasswordContent() {
               placeholder="000000"
               maxLength={6}
               className="text-center text-2xl tracking-[0.5em] font-bold"
-              {...register('code', { 
+              {...register('code', {
                 required: 'Code is required',
                 pattern: { value: /^[0-9]{6}$/, message: "Must be a 6-digit number" }
               })}
@@ -104,7 +104,7 @@ function ResetPasswordContent() {
               label="New Password"
               type="password"
               placeholder="••••••••"
-              {...register('password', { 
+              {...register('password', {
                 required: 'Password is required',
                 minLength: { value: 6, message: 'Password must be at least 6 characters' }
               })}
@@ -115,7 +115,7 @@ function ResetPasswordContent() {
               label="Confirm Password"
               type="password"
               placeholder="••••••••"
-              {...register('confirmPassword', { 
+              {...register('confirmPassword', {
                 required: 'Please confirm your password',
                 validate: (value) => value === password || 'Passwords do not match'
               })}
