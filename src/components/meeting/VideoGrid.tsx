@@ -103,7 +103,19 @@ const VideoTile = ({ stream, userName, audioEnabled, videoEnabled, isLocal, sock
       )}
 
       {/* Top Controls Overlay */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div className="
+  absolute
+  top-4
+  right-4
+  flex
+  items-center
+  gap-2
+  opacity-100
+  md:opacity-0
+  md:group-hover:opacity-100
+  transition-opacity
+  duration-300
+">
 
         <button
           onClick={zoomOut}

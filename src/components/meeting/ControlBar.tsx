@@ -74,10 +74,10 @@ export const ControlBar = ({
         onClick={onClick}
         title={label}
         className={`relative h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-xl border ${danger
-            ? "bg-rose-500 text-white border-rose-400/50 hover:bg-rose-600 shadow-lg shadow-rose-500/20"
-            : active
-              ? `${accent || "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 shadow-lg shadow-primary/10"}`
-              : "bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20"
+          ? "bg-rose-500 text-white border-rose-400/50 hover:bg-rose-600 shadow-lg shadow-rose-500/20"
+          : active
+            ? `${accent || "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 shadow-lg shadow-primary/10"}`
+            : "bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20"
           } transform hover:-translate-y-1 active:scale-95`}
       >
         {children}
@@ -105,10 +105,10 @@ export const ControlBar = ({
       onClick={onClick}
       title={label}
       className={`w-full px-3 py-2 text-sm rounded-lg flex items-center gap-2 transition-all ${danger
-          ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
-          : active
-            ? `${accent || "bg-primary/20 text-primary hover:bg-primary/30"}`
-            : "bg-white/5 text-white hover:bg-white/10"
+        ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
+        : active
+          ? `${accent || "bg-primary/20 text-primary hover:bg-primary/30"}`
+          : "bg-white/5 text-white hover:bg-white/10"
         }`}
     >
       {children}
@@ -207,15 +207,6 @@ export const ControlBar = ({
               )}
             </ControlBtn>
           )}
-
-          <div className="flex flex-col items-center gap-1 sm:gap-2 group">
-            <button className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-white transition-all backdrop-blur-xl">
-              <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
-            </button>
-            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
-              Settings
-            </span>
-          </div>
         </div>
 
         {/* Exit Controls Group - Middle */}

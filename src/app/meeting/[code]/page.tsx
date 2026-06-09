@@ -273,15 +273,6 @@ export default function JoinPage() {
                 </button>
 
                 <div className="w-[1px] h-6 sm:h-8 bg-white/10 mx-1 sm:mx-2" />
-
-                <button className="group flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-all">
-                  <div className="p-2.5 sm:p-3 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all">
-                    <Settings className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                  </div>
-                  <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest">
-                    SETUP
-                  </span>
-                </button>
               </div>
             </div>
           </div>
