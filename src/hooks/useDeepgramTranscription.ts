@@ -232,6 +232,7 @@ export const useDeepgramTranscription = ({
   // Lifecycle flags
   const streamingRef = useRef(false);   // PCM pump active
   const startingRef  = useRef(false);   // currently negotiating start
+  const sessionActiveRef = useRef(false); // Deepgram socket session active
 
   // Always-current refs so callbacks never close over stale state
   const socketRef      = useRef(socket);
@@ -266,26 +267,85 @@ export const useDeepgramTranscription = ({
     audioContextRef.current  = null;
   }, []);
 
-  // ── Start streaming PCM to the backend ────────────────────────────────
-  const startTranscription = useCallback(async () => {
-    if (startingRef.current || streamingRef.current) return;
+  // ── Start Web Audio capture ───────────────────────────────────────────
+  const startAudioCapture = useCallback(async () => {
+    teardownAudio();
 
-    const sock   = socketRef.current;
     const stream = localStreamRef.current;
-    const rid    = roomIdRef.current;
-
-    if (!sock || !stream) return;
+    if (!stream) return;
 
     const audioTracks = stream.getAudioTracks();
     if (!audioTracks.length) {
-      console.warn('[Deepgram] No audio tracks on localStream');
+      console.warn('[Deepgram] No audio tracks on localStream for capture');
       return;
     }
 
+    try {
+      const AudioCtxClass: typeof AudioContext =
+        (window.AudioContext || (window as any).webkitAudioContext);
+      const ctx = new AudioCtxClass();
+
+      if (ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch {}
+      }
+
+      const micStream = new MediaStream(audioTracks);
+      const source = ctx.createMediaStreamSource(micStream);
+      const processor = ctx.createScriptProcessor(PROCESSOR_BUFFER_SIZE, 1, 1);
+      const silentGain = ctx.createGain();
+      silentGain.gain.value = 0;
+
+      processor.onaudioprocess = (e) => {
+        if (!sessionActiveRef.current) return;
+        const s = socketRef.current;
+        if (!s?.connected) return;
+
+        // Skip sending audio if muted
+        if (!audioEnabledRef.current) return;
+
+        const input = e.inputBuffer.getChannelData(0);
+        const downsampled = downsample(input, ctx.sampleRate, TARGET_SAMPLE_RATE);
+        const pcm = floatToInt16(downsampled);
+
+        // Send the underlying ArrayBuffer — socket.io preserves binary as-is.
+        s.emit('audio-chunk', pcm.buffer);
+      };
+
+      source.connect(processor);
+      processor.connect(silentGain);
+      silentGain.connect(ctx.destination);
+
+      audioContextRef.current  = ctx;
+      sourceNodeRef.current    = source;
+      processorNodeRef.current = processor;
+      silentGainRef.current    = silentGain;
+      streamingRef.current = true;
+
+      console.log(
+        `[Deepgram] Audio capture started — ${ctx.sampleRate} Hz → ${TARGET_SAMPLE_RATE} Hz`,
+      );
+    } catch (err) {
+      console.error('[Deepgram] Failed to set up Web Audio capture:', err);
+    }
+  }, [teardownAudio]);
+
+  // ── Stop Web Audio capture ────────────────────────────────────────────
+  const stopAudioCapture = useCallback(() => {
+    streamingRef.current = false;
+    teardownAudio();
+    console.log('[Deepgram] Audio capture stopped');
+  }, [teardownAudio]);
+
+  // ── Start Deepgram Socket Session ─────────────────────────────────────
+  const startSession = useCallback(async () => {
+    if (sessionActiveRef.current || startingRef.current) return;
+
+    const sock = socketRef.current;
+    const rid  = roomIdRef.current;
+    if (!sock) return;
+
     startingRef.current = true;
 
-    // 1. Wait for the backend to confirm Deepgram WebSocket is OPEN.
-    //    Register listeners BEFORE emitting so we can't race the response.
     const waitForBackend = new Promise<void>((resolve, reject) => {
       let settled = false;
 
@@ -318,96 +378,37 @@ export const useDeepgramTranscription = ({
 
     try {
       await waitForBackend;
-    } catch (err) {
-      console.error('[Deepgram] Backend confirmation failed:', err);
+      sessionActiveRef.current = true;
       startingRef.current = false;
-      // Make sure the backend cleans up any half-open stream, then retry
+      console.log('[Deepgram] Session established successfully');
+      
+      // Begin capturing audio if we have a stream ready
+      if (localStreamRef.current) {
+        startAudioCapture();
+      }
+    } catch (err) {
+      console.error('[Deepgram] Backend session establishment failed:', err);
+      startingRef.current = false;
       sock.emit('stop-transcription', { roomId: rid });
       setTimeout(() => setRetryTrigger((r) => r + 1), 2000);
-      return;
     }
+  }, [startAudioCapture]);
 
-    // 2. Build the Web Audio capture graph.
-    try {
-      const AudioCtxClass: typeof AudioContext =
-        (window.AudioContext || (window as any).webkitAudioContext);
-      const ctx = new AudioCtxClass();
+  // ── Stop Deepgram Socket Session ──────────────────────────────────────
+  const stopSession = useCallback(() => {
+    const wasActive = sessionActiveRef.current || startingRef.current;
 
-      // Some browsers (Chrome with no user gesture, Safari) start suspended.
-      if (ctx.state === 'suspended') {
-        try { await ctx.resume(); } catch {}
-      }
-
-      // Build a dedicated MediaStream around just the audio tracks. Sharing
-      // the original stream with WebRTC's RTCPeerConnection is fine — tracks
-      // can have multiple consumers.
-      const micStream = new MediaStream(audioTracks);
-      const source = ctx.createMediaStreamSource(micStream);
-
-      // ScriptProcessorNode is deprecated but universally supported. It is
-      // sufficient for ~85 ms latency speech capture. An AudioWorklet upgrade
-      // is straightforward later if needed.
-      const processor = ctx.createScriptProcessor(PROCESSOR_BUFFER_SIZE, 1, 1);
-
-      // ScriptProcessorNode only runs when connected to ctx.destination.
-      // Route through a zero-gain node so the mic doesn't loop back to speakers.
-      const silentGain = ctx.createGain();
-      silentGain.gain.value = 0;
-
-      processor.onaudioprocess = (e) => {
-        if (!streamingRef.current) return;
-        const s = socketRef.current;
-        if (!s?.connected) return;
-
-        // Skip sending audio if muted
-        if (!audioEnabledRef.current) return;
-
-        const input = e.inputBuffer.getChannelData(0);
-        const downsampled = downsample(input, ctx.sampleRate, TARGET_SAMPLE_RATE);
-        const pcm = floatToInt16(downsampled);
-
-        // Send the underlying ArrayBuffer — socket.io preserves binary as-is.
-        s.emit('audio-chunk', pcm.buffer);
-      };
-
-      source.connect(processor);
-      processor.connect(silentGain);
-      silentGain.connect(ctx.destination);
-
-      audioContextRef.current  = ctx;
-      sourceNodeRef.current    = source;
-      processorNodeRef.current = processor;
-      silentGainRef.current    = silentGain;
-
-      streamingRef.current = true;
-      startingRef.current  = false;
-
-      console.log(
-        `[Deepgram] PCM streaming STARTED — ${ctx.sampleRate} Hz → ${TARGET_SAMPLE_RATE} Hz`,
-      );
-    } catch (err) {
-      console.error('[Deepgram] Failed to set up Web Audio pipeline:', err);
-      startingRef.current = false;
-      teardownAudio();
-      sock.emit('stop-transcription', { roomId: rid });
-    }
-  }, [teardownAudio]);
-
-  // ── Stop streaming & tell backend ─────────────────────────────────────
-  const stopTranscription = useCallback(() => {
-    const wasActive = streamingRef.current || startingRef.current;
-
-    streamingRef.current = false;
+    sessionActiveRef.current = false;
     startingRef.current  = false;
 
-    teardownAudio();
+    stopAudioCapture();
 
     if (socketRef.current && roomIdRef.current) {
       socketRef.current.emit('stop-transcription', { roomId: roomIdRef.current });
     }
 
-    if (wasActive) console.log('[Deepgram] PCM streaming STOPPED');
-  }, [teardownAudio]);
+    if (wasActive) console.log('[Deepgram] Session closed');
+  }, [stopAudioCapture]);
 
   // ── Handle backend-initiated disconnects / errors ─────────────────────
   useEffect(() => {
@@ -415,14 +416,13 @@ export const useDeepgramTranscription = ({
 
     const handleDisconnect = () => {
       console.warn('[Deepgram] Backend stream closed unexpectedly. Restarting…');
-      stopTranscription();
+      stopSession();
       setTimeout(() => setRetryTrigger((r) => r + 1), 1500);
     };
 
     const handleError = (err: any) => {
       console.error('[Deepgram] Backend reported error:', err);
-      // On hard errors, stop + retry after a longer delay
-      stopTranscription();
+      stopSession();
       setTimeout(() => setRetryTrigger((r) => r + 1), 3000);
     };
 
@@ -433,34 +433,39 @@ export const useDeepgramTranscription = ({
       socket.off('transcription-disconnected', handleDisconnect);
       socket.off('transcription-error',        handleError);
     };
-  }, [socket, stopTranscription]);
+  }, [socket, stopSession]);
 
-  // ── React to audio/transcription toggles & dependencies ───────────────
+  // ── React to transcription toggle & session requirements ──────────────
   useEffect(() => {
-    const shouldStream =
-      transcriptionEnabled && !!socket && !!localStream && hasPeers;
+    const shouldHaveSession = transcriptionEnabled && !!socket && hasPeers;
 
-    if (shouldStream) {
-      if (!streamingRef.current && !startingRef.current) {
-        startTranscription();
+    if (shouldHaveSession) {
+      if (!sessionActiveRef.current && !startingRef.current) {
+        startSession();
       }
     } else {
-      if (streamingRef.current || startingRef.current) {
-        stopTranscription();
+      if (sessionActiveRef.current || startingRef.current) {
+        stopSession();
       }
     }
   }, [
     transcriptionEnabled,
     socket,
-    localStream,
     hasPeers,
     retryTrigger,
-    startTranscription,
-    stopTranscription,
+    startSession,
+    stopSession,
   ]);
+
+  // ── React to localStream reference changes ────────────────────────────
+  useEffect(() => {
+    if (sessionActiveRef.current && localStream) {
+      startAudioCapture();
+    }
+  }, [localStream, startAudioCapture]);
 
   // ── Cleanup on unmount ────────────────────────────────────────────────
   useEffect(() => {
-    return () => { stopTranscription(); };
-  }, [stopTranscription]);
+    return () => { stopSession(); };
+  }, [stopSession]);
 };
