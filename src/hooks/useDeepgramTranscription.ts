@@ -237,10 +237,12 @@ export const useDeepgramTranscription = ({
   const socketRef      = useRef(socket);
   const localStreamRef = useRef(localStream);
   const roomIdRef      = useRef(roomId);
+  const audioEnabledRef = useRef(audioEnabled);
 
   useEffect(() => { socketRef.current      = socket;      }, [socket]);
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
   useEffect(() => { roomIdRef.current      = roomId;      }, [roomId]);
+  useEffect(() => { audioEnabledRef.current = audioEnabled; }, [audioEnabled]);
 
   const [retryTrigger, setRetryTrigger] = useState(0);
 
@@ -357,6 +359,9 @@ export const useDeepgramTranscription = ({
         const s = socketRef.current;
         if (!s?.connected) return;
 
+        // Skip sending audio if muted
+        if (!audioEnabledRef.current) return;
+
         const input = e.inputBuffer.getChannelData(0);
         const downsampled = downsample(input, ctx.sampleRate, TARGET_SAMPLE_RATE);
         const pcm = floatToInt16(downsampled);
@@ -433,7 +438,7 @@ export const useDeepgramTranscription = ({
   // ── React to audio/transcription toggles & dependencies ───────────────
   useEffect(() => {
     const shouldStream =
-      audioEnabled && transcriptionEnabled && !!socket && !!localStream && hasPeers;
+      transcriptionEnabled && !!socket && !!localStream && hasPeers;
 
     if (shouldStream) {
       if (!streamingRef.current && !startingRef.current) {
@@ -445,7 +450,6 @@ export const useDeepgramTranscription = ({
       }
     }
   }, [
-    audioEnabled,
     transcriptionEnabled,
     socket,
     localStream,
