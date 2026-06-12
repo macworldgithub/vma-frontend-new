@@ -21,10 +21,32 @@ interface ChatPanelProps {
 export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPanelProps) => {
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setViewportHeight(window.visualViewport?.height ?? null);
+      } else {
+        setViewportHeight(null);
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleSend = () => {
     if (input.trim()) {
@@ -34,7 +56,10 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
   };
 
   return (
-    <div className="w-full sm:w-96 h-full flex flex-col glass border-l border-white/5 fixed sm:static inset-y-0 right-0 z-50 sm:z-40 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300">
+    <div
+      style={viewportHeight ? { height: `${viewportHeight}px` } : { height: '100%' }}
+      className="w-full sm:w-96 flex flex-col glass border-l border-white/5 fixed sm:static top-0 right-0 z-[60] sm:z-40 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
@@ -80,8 +105,8 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
                 </div>
 
                 <div className={`px-4 py-3 rounded-2xl text-[13px] max-w-[90%] leading-relaxed shadow-sm border ${isMe
-                    ? 'bg-primary text-white border-primary/20 rounded-tr-none'
-                    : 'bg-white/5 text-slate-200 border-white/10 rounded-tl-none backdrop-blur-md'
+                  ? 'bg-primary text-white border-primary/20 rounded-tr-none'
+                  : 'bg-white/5 text-slate-200 border-white/10 rounded-tl-none backdrop-blur-md'
                   }`}>
                   {msg.message}
                 </div>
@@ -111,8 +136,8 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
             onClick={handleSend}
             disabled={!input.trim()}
             className={`absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl flex items-center justify-center transition-all ${input.trim()
-                ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                : 'bg-white/5 text-slate-600'
+              ? 'bg-primary text-white shadow-lg shadow-primary/20'
+              : 'bg-white/5 text-slate-600'
               }`}
           >
             <Send className="h-4 w-4" />

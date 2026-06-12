@@ -21,10 +21,32 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcripts]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setViewportHeight(window.visualViewport?.height ?? null);
+      } else {
+        setViewportHeight(null);
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleCopy = () => {
     const fullText = transcripts
@@ -48,7 +70,10 @@ export const TranscriptPanel = ({ transcripts, onClose, currentUserId }: Transcr
   );
 
   return (
-    <div className="w-full sm:w-96 h-full flex flex-col glass border-l border-white/5 fixed sm:static inset-y-0 right-0 z-50 sm:z-40 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300">
+    <div
+      style={viewportHeight ? { height: `${viewportHeight}px` } : { height: '100%' }}
+      className="w-full sm:w-96 flex flex-col glass border-l border-white/5 fixed sm:static top-0 right-0 z-[60] sm:z-40 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
