@@ -58,13 +58,13 @@ const VideoTile = ({
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
-  }, [stream]);
+  }, [stream, stream?.getVideoTracks().length]);
 
   useEffect(() => {
     if (audioRef.current && stream && !isLocal) {
       audioRef.current.srcObject = stream;
     }
-  }, [stream, isLocal]);
+  }, [stream, isLocal, stream?.getAudioTracks().length]);
 
   const toggleFullscreen = async () => {
     if (!tileRef.current) return;

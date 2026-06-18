@@ -264,23 +264,11 @@ export const useWebRTC = ({
       console.log(`[WebRTC] ${targetSocketId} connectionState →`, pc.connectionState);
       if (pc.connectionState === 'failed') {
         console.warn(`[WebRTC] Connection failed for ${targetSocketId} — ICE restart`);
-        const ns = negotiationState.current.get(targetSocketId);
-        if (!ns) return;
-        (async () => {
-          try {
-            ns.makingOffer = true;
-            await pc.setLocalDescription(await pc.createOffer({ iceRestart: true }));
-            socket?.emit('offer', {
-              targetSocketId,
-              signal: pc.localDescription,
-              roomId,
-            });
-          } catch (e) {
-            console.error('[WebRTC] ICE restart failed:', e);
-          } finally {
-            ns.makingOffer = false;
-          }
-        })();
+        try {
+          pc.restartIce();
+        } catch (e) {
+          console.error('[WebRTC] ICE restart failed:', e);
+        }
       }
     };
 
