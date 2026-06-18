@@ -81,7 +81,7 @@ const VideoTile = ({
   return (
     <div
       ref={tileRef}
-      className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 aspect-video flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5"
+      className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 h-full w-full"
     >
       {!isLocal && stream && <audio ref={audioRef} autoPlay playsInline />}
 
@@ -185,32 +185,34 @@ export const VideoGrid = ({
   localRaisedHand,
 }: VideoGridProps) => {
   const peerArray = Array.from(peers.values());
-  const totalCount = peerArray.length + 1;
-  console.log(totalCount, "TOTAL")
+  const participants = [null, ...peerArray];
+  const count = participants.length;
 
-  const getGridClass = () => {
-    if (totalCount === 1) return 'grid-cols-1 max-w-4xl mx-auto';
-    if (totalCount === 2) return 'grid-cols-1 md:grid-cols-2 max-w-6xl mx-auto';
-    if (totalCount <= 4) return 'grid-cols-1 sm:grid-cols-2 max-w-6xl mx-auto';
-    return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+  const getGridCols = () => {
+    // On mobile we always use 2 cols for 3+ participants so tiles share
+    // the available height rather than stacking and causing scroll.
+    if (count === 1) return 'grid-cols-1';
+    if (count === 2) return 'grid-cols-1 sm:grid-cols-2';
+    if (count <= 4) return 'grid-cols-2';
+    if (count <= 6) return 'grid-cols-2 lg:grid-cols-3';
+    if (count <= 9) return 'grid-cols-2 md:grid-cols-3';
+    return 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4';
   };
 
   return (
-    <div className="h-full w-full p-6 md:p-8 flex items-center justify-center bg-[#050810]">
+    <div className="h-full w-full p-2 sm:p-4 md:p-6 bg-[#050810] overflow-hidden">
       <div
-        className={`grid gap-6 w-full ${getGridClass()} transition-all duration-700 ease-in-out`}
+        className={`grid gap-2 sm:gap-3 md:gap-4 w-full h-full ${getGridCols()} auto-rows-fr`}
       >
-        {/* Local tile */}
         <VideoTile
           stream={localStream}
           userName={localUserName}
           audioEnabled={localAudioEnabled}
           videoEnabled={localVideoEnabled}
           isLocal
-          raisedHand={localRaisedHand} // <-- FORWARDED
+          raisedHand={localRaisedHand}
         />
 
-        {/* Remote peers */}
         {peerArray.map((peer) => (
           <VideoTile
             key={peer.socketId}

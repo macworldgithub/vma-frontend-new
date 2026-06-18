@@ -168,7 +168,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       touch-manipulation
       ${meeting.status === "LIVE"
                   ? "bg-primary text-black hover:bg-[#00808a]"
-                  : "border border-white/10 bg-transparent text-black hover:bg-white/10"
+                  : "border border-white/10 bg-primary text-black hover:bg-[#00808a]"
                 }
       ${meeting.status === "ENDED" || meeting.status === "CANCELLED"
                   ? "opacity-50 cursor-not-allowed"
