@@ -90,6 +90,7 @@ const VideoTile = ({
           ref={videoRef}
           autoPlay
           playsInline
+          muted
           key={`video-${socketId || 'local'}`}
           className={`w-full h-full object-cover transition-transform duration-300 ${isLocal ? 'mirror' : ''}`}
           style={{
