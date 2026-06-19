@@ -371,7 +371,7 @@ export default function MeetingRoomPage() {
           <button
             onClick={generateReport}
             disabled={reportLoading}
-            className={`w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${reportDownloaded
+            className={`w-full h-14 rounded-2xl flex items-center justify-center font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${reportDownloaded
               ? 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30'
               : 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30 hover:-translate-y-0.5'
               } ${reportLoading ? 'opacity-70 cursor-wait' : 'active:scale-[0.98]'}`}
@@ -383,12 +383,10 @@ export default function MeetingRoomPage() {
               </>
             ) : reportDownloaded ? (
               <>
-                <FileDown className="h-5 w-5" />
                 Download Again
               </>
             ) : (
               <>
-                <FileDown className="h-5 w-5" />
                 Download Meeting Report
               </>
             )}

@@ -144,7 +144,7 @@ const VideoTile = ({
       </div>
 
       {/* ── Bottom Information Overlay ────────────────────────────────────── */}
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+      <div className="absolute bottom-20 lg:bottom-6 left-4 right-4 flex items-center justify-between pointer-events-none">
         <div className="glass-dark px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.8)]" />

@@ -130,7 +130,7 @@ export default function DashboardPage() {
             <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
           <div className="h-8 sm:h-10 w-px bg-white/10 mx-1 sm:mx-2" />
-          <button className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-all">
+          <button className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 text-[8px] sm:text-[10px] font-black text-white uppercase tracking-widest hover:text-white transition-all">
             <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             FILTERS
           </button>

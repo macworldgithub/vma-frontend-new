@@ -122,7 +122,7 @@ export const ControlBar = ({
   );
 
   return (
-    <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[95%] sm:w-auto">
+    <div className="absolute bottom-1 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[95%] sm:w-auto">
       <div className="glass-dark px-3 sm:px-8 py-2.5 sm:py-4 rounded-[20px] sm:rounded-[32px] flex items-center gap-2 sm:gap-3 md:gap-6 border border-white/10 shadow-2xl backdrop-blur-2xl pointer-events-auto">
         {/* Media Controls Group - Left Side */}
         <div className="flex items-center gap-2 sm:gap-4">
@@ -162,6 +162,20 @@ export const ControlBar = ({
           >
             <Hand className="h-5 w-5 sm:h-6 sm:w-6" />
           </ControlBtn>
+
+          {/* Messages (Mobile Only) */}
+          <div className="lg:hidden">
+            <ControlBtn
+              active={chatOpen}
+              onClick={onToggleChat}
+              label="Messages"
+              accent={
+                chatOpen ? "bg-primary/20 text-primary border-primary/30" : ""
+              }
+            >
+              <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
+            </ControlBtn>
+          </div>
         </div>
 
         {/* Feature Controls Group - Hidden on lg and below, shown in menu */}
@@ -276,18 +290,6 @@ export const ControlBar = ({
               </MenuBtn>
 
               <MenuBtn
-                active={chatOpen}
-                onClick={() => {
-                  onToggleChat();
-                  setShowMenu(false);
-                }}
-                label="Messages"
-                accent={chatOpen ? "bg-primary/20 text-primary" : ""}
-              >
-                <MessageSquare className="h-4 w-4" />
-              </MenuBtn>
-
-              <MenuBtn
                 active={transcriptOpen}
                 onClick={() => {
                   onToggleTranscript();
@@ -338,8 +340,8 @@ export const ControlBar = ({
         </div>
       </div>
 
-      {/* Branding Subtitle */}
-      <div className="flex items-center justify-center gap-2 mt-4 opacity-40">
+      {/* Branding Subtitle on Desktop */}
+      <div className="hidden lg:flex items-center justify-center gap-2 mt-4 opacity-40">
         <Shield className="h-3 w-3 text-primary" />
         <span className="text-[8px] font-black text-white uppercase tracking-[0.4em]">
           OmniSuiteAI Secure Realtime Pipeline
