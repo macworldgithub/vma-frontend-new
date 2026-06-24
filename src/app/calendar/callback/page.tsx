@@ -9,6 +9,7 @@ function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const [providerName, setProviderName] = useState('Google');
 
   const calledRef = useRef(false);
 
@@ -16,6 +17,10 @@ function CallbackContent() {
     const handleCallback = async () => {
       const code = searchParams.get('code');
       const state = searchParams.get('state');
+      const provider = searchParams.get('provider') || 'google';
+      const isMicrosoft = provider === 'microsoft';
+      
+      setProviderName(isMicrosoft ? 'Microsoft Teams' : 'Google');
 
       if (!code || !state) {
         setError('Missing authorization data');
@@ -26,11 +31,16 @@ function CallbackContent() {
       calledRef.current = true;
 
       try {
-        await calendarService.connectGoogle(code, state);
-        router.push('/dashboard/calendar?status=success');
+        if (isMicrosoft) {
+          await calendarService.connectMicrosoft(code, state);
+          router.push('/dashboard/calendar?status=success&provider=microsoft');
+        } else {
+          await calendarService.connectGoogle(code, state);
+          router.push('/dashboard/calendar?status=success&provider=google');
+        }
       } catch (err: any) {
         console.error('Calendar connection failed:', err);
-        setError(err.response?.data?.message || 'Failed to connect Google Calendar');
+        setError(err.response?.data?.message || `Failed to connect ${isMicrosoft ? 'Microsoft Teams' : 'Google Calendar'}`);
       }
     };
 
@@ -48,7 +58,7 @@ function CallbackContent() {
           <p className="text-muted-foreground mb-6">{error}</p>
           <button 
             onClick={() => router.push('/dashboard/calendar')}
-            className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-all uppercase"
+            className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition-all uppercase cursor-pointer"
           >
             Back to Calendar
           </button>
@@ -63,8 +73,8 @@ function CallbackContent() {
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
         <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-6" />
         <h1 className="text-2xl font-black text-white uppercase mb-2">Connecting Account</h1>
-        <p className="text-muted-foreground uppercase tracking-widest text-xs font-bold">
-          Finalizing secure handshake with Google...
+        <p className="text-muted-foreground uppercase tracking-widest text-xs font-bold animate-pulse">
+          Finalizing secure handshake with {providerName}...
         </p>
       </div>
     </div>

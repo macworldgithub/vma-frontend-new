@@ -29,7 +29,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
     { name: "My Meetings", icon: Video, href: "/dashboard/meetings" },
-    { name: "Google Calendar", icon: Calendar, href: "/dashboard/calendar" },
+    { name: "Calendar", icon: Calendar, href: "/dashboard/calendar" },
     { name: "Profile", icon: User, href: "/dashboard/profile" },
     ...(user?.role === "admin"
       ? [{ name: "Admin", icon: ShieldCheck, href: "/admin" }]
