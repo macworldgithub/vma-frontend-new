@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
@@ -69,16 +70,20 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 glass p-6 sm:p-10 rounded-2xl relative overflow-hidden animate-scale-in">
+      <div className="w-full max-w-md space-y-8 bg-card border border-border p-6 sm:p-10 rounded-2xl relative overflow-hidden shadow-2xl animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
 
         <div className="text-center relative">
-          <div className="inline-block p-3 rounded-xl bg-accent/10 border border-accent/30 mb-4 shadow-lg shadow-accent/5 hover:border-primary hover:shadow-primary/20 transition-all duration-300">
-            <div className="w-12 h-12 flex items-center justify-center text-accent font-black text-2xl tracking-tighter">PC</div>
+          <div className="inline-flex items-center justify-center mb-4">
+            <Image
+              src="/images/logo.png"
+              alt="Patterson Cheney Logo"
+              width={200}
+              height={66}
+              className="object-contain h-16 w-auto"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white uppercase">
-            Patterson Cheney
-          </h1>
           <p className="mt-2 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-[0.2em]">
             Virtual Meeting Assistant
           </p>
@@ -97,8 +102,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setValue('role', 'staff')}
                 className={`p-2 sm:p-3 rounded-xl border-2 transition-all duration-300 text-xs sm:text-sm font-bold uppercase tracking-wider ${selectedRole === 'staff'
-                  ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20'
-                  : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'
+                  ? 'border-primary bg-primary/10 text-primary shadow-md shadow-primary/20'
+                  : 'border-border bg-muted/20 text-muted-foreground hover:border-muted-foreground/30'
                   }`}
               >
                 Staff
@@ -107,8 +112,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setValue('role', 'admin')}
                 className={`p-2 sm:p-3 rounded-xl border-2 transition-all duration-300 text-xs sm:text-sm font-bold uppercase tracking-wider ${selectedRole === 'admin'
-                  ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/20'
-                  : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/10'
+                  ? 'border-primary bg-primary/10 text-primary shadow-md shadow-primary/20'
+                  : 'border-border bg-muted/20 text-muted-foreground hover:border-muted-foreground/30'
                   }`}
               >
                 Admin
@@ -145,7 +150,7 @@ export default function LoginPage() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 rounded border-white/10 bg-black/40 text-primary focus:ring-primary/20"
+                className="h-4 w-4 rounded border-border bg-muted text-primary focus:ring-primary/20"
               />
               <label htmlFor="remember-me" className="ml-2 block text-[10px] md:text-sm font-medium text-muted-foreground">
                 Remember me
@@ -165,7 +170,7 @@ export default function LoginPage() {
 
           <div className="text-center text-sm text-muted-foreground font-medium pt-2">
             New to VMA?{' '}
-            <Link href="/signup" className="text-primary hover:text-primary/80 transition-colors">
+            <Link href="/signup" className="text-primary hover:text-primary/80 transition-colors font-bold">
               Request Access
             </Link>
           </div>

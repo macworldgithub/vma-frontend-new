@@ -81,7 +81,7 @@ const VideoTile = ({
   return (
     <div
       ref={tileRef}
-      className="relative rounded-3xl overflow-hidden bg-slate-900 border border-white/5 flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 h-full w-full"
+      className="relative rounded-3xl overflow-hidden bg-card border border-border flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-xl h-full w-full"
     >
       {!isLocal && stream && <audio ref={audioRef} autoPlay playsInline />}
 
@@ -98,10 +98,10 @@ const VideoTile = ({
           }}
         />
       ) : (
-        <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d]">
+        <div className="flex flex-col items-center justify-center w-full h-full bg-muted/40">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-            <div className="relative h-20 w-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl font-black text-primary italic shadow-2xl">
+            <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl animate-pulse" />
+            <div className="relative h-20 w-20 rounded-2xl bg-card border border-border flex items-center justify-center text-3xl font-black text-primary italic shadow-md">
               {userName?.[0]?.toUpperCase() || '?'}
             </div>
           </div>
@@ -113,9 +113,9 @@ const VideoTile = ({
 
       {/* ── Raised-Hand Badge ─────────────────────────────────────────────── */}
       {raisedHand && (
-        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-yellow-400/20 border border-yellow-400/40 backdrop-blur-md shadow-lg shadow-yellow-400/10 animate-bounce-subtle">
-          <Hand className="h-4 w-4 text-yellow-400" />
-          <span className="text-[9px] font-black text-yellow-300 uppercase tracking-widest">
+        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-amber-100 border border-amber-300 backdrop-blur-md shadow-md animate-bounce-subtle">
+          <Hand className="h-4 w-4 text-amber-600" />
+          <span className="text-[9px] font-black text-amber-800 uppercase tracking-widest">
             Hand Raised
           </span>
         </div>
@@ -125,19 +125,19 @@ const VideoTile = ({
       <div className="absolute top-4 right-4 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
         <button
           onClick={zoomOut}
-          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-black/60 transition-colors"
+          className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
         >
           <ZoomOut className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={zoomIn}
-          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-black/60 transition-colors"
+          className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
         >
           <ZoomIn className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={toggleFullscreen}
-          className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-black/60 transition-colors"
+          className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
         >
           <Maximize2 className="h-3.5 w-3.5" />
         </button>
@@ -145,10 +145,10 @@ const VideoTile = ({
 
       {/* ── Bottom Information Overlay ────────────────────────────────────── */}
       <div className="absolute bottom-20 lg:bottom-6 left-4 right-4 flex items-center justify-between pointer-events-none">
-        <div className="glass-dark px-4 py-2 rounded-2xl border border-white/10 flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
+        <div className="glass px-4 py-2 rounded-2xl border border-border flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-            <span className="text-[10px] font-black text-white uppercase italic tracking-wider">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
+            <span className="text-[10px] font-black text-foreground uppercase italic tracking-wider">
               {userName}
               {isLocal && <span className="text-primary ml-1">(HOST)</span>}
             </span>
@@ -162,8 +162,8 @@ const VideoTile = ({
             </div>
           )}
           {!videoEnabled && (
-            <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-center">
-              <VideoOff className="h-4 w-4 text-slate-400" />
+            <div className="h-9 w-9 rounded-xl bg-muted border border-border backdrop-blur-md flex items-center justify-center">
+              <VideoOff className="h-4 w-4 text-muted-foreground" />
             </div>
           )}
         </div>
@@ -201,7 +201,7 @@ export const VideoGrid = ({
   };
 
   return (
-    <div className="h-full w-full p-2 sm:p-4 md:p-6 bg-[#050810] overflow-hidden">
+    <div className="h-full w-full p-2 sm:p-4 md:p-6 bg-background overflow-hidden">
       <div
         className={`grid gap-2 sm:gap-3 md:gap-4 w-full h-full ${getGridCols()} auto-rows-fr`}
       >

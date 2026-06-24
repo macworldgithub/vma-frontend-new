@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -53,36 +54,29 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       )}
 
       <div
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r border-[#13225c]/50 bg-[#020512] backdrop-blur-xl transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r border-border bg-white shadow-sm transition-transform duration-300 lg:static lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-20 items-center justify-between px-6">
-          {/* <div className="flex flex-col">
-            <span className="text-lg font-black text-white uppercase tracking-tighter leading-none">
-              Patterson Cheney
-            </span>
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mt-1 shadow-sm shadow-primary/5">
-              VMA Platform
-            </span>
-          </div> */}
-
           <Link
             href="/dashboard"
             onClick={onClose}
-            className="flex flex-col cursor-pointer"
+            className="flex items-center cursor-pointer"
           >
-            <span className="text-lg font-black text-white uppercase tracking-tighter leading-none">
-              Patterson Cheney
-            </span>
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mt-1 shadow-sm shadow-primary/5">
-              VMA Platform
-            </span>
+            <Image
+              src="/images/logo.png"
+              alt="Patterson Cheney Logo"
+              width={160}
+              height={52}
+              className="object-contain h-12 w-auto"
+              priority
+            />
           </Link>
 
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+            className="lg:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
           >
             <X className="h-5 w-5" />
           </button>
@@ -96,10 +90,10 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 key={item.name}
                 href={item.href}
                 onClick={onClose}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200 ${
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "text-foreground/70 hover:bg-muted hover:text-primary"
                 }`}
               >
                 <item.icon className="h-5 w-5" />
@@ -109,19 +103,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           })}
         </nav>
 
-        <div className="border-t border-white/5 p-4">
+        <div className="border-t border-border/40 p-4">
           {token && (
             <>
               <Link
                 href="/dashboard/profile"
                 onClick={onClose}
-                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-all group"
+                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted transition-all group"
               >
                 <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic shadow-lg shadow-primary/5 group-hover:border-primary/40 transition-all">
                   {user?.name?.[0] || "U"}
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <p className="truncate text-sm font-bold text-white group-hover:text-primary transition-colors">
+                  <p className="truncate text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                     {user?.name}
                   </p>
                   <p className="truncate text-[10px] font-black text-muted-foreground uppercase tracking-widest">

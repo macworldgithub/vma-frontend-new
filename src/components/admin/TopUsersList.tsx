@@ -35,10 +35,10 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
   };
 
   return (
-    <div className="glass p-6 rounded-2xl border-white/5 space-y-6">
+    <div className="glass-card p-6 rounded-2xl bg-card border border-border space-y-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-black text-white uppercase tracking-tight">
+          <h3 className="text-lg font-black text-foreground uppercase tracking-tight">
             Top <span className="text-primary">Hosts</span>
           </h3>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
@@ -58,10 +58,10 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
             <div key={u.userId} className="flex items-center justify-between group">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border group-hover:border-primary/30 transition-colors">
                     <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-black border-2 border-slate-950">
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-primary-foreground border-2 border-background">
                     {i + 1}
                   </div>
                 </div>
@@ -69,7 +69,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
                   <div className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
                     ID: {u.userId}
                   </div>
-                  <div className="text-[10px] font-black text-white uppercase tracking-widest">
+                  <div className="text-[10px] font-black text-foreground uppercase tracking-widest">
                     Host Activity
                   </div>
                 </div>
@@ -87,10 +87,10 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
         )}
       </div>
 
-      <div className="pt-4 border-t border-white/5">
+      <div className="pt-4 border-t border-border">
         <button 
           onClick={handleOpen}
-          className="w-full text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] hover:text-white transition-colors cursor-pointer"
+          className="w-full text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] hover:text-primary transition-colors cursor-pointer"
         >
           View All Leaderboard
         </button>
@@ -98,14 +98,14 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
 
       {/* Leaderboard Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="glass max-w-xl w-full rounded-[30px] border border-primary/20 relative overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="glass-card max-w-xl w-full rounded-[30px] border border-border bg-card shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh]">
             <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-white/5 flex justify-between items-start">
+            <div className="p-6 border-b border-border flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
+                <h3 className="text-lg font-black text-foreground uppercase tracking-tight flex items-center gap-2">
                   Performance <span className="text-primary">Leaderboard</span>
                   <Trophy className="h-5 w-5 text-yellow-500" />
                 </h3>
@@ -115,7 +115,7 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 rounded-lg bg-white/5 border border-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-2 rounded-lg bg-muted border border-border text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -142,18 +142,18 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
                     const displayEmail = resolvedUser ? resolvedUser.email : `ID: ${u.userId}`;
                     
                     return (
-                      <div key={u.userId} className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.02] border border-white/5 hover:border-primary/20 hover:bg-white/[0.04] transition-all group gap-3">
+                      <div key={u.userId} className="flex items-center justify-between p-3.5 rounded-xl bg-muted/20 border border-border hover:border-primary/20 hover:bg-muted/40 transition-all group gap-3">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="relative flex-shrink-0">
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border group-hover:border-primary/30 transition-colors">
                               <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                             </div>
-                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-black border-2 border-slate-950">
+                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-[10px] font-black text-primary-foreground border-2 border-background">
                               {i + 1}
                             </div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="text-xs font-black text-white uppercase tracking-wider truncate">
+                            <h4 className="text-xs font-black text-foreground uppercase tracking-wider truncate">
                               {displayName}
                             </h4>
                             <p className="text-[10px] font-mono text-muted-foreground truncate">
@@ -177,10 +177,10 @@ export const TopUsersList = ({ users }: TopUsersListProps) => {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-white/5 bg-slate-950/20 flex justify-end">
+            <div className="p-6 border-t border-border bg-muted/10 flex justify-end">
               <button
                 onClick={() => setIsOpen(false)}
-                className="px-6 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl border border-border bg-white hover:bg-muted text-foreground font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer shadow-sm"
               >
                 Close
               </button>

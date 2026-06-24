@@ -124,7 +124,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="relative">
           <div className="absolute -top-6 -left-6 w-20 h-20 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-          <h1 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-tighter relative flex items-center gap-3">
+          <h1 className="text-2xl sm:text-4xl font-black text-foreground uppercase tracking-tighter relative flex items-center gap-3">
             Admin <span className="text-primary">Console</span>
           </h1>
           <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mt-1">
@@ -137,7 +137,7 @@ export default function AdminPage() {
             variant="outline"
             size="icon"
             onClick={fetchData}
-            className="rounded-full border-white/5 bg-white/5 hover:bg-white/10"
+            className="rounded-full border-border bg-white hover:bg-muted shadow-sm"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
@@ -155,7 +155,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-1 p-1 bg-white/5 rounded-2xl w-full sm:w-fit justify-center sm:justify-start">
+        <div className="flex flex-wrap gap-1 p-1 bg-muted/60 border border-border rounded-2xl w-full sm:w-fit justify-center sm:justify-start">
           {[
             { id: 'analytics', label: 'Analytics', icon: Activity },
             { id: 'users', label: 'User Directory', icon: Users },
@@ -165,8 +165,8 @@ export default function AdminPage() {
               key={item.id}
               onClick={() => setTab(item.id as any)}
               className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all ${tab === item.id
-                ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                : 'text-muted-foreground hover:text-primary hover:bg-muted/40'
                 }`}
             >
               <item.icon className="h-3 w-3" />
@@ -177,7 +177,7 @@ export default function AdminPage() {
 
         {loading && !stats ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
-            {[1, 2, 3].map(i => <div key={i} className="h-32 glass rounded-2xl border-white/5" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-32 glass-card bg-card border-border rounded-2xl" />)}
           </div>
         ) : (
           <div className="animate-fade-in-up">
@@ -202,7 +202,7 @@ export default function AdminPage() {
                     label="Total Meetings"
                     value={stats?.meetings.total || 0}
                     icon={Video}
-                    color="text-blue-500"
+                    color="text-blue-600"
                     description={`${stats?.meetings.ended || 0} COMPLETED`}
                   />
                   <StatCard
@@ -232,10 +232,10 @@ export default function AdminPage() {
             )}
 
             {tab === 'users' && (
-              <div className="glass rounded-3xl overflow-hidden border-white/5 relative">
-                <div className="p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="glass-card rounded-3xl overflow-hidden border-border bg-card relative shadow-sm">
+                <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-black text-white uppercase">Staff <span className="text-primary">Directory</span></h3>
+                    <h3 className="text-lg font-black text-foreground uppercase">Staff <span className="text-primary">Directory</span></h3>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Manage User Access & Roles</p>
                   </div>
                   <div className="relative group">
@@ -243,37 +243,37 @@ export default function AdminPage() {
                     <input
                       type="text"
                       placeholder="SEARCH STAFF..."
-                      className="bg-white/5 border border-white/10 rounded-full pl-10 pr-6 py-2 text-[10px] font-bold text-white uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all min-w-[240px]"
+                      className="bg-muted/40 border border-border rounded-full pl-10 pr-6 py-2 text-[10px] font-bold text-foreground uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all min-w-[240px]"
                     />
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-white/5 text-muted-foreground font-black uppercase tracking-widest text-[10px]">
+                      <tr className="bg-muted/40 text-muted-foreground font-black uppercase tracking-widest text-[10px]">
                         <th className="text-left p-6">Staff Member</th>
                         <th className="text-left p-6">Identity Status</th>
                         <th className="text-left p-6">Platform Role</th>
                         <th className="text-right p-6">Governance</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-border">
                       {users.map((u: any) => (
-                        <tr key={u._id} className="hover:bg-white/[0.02] transition-colors group">
+                        <tr key={u._id} className="hover:bg-muted/20 transition-colors group">
                           <td className="p-6">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center font-black text-primary border border-white/5 group-hover:border-primary/30 transition-all duration-500 transform group-hover:scale-105">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center font-black text-primary border border-border group-hover:border-primary/30 transition-all duration-500 transform group-hover:scale-105">
                                 {u.name.charAt(0)}
                               </div>
                               <div>
-                                <div className="text-white font-bold tracking-tight text-base">{u.name}</div>
+                                <div className="text-foreground font-bold tracking-tight text-base">{u.name}</div>
                                 <div className="text-xs text-muted-foreground font-medium">{u.email}</div>
                               </div>
                             </div>
                           </td>
                           <td className="p-6">
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-primary shadow-[0_0_8px_rgba(0,240,255,0.5)]' : 'bg-slate-600'}`} />
+                              <div className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-primary shadow-[0_0_8px_var(--color-primary)]' : 'bg-slate-400'}`} />
                               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                                 {u.isActive ? 'Verified Active' : 'Deactivated'}
                               </span>
@@ -281,8 +281,8 @@ export default function AdminPage() {
                           </td>
                           <td className="p-6">
                             <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter ${u.role === 'admin'
-                              ? 'bg-primary/20 text-primary border border-primary/20 shadow-lg shadow-primary/10'
-                              : 'bg-white/5 text-muted-foreground border border-white/5'
+                              ? 'bg-primary/20 text-primary border border-primary/20 shadow-sm'
+                              : 'bg-muted text-muted-foreground border border-border'
                               }`}>
                               {u.role}
                             </span>
@@ -290,7 +290,7 @@ export default function AdminPage() {
                           <td className="p-6 text-right">
                             <button
                               onClick={() => deleteUser(u._id)}
-                              className="text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-all p-3 rounded-xl border border-transparent hover:border-rose-500/20"
+                              className="text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-all p-3 rounded-xl border border-transparent hover:border-rose-600/20"
                               title="Revoke Access"
                             >
                               <Shield className="h-5 w-5" />

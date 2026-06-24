@@ -48,10 +48,10 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase">Staff Profile</h1>
+          <h1 className="text-3xl font-black tracking-tight text-foreground uppercase">Staff Profile</h1>
           <p className="text-muted-foreground font-medium uppercase tracking-widest text-sm">Account Management</p>
         </div>
-        <Button variant="outline" onClick={logout} className="border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40 w-full sm:w-auto">
+        <Button variant="outline" onClick={logout} className="w-full sm:w-auto bg-white shadow-sm">
           Sign Out
         </Button>
       </div>
@@ -59,14 +59,14 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Profile Card */}
         <div className="md:col-span-1 space-y-6">
-          <div className="glass p-8 rounded-2xl text-center relative overflow-hidden">
+          <div className="glass-card p-8 rounded-2xl bg-card border border-border text-center relative overflow-hidden shadow-sm">
             <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
             <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-primary/20 shadow-xl shadow-primary/5">
               <span className="text-4xl font-black text-primary uppercase">
                 {profile?.name?.charAt(0) || 'U'}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white truncate">{profile?.name}</h2>
+            <h2 className="text-xl font-bold text-foreground truncate">{profile?.name}</h2>
             <p className="text-sm text-primary font-bold uppercase tracking-widest mt-1">
               {profile?.role}
             </p>
@@ -75,18 +75,18 @@ export default function ProfilePage() {
 
         {/* Details Card */}
         <div className="md:col-span-2">
-          <div className="glass p-8 rounded-2xl relative overflow-hidden h-full">
-            <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-wider border-b border-white/5 pb-4">Personal Information</h3>
+          <div className="glass-card p-8 rounded-2xl bg-card border border-border relative overflow-hidden h-full shadow-sm">
+            <h3 className="text-lg font-bold text-foreground mb-6 uppercase tracking-wider border-b border-border pb-4">Personal Information</h3>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">Full Name</label>
-                  <p className="text-white font-medium bg-white/5 p-3 rounded-lg border border-white/5">{profile?.name}</p>
+                  <p className="text-foreground font-medium bg-muted/40 p-3 rounded-lg border border-border">{profile?.name}</p>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">Email Address</label>
-                  <p className="text-white font-medium bg-white/5 p-3 rounded-lg border border-white/5">{profile?.email}</p>
+                  <p className="text-foreground font-medium bg-muted/40 p-3 rounded-lg border border-border">{profile?.email}</p>
                 </div>
               </div>
 
@@ -97,7 +97,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-1">Member Since</label>
-                  <p className="text-white font-medium bg-white/5 p-3 rounded-lg border border-white/5">
+                  <p className="text-foreground font-medium bg-muted/40 p-3 rounded-lg border border-border">
                     {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-AU', {
                       year: 'numeric',
                       month: 'long',
@@ -108,7 +108,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="mt-10 pt-6 border-t border-white/5">
+            <div className="mt-10 pt-6 border-t border-border">
               <Button className="w-full sm:w-auto" variant="secondary">
                 Edit Profile Information
               </Button>

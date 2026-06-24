@@ -1,25 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #020512;
-  --color-foreground: #ffffff;
-  --color-card: #050b21;
-  --color-card-foreground: #f8fafc;
-  --color-popover: #030718;
-  --color-popover-foreground: #f8fafc;
-  --color-primary: #00f0ff;
-  --color-primary-foreground: #020512;
-  --color-secondary: #0b1437;
-  --color-secondary-foreground: #f8fafc;
-  --color-muted: #0b1437;
-  --color-muted-foreground: #8a9fc4;
-  --color-accent: #dfb76c;
-  --color-accent-foreground: #020512;
-  --color-destructive: #ff3b30;
+  /* ── Patterson Cheney Light Theme ───────────────────────────── */
+
+  /* Backgrounds */
+  --color-background: #ffffff;
+  --color-foreground: #231f20;
+
+  /* Card — slightly off-white for depth */
+  --color-card: #f8f9fa;
+  --color-card-foreground: #231f20;
+
+  /* Popover */
+  --color-popover: #ffffff;
+  --color-popover-foreground: #231f20;
+
+  /* Primary — PC Blue */
+  --color-primary: #1473b9;
+  --color-primary-foreground: #ffffff;
+
+  /* Secondary — light warm grey */
+  --color-secondary: #f1f3f5;
+  --color-secondary-foreground: #231f20;
+
+  /* Muted */
+  --color-muted: #f1f3f5;
+  --color-muted-foreground: #6b7280;
+
+  /* Accent — PC Gold */
+  --color-accent: #f1b618;
+  --color-accent-foreground: #231f20;
+
+  /* Destructive */
+  --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
-  --color-border: #13225c;
-  --color-input: #070e28;
-  --color-ring: #00f0ff;
+
+  /* Border / Input / Ring */
+  --color-border: #e2e6ea;
+  --color-input: #f1f3f5;
+  --color-ring: #1473b9;
+
   --radius: 0.75rem;
 
   --font-sans: var(--font-poppins), system-ui, sans-serif;
@@ -35,35 +55,35 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   overflow-x: hidden;
+  /* Subtle warm light radials to keep depth without color bleed */
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(223, 183, 108, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(11, 20, 55, 0.5) 0%, transparent 100%);
+    radial-gradient(circle at 15% 10%, rgba(20, 115, 185, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 85% 90%, rgba(241, 182, 24, 0.03) 0%, transparent 50%);
 }
 
-/* Premium UCL Glassmorphism */
+/* ── Glassmorphism — light variant ──────────────────────────── */
 .glass {
-  background: rgba(5, 11, 33, 0.65);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(19, 34, 92, 0.4);
-  box-shadow: 0 25px 50px -12px rgba(2, 5, 18, 0.7);
+  border: 1px solid rgba(226, 230, 234, 0.8);
+  box-shadow: 0 8px 32px rgba(35, 31, 32, 0.08);
 }
 
 .glass-card {
-  background: rgba(11, 20, 55, 0.35);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(19, 34, 92, 0.3);
+  border: 1px solid rgba(226, 230, 234, 0.7);
   border-radius: var(--radius);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(0, 240, 255, 0.3);
-  background: rgba(11, 20, 55, 0.5);
-  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+  border-color: rgba(20, 115, 185, 0.35);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px rgba(20, 115, 185, 0.12);
 }
 
-/* Starfield Shimmer Effect */
+/* ── Shimmer Effect — blue tint ─────────────────────────────── */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -75,30 +95,30 @@ body {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(20, 115, 185, 0.2), transparent);
   background-size: 200% 100%;
   animation: shimmer 2.5s infinite linear;
 }
 
-/* Custom UCL Styled Scrollbar */
+/* ── Scrollbar — light theme ────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020512;
+  background: #f1f3f5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #13225c;
+  background: #d1d5db;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2500f5;
+  background: #1473b9;
 }
 
-/* Typography & Layout - UEFA Space Grotesk Title Styles */
+/* ── Typography ─────────────────────────────────────────────── */
 h1,
 h2,
 h3,
@@ -108,27 +128,32 @@ h6 {
   font-family: var(--font-display), system-ui, sans-serif;
   letter-spacing: -0.01em;
   font-weight: 700;
+  color: var(--color-foreground);
 }
 
+/* ── Primary Button — solid PC blue ────────────────────────── */
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #0b1437 0%, #13225c 50%, #00f0ff 100%);
-  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.2);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+  background: #1473b9;
+  box-shadow: 0 4px 16px rgba(20, 115, 185, 0.3);
+  border: 1px solid #1060a0;
   color: #ffffff;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary-gradient:hover {
+  background: #0f5e94;
   transform: translateY(-1px);
-  box-shadow: 0 6px 25px rgba(0, 240, 255, 0.35);
-  border-color: #00f0ff;
+  box-shadow: 0 6px 24px rgba(20, 115, 185, 0.4);
+  border-color: #0d5283;
 }
 
 .btn-primary-gradient:active {
   transform: translateY(0);
+  background: #0d5283;
+  box-shadow: 0 2px 8px rgba(20, 115, 185, 0.25);
 }
 
-/* Premium Keyframe Animations */
+/* ── Keyframe Animations ────────────────────────────────────── */
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
@@ -140,10 +165,10 @@ h6 {
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 0 rgba(20, 115, 185, 0), 0 2px 8px rgba(35, 31, 32, 0.08);
   }
   50% {
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.35), inset 0 1px 1px rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 0 6px rgba(20, 115, 185, 0.06), 0 4px 20px rgba(20, 115, 185, 0.1);
   }
 }
 
@@ -190,7 +215,7 @@ h6 {
   }
 }
 
-/* Animations Utility Classes */
+/* ── Animation Utilities ────────────────────────────────────── */
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -211,26 +236,36 @@ h6 {
   animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Premium Card hover effects and transitions */
+/* ── Card Hover Effects ─────────────────────────────────────── */
 .hover-float {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hover-float:hover {
-  transform: translateY(-6px);
-  border-color: rgba(0, 240, 255, 0.4);
-  box-shadow: 0 20px 40px -10px rgba(2, 5, 18, 0.8), 0 0 25px rgba(0, 240, 255, 0.2);
+  transform: translateY(-4px);
+  border-color: rgba(20, 115, 185, 0.35);
+  box-shadow: 0 16px 40px -8px rgba(35, 31, 32, 0.12), 0 0 0 1px rgba(20, 115, 185, 0.1);
 }
 
-/* Custom interactive gradients */
+/* ── Aurora Background — light variant ─────────────────────── */
 .aurora-bg {
-  background: linear-gradient(-45deg, #020512, #0b1437, #050b21, #0c2045);
+  background: linear-gradient(-45deg, #ffffff, #f1f3f5, #e8f1f9, #f5f9fe);
   background-size: 400% 400%;
   animation: aurora-run 15s ease infinite;
 }
 
+/* ── Gradient Text — PC blue ────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #ffffff 30%, #00f0ff 100%);
+  background: linear-gradient(135deg, #231f20 20%, #1473b9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* ── Light Surface Elevation Shadows ────────────────────────── */
+.shadow-card {
+  box-shadow: 0 1px 3px rgba(35, 31, 32, 0.08), 0 4px 16px rgba(35, 31, 32, 0.06);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 4px 12px rgba(35, 31, 32, 0.1), 0 12px 32px rgba(20, 115, 185, 0.08);
 }

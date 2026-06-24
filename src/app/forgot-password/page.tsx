@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8 glass p-6 sm:p-10 rounded-2xl relative overflow-hidden animate-scale-in">
+      <div className="w-full max-w-md space-y-8 bg-card border border-border p-6 sm:p-10 rounded-2xl relative overflow-hidden shadow-2xl animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary shimmer" />
 
         <div className="text-center relative">
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
               </svg>
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase">Reset Password</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">Reset Password</h1>
           <p className="mt-2 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-widest">
             {isSent ? 'Verification code sent' : 'Enter your staff email'}
           </p>
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
             <div className="text-primary font-bold text-lg">Check your inbox</div>
             <p className="text-muted-foreground text-sm">We've sent a 6-digit code to your email. Redirecting you to the reset page...</p>
             <div className="flex justify-center pt-4">
-              <div className="h-1 w-24 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-1 w-24 bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary animate-progress w-full" />
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
 
             <div className="text-center text-sm text-muted-foreground font-medium">
               Remembered your password?{' '}
-              <Link href="/login" className="text-primary hover:text-primary/80 transition-colors">
+              <Link href="/login" className="text-primary hover:text-primary/80 transition-colors font-bold">
                 Back to login
               </Link>
             </div>

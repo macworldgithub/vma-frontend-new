@@ -58,22 +58,22 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
   return (
     <div
       style={viewportHeight ? { height: `${viewportHeight}px` } : { height: '100%' }}
-      className="w-full sm:w-96 flex flex-col glass border-l border-white/5 fixed sm:static top-0 right-0 z-[60] sm:z-40 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300"
+      className="w-full sm:w-96 flex flex-col glass border-l border-border fixed sm:static top-0 right-0 z-[60] sm:z-40 bg-background/95 sm:bg-background/80 backdrop-blur-3xl animate-in slide-in-from-right duration-300"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-white/5">
+      <div className="flex items-center justify-between p-6 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-primary/10 text-primary">
             <MessageSquare className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">In-Call Chat</h3>
+            <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">In-Call Chat</h3>
             <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Secure Channel</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all"
+          className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
         >
           <X className="h-5 w-5" />
         </button>
@@ -82,11 +82,11 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center opacity-20 space-y-4">
-            <div className="p-6 rounded-full bg-white/5">
-              <Hash className="h-10 w-10 text-white" />
+          <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-50">
+            <div className="p-6 rounded-full bg-muted border border-border">
+              <Hash className="h-10 w-10 text-muted-foreground" />
             </div>
-            <p className="text-[10px] font-black text-white uppercase tracking-[0.3em]">No Messages Yet</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">No Messages Yet</p>
           </div>
         ) : (
           messages.map((msg, i) => {
@@ -105,13 +105,13 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
                 </div>
 
                 <div className={`px-4 py-3 rounded-2xl text-[13px] max-w-[90%] leading-relaxed shadow-sm border ${isMe
-                  ? 'bg-primary text-white border-primary/20 rounded-tr-none'
-                  : 'bg-white/5 text-slate-200 border-white/10 rounded-tl-none backdrop-blur-md'
+                  ? 'bg-primary text-primary-foreground border-primary/20 rounded-tr-none'
+                  : 'bg-card text-foreground border-border rounded-tl-none backdrop-blur-md'
                   }`}>
                   {msg.message}
                 </div>
 
-                <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
+                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
                   <Clock className="h-2.5 w-2.5" />
                   {new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -123,21 +123,21 @@ export const ChatPanel = ({ messages, onSend, onClose, currentUserId }: ChatPane
       </div>
 
       {/* Input */}
-      <div className="p-6 bg-white/5 border-t border-white/5 backdrop-blur-xl">
+      <div className="p-6 bg-muted/40 border-t border-border backdrop-blur-xl">
         <div className="relative group">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="TYPE SECURE MESSAGE..."
-            className="w-full bg-slate-900 border border-white/10 rounded-2xl pl-5 pr-14 py-4 text-[10px] font-bold text-white uppercase tracking-widest placeholder:text-slate-600 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
+            className="w-full bg-background border border-border rounded-2xl pl-5 pr-14 py-4 text-[10px] font-bold text-foreground uppercase tracking-widest placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all shadow-sm"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
             className={`absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl flex items-center justify-center transition-all ${input.trim()
-              ? 'bg-primary text-white shadow-lg shadow-primary/20'
-              : 'bg-white/5 text-slate-600'
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+              : 'bg-muted text-muted-foreground'
               }`}
           >
             <Send className="h-4 w-4" />

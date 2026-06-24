@@ -29,8 +29,8 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
 
   const statusConfig = {
     SCHEDULED: {
-      color: "text-blue-400",
-      bg: "bg-blue-400/10",
+      color: "text-blue-600",
+      bg: "bg-blue-500/10",
       label: "Upcoming",
     },
     LIVE: {
@@ -38,9 +38,9 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       bg: "bg-primary/10",
       label: "Live Now",
     },
-    ENDED: { color: "text-slate-500", bg: "bg-white/5", label: "Ended" },
+    ENDED: { color: "text-muted-foreground", bg: "bg-muted", label: "Ended" },
     CANCELLED: {
-      color: "text-rose-500",
+      color: "text-rose-600",
       bg: "bg-rose-500/10",
       label: "Cancelled",
     },
@@ -53,30 +53,29 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
   };
 
   return (
-    <div className="glass group relative overflow-hidden rounded-2xl border-white/5 hover-float">
+    <div className="glass-card group relative overflow-hidden rounded-2xl border-border bg-card hover-float">
       {/* Dynamic Status Border */}
       <div
-        className={`absolute top-0 left-0 w-full h-1 opacity-20 group-hover:opacity-100 transition-opacity ${meeting.status === "LIVE" ? "bg-primary" : "bg-primary"
-          }`}
+        className={`absolute top-0 left-0 w-full h-1 opacity-20 group-hover:opacity-100 transition-opacity bg-primary`}
       />
 
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
         <div className="flex justify-between items-start gap-4">
           <div className="space-y-1">
-            <h3 className="font-black text-base sm:text-lg text-white uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+            <h3 className="font-black text-base sm:text-lg text-foreground uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1">
               {meeting.title}
             </h3>
             <div className="flex items-center gap-2">
-              <span className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded border border-white/5">
+              <span className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded border border-border">
                 {meeting.meetingCode}
               </span>
               {meeting.status === "LIVE" && (
-                <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
+                <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_var(--color-primary)]" />
               )}
             </div>
           </div>
           <span
-            className={`text-[8px] sm:text-[9px] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest border border-white/10 ${currentStatus.color} ${currentStatus.bg}`}
+            className={`text-[8px] sm:text-[9px] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full font-black uppercase tracking-widest border border-border ${currentStatus.color} ${currentStatus.bg}`}
           >
             {currentStatus.label}
           </span>
@@ -84,7 +83,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
 
         <div className="grid grid-cols-2 gap-2 sm:gap-4 pt-1 sm:pt-2">
           <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-tighter">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-white/5">
+            <div className="p-1.5 sm:p-2 rounded-lg bg-muted">
               <Calendar className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
             </div>
             {meeting.startTime
@@ -95,7 +94,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
               : "Instant"}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-tighter">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-white/5">
+            <div className="p-1.5 sm:p-2 rounded-lg bg-muted">
               <Clock className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
             </div>
             {meeting.startTime
@@ -107,19 +106,19 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
           </div>
         </div>
 
-        <div className="pt-4 flex items-center justify-between border-t border-white/5">
+        <div className="pt-4 flex items-center justify-between border-t border-border">
           <div className="flex items-center gap-2">
             <div className="flex -space-x-1.5 sm:-space-x-2">
               {[1, 2].map((i) => (
                 <div
                   key={i}
-                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/10 border border-slate-950 flex items-center justify-center"
+                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-muted border border-background flex items-center justify-center"
                 >
                   <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
                 </div>
               ))}
               {meeting.status === "LIVE" && (
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/20 border border-slate-950 flex items-center justify-center text-[7px] sm:text-[8px] font-black text-primary">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/20 border border-background flex items-center justify-center text-[7px] sm:text-[8px] font-black text-primary">
                   +{meeting.participantCount || 0}
                 </div>
               )}
@@ -128,23 +127,6 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
               {meeting.status === "LIVE" ? "Active" : "Ready"}
             </span>
           </div>
-
-          {/* <Button
-            variant={meeting.status === "LIVE" ? "primary" : "outline"}
-            size="sm"
-            className={`rounded-lg sm:rounded-xl px-2.5 sm:px-4 gap-1.5 sm:gap-2 font-black uppercase tracking-widest text-[8px] sm:text-[10px] h-8 sm:h-10 transition-all ${
-              meeting.status === "LIVE"
-                ? "shadow-lg shadow-primary/20 border-primary hover:bg-primary/80"
-                : "border-white/10 hover:bg-white/10"
-            }`}
-            onClick={handleJoin}
-            disabled={
-              meeting.status === "ENDED" || meeting.status === "CANCELLED"
-            }
-          >
-            {meeting.status === "LIVE" ? "JOIN" : "LOBBY"}
-            <ChevronRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-          </Button> */}
 
           <div className="relative z-50">
             <button
@@ -167,8 +149,8 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       transition-all
       touch-manipulation
       ${meeting.status === "LIVE"
-                  ? "bg-primary text-black hover:bg-[#00808a]"
-                  : "border border-white/10 bg-primary text-black hover:bg-[#00808a]"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "border border-border bg-primary text-primary-foreground hover:bg-primary/90"
                 }
       ${meeting.status === "ENDED" || meeting.status === "CANCELLED"
                   ? "opacity-50 cursor-not-allowed"

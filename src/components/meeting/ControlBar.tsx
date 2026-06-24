@@ -73,30 +73,41 @@ export const ControlBar = ({
     label,
     badge,
     accent,
-  }: any) => (
-    <div className="flex flex-col items-center gap-1 sm:gap-2 group">
-      <button
-        onClick={onClick}
-        title={label}
-        className={`relative h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-xl border ${danger
-          ? "bg-rose-500 text-white border-rose-400/50 hover:bg-rose-600 shadow-lg shadow-rose-500/20"
-          : active
-            ? `${accent || "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 shadow-lg shadow-primary/10"}`
-            : "bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-rose-500/20"
-          } transform hover:-translate-y-1 active:scale-95`}
-      >
-        {children}
-        {badge && (
-          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 sm:h-4 sm:w-4 bg-primary text-white text-[7px] sm:text-[8px] font-black rounded-full flex items-center justify-center border-2 border-slate-950">
-            {badge}
-          </span>
-        )}
-      </button>
-      <span className="text-[7px] sm:text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
-        {label}
-      </span>
-    </div>
-  );
+    isMediaToggle,
+  }: any) => {
+    let buttonStyle = "";
+    if (danger) {
+      buttonStyle = "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-lg hover:shadow-destructive/20 border-destructive";
+    } else if (active) {
+      buttonStyle = accent || "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 shadow-md shadow-primary/5";
+    } else {
+      if (isMediaToggle) {
+        buttonStyle = "bg-rose-500/10 text-rose-600 border-rose-500/20 hover:bg-rose-500/20";
+      } else {
+        buttonStyle = "bg-muted text-foreground/70 border-border hover:bg-muted/80 hover:text-foreground";
+      }
+    }
+
+    return (
+      <div className="flex flex-col items-center gap-1 sm:gap-2 group">
+        <button
+          onClick={onClick}
+          title={label}
+          className={`relative h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-xl border ${buttonStyle} transform hover:-translate-y-1 active:scale-95`}
+        >
+          {children}
+          {badge && (
+            <span className="absolute -top-1 -right-1 h-3.5 w-3.5 sm:h-4 sm:w-4 bg-primary text-primary-foreground text-[7px] sm:text-[8px] font-black rounded-full flex items-center justify-center border-2 border-background">
+              {badge}
+            </span>
+          )}
+        </button>
+        <span className="text-[7px] sm:text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
+          {label}
+        </span>
+      </div>
+    );
+  };
 
   const MenuBtn = ({
     active,
@@ -110,10 +121,10 @@ export const ControlBar = ({
       onClick={onClick}
       title={label}
       className={`w-full px-3 py-2 text-sm rounded-lg flex items-center gap-2 transition-all ${danger
-        ? "bg-rose-500/20 text-rose-400 hover:bg-rose-500/30"
+        ? "bg-rose-500/10 text-rose-600 hover:bg-rose-500/20"
         : active
-          ? `${accent || "bg-primary/20 text-primary hover:bg-primary/30"}`
-          : "bg-white/5 text-white hover:bg-white/10"
+          ? `${accent || "bg-primary/10 text-primary hover:bg-primary/20"}`
+          : "bg-muted text-foreground hover:bg-muted/80"
         }`}
     >
       {children}
@@ -123,13 +134,14 @@ export const ControlBar = ({
 
   return (
     <div className="absolute bottom-1 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[95%] sm:w-auto">
-      <div className="glass-dark px-3 sm:px-8 py-2.5 sm:py-4 rounded-[20px] sm:rounded-[32px] flex items-center gap-2 sm:gap-3 md:gap-6 border border-white/10 shadow-2xl backdrop-blur-2xl pointer-events-auto">
+      <div className="glass px-3 sm:px-8 py-2.5 sm:py-4 rounded-[20px] sm:rounded-[32px] flex items-center gap-2 sm:gap-3 md:gap-6 border border-border shadow-xl backdrop-blur-2xl pointer-events-auto">
         {/* Media Controls Group - Left Side */}
         <div className="flex items-center gap-2 sm:gap-4">
           <ControlBtn
             active={audioEnabled}
             onClick={onToggleAudio}
             label={audioEnabled ? "Mute" : "Unmute"}
+            isMediaToggle={true}
           >
             {audioEnabled ? (
               <Mic className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -142,6 +154,7 @@ export const ControlBar = ({
             active={videoEnabled}
             onClick={onToggleVideo}
             label={videoEnabled ? "Stop Video" : "Start Video"}
+            isMediaToggle={true}
           >
             {videoEnabled ? (
               <Video className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -156,7 +169,7 @@ export const ControlBar = ({
             label={raisedHand ? "Lower Hand" : "Raise Hand"}
             accent={
               raisedHand
-                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                ? "bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200"
                 : ""
             }
           >
@@ -262,7 +275,7 @@ export const ControlBar = ({
         <div className="lg:hidden relative md:ml-auto">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-white transition-all backdrop-blur-xl"
+            className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center bg-muted border border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all backdrop-blur-xl"
             title="More options"
           >
             <MoreVertical className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -270,7 +283,7 @@ export const ControlBar = ({
 
           {/* Dropdown Menu */}
           {showMenu && (
-            <div className="absolute bottom-20 right-0 w-48 bg-slate-900/95 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl p-2 space-y-1">
+            <div className="absolute bottom-20 right-0 w-48 bg-card border border-border rounded-2xl shadow-xl backdrop-blur-xl p-2 space-y-1">
               <MenuBtn
                 active={screenSharing}
                 onClick={() => {
@@ -343,7 +356,7 @@ export const ControlBar = ({
       {/* Branding Subtitle on Desktop */}
       <div className="hidden lg:flex items-center justify-center gap-2 mt-4 opacity-40">
         <Shield className="h-3 w-3 text-primary" />
-        <span className="text-[8px] font-black text-white uppercase tracking-[0.4em]">
+        <span className="text-[8px] font-black text-foreground uppercase tracking-[0.4em]">
           OmniSuiteAI Secure Realtime Pipeline
         </span>
       </div>

@@ -52,7 +52,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // Prevent flash of protected/unprotected content during hydration
   if (!isHydrated) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] animate-pulse">
           Validating Security Credentials...

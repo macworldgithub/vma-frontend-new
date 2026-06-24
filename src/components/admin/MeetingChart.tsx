@@ -18,10 +18,10 @@ interface MeetingChartProps {
 
 export const MeetingChart = ({ data }: MeetingChartProps) => {
   return (
-    <div className="glass p-6 rounded-2xl border-white/5 space-y-6">
+    <div className="glass-card p-6 rounded-2xl bg-card border border-border space-y-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-black text-white uppercase tracking-tight">
+          <h3 className="text-lg font-black text-foreground uppercase tracking-tight">
             Platform <span className="text-primary">Activity</span>
           </h3>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
@@ -53,7 +53,7 @@ export const MeetingChart = ({ data }: MeetingChartProps) => {
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
             <XAxis
               dataKey="date"
               stroke="#64748b"
@@ -74,13 +74,13 @@ export const MeetingChart = ({ data }: MeetingChartProps) => {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#0f172a',
-                border: '1px solid rgba(255,255,255,0.05)',
+                backgroundColor: 'var(--color-card)',
+                border: '1px solid var(--color-border)',
                 borderRadius: '12px',
                 fontSize: '12px',
-                color: '#fff',
+                color: 'var(--color-foreground)',
               }}
-              itemStyle={{ color: '#fff', fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold' }}
+              itemStyle={{ color: 'var(--color-foreground)', fontSize: '10px', textTransform: 'uppercase', fontWeight: 'bold' }}
             />
             <Area
               type="monotone"

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Menu } from "lucide-react";
+import Image from "next/image";
 
 export default function DashboardLayout({
   children,
@@ -12,22 +13,22 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-slate-950 overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="flex h-16 items-center justify-between border-b border-[#13225c]/30 bg-[#020512]/80 px-6 backdrop-blur-xl lg:hidden z-30">
-          <div className="flex flex-col">
-            <span className="text-sm font-black text-white uppercase tracking-tighter leading-none">
-              Patterson Cheney
-            </span>
-            <span className="text-[8px] font-black text-primary uppercase tracking-[0.4em] mt-0.5">
-              VMA Platform
-            </span>
-          </div>
+        <header className="flex h-16 items-center justify-between border-b border-border/40 bg-card/80 px-6 backdrop-blur-xl lg:hidden z-30">
+          <Image
+            src="/images/logo.png"
+            alt="Patterson Cheney Logo"
+            width={140}
+            height={44}
+            className="object-contain h-10 w-auto"
+            priority
+          />
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="rounded-xl p-2 text-slate-400 hover:bg-white/5 hover:text-white transition-all active:scale-95 border border-white/5"
+            className="rounded-xl p-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all active:scale-95 border border-border"
             aria-label="Open Sidebar"
           >
             <Menu className="h-5 w-5" />

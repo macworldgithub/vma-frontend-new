@@ -151,7 +151,7 @@ export default function CalendarPage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tighter">
+          <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter">
             Staff <span className="text-primary">Schedule</span>
           </h1>
           <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-xs mt-1">
@@ -163,12 +163,12 @@ export default function CalendarPage() {
           {isCurrentTabConnected ? (
             <>
               {activeTab === 'google' ? (
-                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest">
+                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-[10px] font-black uppercase tracking-widest">
                   <CheckCircle2 className="h-3 w-3" />
                   Linked to Google
                 </div>
               ) : (
-                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+                <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 text-[10px] font-black uppercase tracking-widest">
                   <CheckCircle2 className="h-3 w-3" />
                   Linked to Teams
                 </div>
@@ -177,7 +177,7 @@ export default function CalendarPage() {
                 onClick={handleSync}
                 disabled={isSyncing}
                 variant="outline"
-                className="gap-2 border-white/5 bg-white/5 hover:bg-white/10"
+                className="gap-2 bg-white border-border text-foreground hover:bg-muted shadow-sm"
               >
                 <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                 {isSyncing ? 'Syncing...' : 'Sync Now'}
@@ -206,25 +206,25 @@ export default function CalendarPage() {
 
       {/* Success Notification */}
       {successMessage && (
-        <div className="glass border border-emerald-500/30 bg-emerald-500/10 p-4 rounded-2xl flex items-center justify-between text-emerald-400 text-sm font-bold uppercase tracking-wider animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl flex items-center justify-between text-emerald-600 text-sm font-bold uppercase tracking-wider animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             {successMessage}
           </div>
-          <button onClick={() => setSuccessMessage(null)} className="text-emerald-400 hover:text-white cursor-pointer font-bold">
+          <button onClick={() => setSuccessMessage(null)} className="text-emerald-600 hover:text-emerald-800 cursor-pointer font-bold">
             Dismiss
           </button>
         </div>
       )}
 
       {/* Provider Tabs */}
-      <div className="flex border-b border-white/10 space-x-6">
+      <div className="flex border-b border-border space-x-6">
         <button
           onClick={() => setActiveTab('google')}
           className={`pb-3 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
             activeTab === 'google'
               ? 'border-primary text-primary'
-              : 'border-transparent text-slate-400 hover:text-white'
+              : 'border-transparent text-muted-foreground hover:text-primary'
           }`}
         >
           Google Calendar
@@ -234,7 +234,7 @@ export default function CalendarPage() {
           className={`pb-3 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
             activeTab === 'microsoft'
               ? 'border-primary text-primary'
-              : 'border-transparent text-slate-400 hover:text-white'
+              : 'border-transparent text-muted-foreground hover:text-primary'
           }`}
         >
           Teams Calendar
@@ -243,7 +243,7 @@ export default function CalendarPage() {
 
       {/* Main content Area */}
       {!isCurrentTabConnected ? (
-        <div className="glass p-12 rounded-3xl text-center space-y-6 relative overflow-hidden">
+        <div className="glass-card p-12 rounded-3xl text-center space-y-6 relative overflow-hidden bg-card border-border">
           <div className={`absolute top-0 left-0 w-full h-1 ${activeTab === 'google' ? 'bg-blue-500/20' : 'bg-indigo-500/20'}`} />
           <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto border-2 mb-2 ${
             activeTab === 'google' ? 'bg-blue-500/5 border-blue-500/10' : 'bg-indigo-500/5 border-indigo-500/10'
@@ -255,7 +255,7 @@ export default function CalendarPage() {
             )}
           </div>
           <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-black text-white uppercase">
+            <h2 className="text-2xl font-black text-foreground uppercase">
               {activeTab === 'google' ? 'Google Calendar' : 'Teams Calendar'} Not Connected
             </h2>
             <p className="text-muted-foreground font-medium mt-2">
@@ -273,7 +273,7 @@ export default function CalendarPage() {
           </Button>
         </div>
       ) : filteredEvents.length === 0 ? (
-        <div className="glass p-12 rounded-3xl text-center space-y-4">
+        <div className="glass-card p-12 rounded-3xl text-center space-y-4 bg-card border-border">
           <p className="text-muted-foreground font-medium">
             No upcoming meetings found in your {activeTab === 'google' ? 'Google' : 'Teams'} calendar.
           </p>
@@ -293,20 +293,20 @@ export default function CalendarPage() {
             {filteredEvents.map((event) => (
               <div
                 key={event._id}
-                className="glass-card p-6 rounded-2xl group border-white/5 hover-float flex flex-col md:flex-row md:items-center justify-between gap-6"
+                className="glass-card p-6 rounded-2xl group border-border bg-card hover-float flex flex-col md:flex-row md:items-center justify-between gap-6"
               >
                 <div className="flex gap-6 items-start">
-                  <div className="flex flex-col items-center justify-center bg-white/5 rounded-xl px-4 py-3 border border-white/5 min-w-[80px]">
+                  <div className="flex flex-col items-center justify-center bg-muted rounded-xl px-4 py-3 border border-border min-w-[80px]">
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">
                       {new Date(event.startTime).toLocaleDateString('en-AU', { month: 'short' })}
                     </span>
-                    <span className="text-2xl font-black text-white leading-none">
+                    <span className="text-2xl font-black text-foreground leading-none">
                       {new Date(event.startTime).getDate()}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors mb-1">
+                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
                       {event.title}
                     </h3>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -326,7 +326,7 @@ export default function CalendarPage() {
                   {event.meetingLink && (
                     <Button
                       variant="outline"
-                      className="btn-primary-gradient gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300"
+                      className="gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white"
                       onClick={() => window.open(event.meetingLink, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4" />
