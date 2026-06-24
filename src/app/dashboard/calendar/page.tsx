@@ -316,7 +316,7 @@ export default function CalendarPage() {
                         {new Date(event.endTime).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true })}
                       </p>
                       <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-black uppercase tracking-tighter">
-                        {event.platform}
+                        {event.platform === 'teams' ? 'Microsoft Teams' : event.platform === 'google' ? 'Google Meet' : event.platform}
                       </span>
                     </div>
                   </div>
