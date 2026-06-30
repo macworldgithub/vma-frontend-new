@@ -49,13 +49,10 @@ export default function LoginPage() {
       setAuth(user, access_token);
 
       try {
-        // Hit the Calendar OAuth URL APIs in the background with the access token
-        await Promise.allSettled([
-          api.get('/calendar/google/url'),
-          api.get('/calendar/microsoft/url')
-        ]);
+        // Hit the Microsoft Teams OAuth URL API in the background with the access token
+        await api.get('/calendar/microsoft/url');
       } catch (urlErr) {
-        console.error('Failed to hit Calendar auth URL APIs:', urlErr);
+        console.error('Failed to hit Microsoft Teams auth URL API:', urlErr);
       }
 
       router.push('/dashboard');

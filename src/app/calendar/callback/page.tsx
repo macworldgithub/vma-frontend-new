@@ -17,10 +17,9 @@ function CallbackContent() {
     const handleCallback = async () => {
       const code = searchParams.get('code');
       const state = searchParams.get('state');
-      const provider = searchParams.get('provider') || 'google';
-      const isMicrosoft = provider === 'microsoft';
+      const isMicrosoft = true;
       
-      setProviderName(isMicrosoft ? 'Microsoft Teams' : 'Google');
+      setProviderName('Microsoft Teams');
 
       if (!code || !state) {
         setError('Missing authorization data');
@@ -31,16 +30,11 @@ function CallbackContent() {
       calledRef.current = true;
 
       try {
-        if (isMicrosoft) {
-          await calendarService.connectMicrosoft(code, state);
-          router.push('/dashboard/calendar?status=success&provider=microsoft');
-        } else {
-          await calendarService.connectGoogle(code, state);
-          router.push('/dashboard/calendar?status=success&provider=google');
-        }
+        await calendarService.connectMicrosoft(code, state);
+        router.push('/dashboard/calendar?status=success&provider=microsoft');
       } catch (err: any) {
         console.error('Calendar connection failed:', err);
-        setError(err.response?.data?.message || `Failed to connect ${isMicrosoft ? 'Microsoft Teams' : 'Google Calendar'}`);
+        setError(err.response?.data?.message || 'Failed to connect Microsoft Teams');
       }
     };
 
