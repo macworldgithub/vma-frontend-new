@@ -105,11 +105,22 @@ export default function AdminPage() {
     }
   };
 
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return '--';
+    if (seconds < 60) return `${seconds}s`;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (m < 60) return `${m}m ${s}s`;
+    const h = Math.floor(m / 60);
+    const mRemaining = m % 60;
+    return `${h}h ${mRemaining}m ${s}s`;
+  };
+
   const handleExportLogs = async () => {
     setExporting(true);
     try {
       const meetingsToExport = await dashboardService.getRecentMeetings(100);
-      const headers = ['Meeting ID', 'Title', 'Status', 'Host ID', 'Meeting Code', 'Duration (seconds)', 'Created At', 'Max Participants'];
+      const headers = ['Meeting ID', 'Title', 'Status', 'Host ID', 'Meeting Code', 'Duration', 'Created At', 'Max Participants'];
       
       const csvRows = [
         headers.join(','),
@@ -121,7 +132,7 @@ export default function AdminPage() {
             meeting.status,
             meeting.hostId,
             meeting.meetingCode,
-            meeting.duration || 0,
+            formatDuration(meeting.duration),
             meeting.createdAt,
             meeting.maxParticipants
           ].join(',');
