@@ -6,6 +6,17 @@ interface RecentMeetingsTableProps {
   meetings: RecentMeeting[];
 }
 
+const formatDuration = (seconds?: number) => {
+  if (!seconds) return '--';
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m < 60) return `${m}m ${s}s`;
+  const h = Math.floor(m / 60);
+  const mRemaining = m % 60;
+  return `${h}h ${mRemaining}m ${s}s`;
+};
+
 export const RecentMeetingsTable = ({ meetings }: RecentMeetingsTableProps) => {
   return (
     <div className="glass-card rounded-2xl overflow-hidden border-border bg-card shadow-sm">
@@ -62,7 +73,7 @@ export const RecentMeetingsTable = ({ meetings }: RecentMeetingsTableProps) => {
                   <td className="p-5">
                     <div className="flex items-center gap-2 text-muted-foreground font-medium">
                       <Clock className="h-3 w-3" />
-                      {meeting.duration ? `${Math.round(meeting.duration / 60)} min` : '--'}
+                      {formatDuration(meeting.duration)}
                     </div>
                   </td>
                   <td className="p-5 text-right font-mono text-xs text-muted-foreground">

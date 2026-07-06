@@ -56,7 +56,15 @@ export const dashboardService = {
   },
   getRecentMeetings: async (limit: number = 20): Promise<RecentMeeting[]> => {
     const response = await api.get(`/dashboard/recent-meetings?limit=${limit}`);
-    return response.data;
+    return response.data.map((meeting: RecentMeeting) => {
+      let duration = meeting.duration;
+      if (!duration && meeting.actualStartTime) {
+        const start = new Date(meeting.actualStartTime).getTime();
+        const end = meeting.actualEndTime ? new Date(meeting.actualEndTime).getTime() : Date.now();
+        duration = Math.floor((end - start) / 1000);
+      }
+      return { ...meeting, duration };
+    });
   },
   getTopUsers: async (limit: number = 10): Promise<TopUser[]> => {
     const response = await api.get(`/dashboard/top-users?limit=${limit}`);

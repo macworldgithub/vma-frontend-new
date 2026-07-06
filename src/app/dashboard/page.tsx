@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Plus, Video, Calendar as CalendarIcon,
   RefreshCw, User, Shield, Activity, Users,
-  Search, SlidersHorizontal, ChevronRight
+  Search, SlidersHorizontal, ChevronRight, ChevronDown, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { MeetingCard } from '@/components/dashboard/MeetingCard';
@@ -19,6 +19,11 @@ export default function DashboardPage() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'SCHEDULED' | 'LIVE'>('ALL');
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchMeetings = async () => {
     setIsLoading(true);
@@ -37,10 +42,34 @@ export default function DashboardPage() {
     fetchMeetings();
   }, []);
 
+  // Filtered meetings based on search query and status filter
+  const filteredMeetings = useMemo(() => {
+    let result = meetings;
+
+    // Filter by search query (title or meeting code)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (m: any) =>
+          m.title?.toLowerCase().includes(query) ||
+          m.meetingCode?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by status
+    if (statusFilter !== 'ALL') {
+      result = result.filter((m: any) => m.status === statusFilter);
+    }
+
+    return result;
+  }, [meetings, searchQuery, statusFilter]);
+
   const handleMeetingCreated = (code: string) => {
     setIsModalOpen(false);
     router.push(`/meeting/${code}`);
   };
+
+  const activeFilterCount = (searchQuery ? 1 : 0) + (statusFilter !== 'ALL' ? 1 : 0);
 
   return (
     <div className="space-y-10 pb-20">
@@ -121,8 +150,18 @@ export default function DashboardPage() {
           <input
             type="text"
             placeholder="SEARCH SESSIONS BY TITLE OR CODE..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-muted/40 border border-border rounded-xl sm:rounded-2xl pl-10 sm:pl-12 pr-4 sm:pr-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-foreground placeholder:text-muted-foreground uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -130,10 +169,64 @@ export default function DashboardPage() {
             <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
           <div className="h-8 sm:h-10 w-px bg-border mx-1 sm:mx-2" />
-          <button className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-white border border-border text-[8px] sm:text-[10px] font-black text-foreground uppercase tracking-widest hover:text-primary transition-all shadow-sm">
-            <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            FILTERS
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${
+                showFilters || statusFilter !== 'ALL'
+                  ? 'bg-primary/10 border-primary/30 text-primary'
+                  : 'bg-white border-border text-foreground hover:text-primary'
+              }`}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              FILTERS
+              {activeFilterCount > 0 && (
+                <span className="ml-1 bg-primary text-primary-foreground text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            {/* Filter Dropdown */}
+            {showFilters && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden animate-scale-in">
+                <div className="p-3 border-b border-border">
+                  <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Status Filter</p>
+                </div>
+                <div className="p-2 space-y-1">
+                  {(['ALL', 'SCHEDULED', 'LIVE'] as const).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => {
+                        setStatusFilter(status);
+                        setShowFilters(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        statusFilter === status
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      {status === 'ALL' ? 'All Sessions' : status}
+                    </button>
+                  ))}
+                </div>
+                {statusFilter !== 'ALL' && (
+                  <div className="p-2 border-t border-border">
+                    <button
+                      onClick={() => {
+                        setStatusFilter('ALL');
+                        setShowFilters(false);
+                      }}
+                      className="w-full text-center px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-destructive hover:bg-destructive/10 transition-all"
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -144,12 +237,23 @@ export default function DashboardPage() {
             <div key={i} className="h-64 glass-card rounded-4xl animate-pulse border-border bg-muted/20" />
           ))}
         </div>
-      ) : meetings.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
-          {meetings.map((meeting: any) => (
-            <MeetingCard key={meeting._id} meeting={meeting} />
-          ))}
-        </div>
+      ) : filteredMeetings.length > 0 ? (
+        <>
+          {/* Results count when filtering */}
+          {(searchQuery || statusFilter !== 'ALL') && (
+            <div className="px-2">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                Showing {filteredMeetings.length} of {meetings.length} sessions
+                {searchQuery && <span> matching &ldquo;{searchQuery}&rdquo;</span>}
+              </p>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
+            {filteredMeetings.map((meeting: any) => (
+              <MeetingCard key={meeting._id} meeting={meeting} />
+            ))}
+          </div>
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 glass-card rounded-[40px] border-border text-center">
           <div className="relative mb-8">
@@ -158,12 +262,28 @@ export default function DashboardPage() {
               <Video className="h-10 w-10 text-muted-foreground" />
             </div>
           </div>
-          <h3 className="text-xl md:text-2xl font-black text-foreground uppercase tracking-tighter">No Sessions Found</h3>
-          <p className="text-muted-foreground mt-2 font-medium max-w-sm">Your meeting history is empty. Start your first high-performance session now.</p>
-          <Button className="mt-10 h-14 px-3 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => setIsModalOpen(true)}>
-            INITIALIZE FIRST SESSION
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+          {searchQuery || statusFilter !== 'ALL' ? (
+            <>
+              <h3 className="text-xl md:text-2xl font-black text-foreground uppercase tracking-tighter">No Matching Sessions</h3>
+              <p className="text-muted-foreground mt-2 font-medium max-w-sm">No sessions match your current search or filter criteria.</p>
+              <Button
+                variant="outline"
+                className="mt-10 h-12 px-6 rounded-2xl gap-3 font-black uppercase tracking-widest"
+                onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); }}
+              >
+                Clear All Filters
+              </Button>
+            </>
+          ) : (
+            <>
+              <h3 className="text-xl md:text-2xl font-black text-foreground uppercase tracking-tighter">No Sessions Found</h3>
+              <p className="text-muted-foreground mt-2 font-medium max-w-sm">Your meeting history is empty. Start your first high-performance session now.</p>
+              <Button className="mt-10 h-14 px-3 rounded-2xl gap-3 font-black uppercase tracking-widest shadow-xl shadow-primary/20" onClick={() => setIsModalOpen(true)}>
+                INITIALIZE FIRST SESSION
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </>
+          )}
         </div>
       )}
 
