@@ -191,10 +191,12 @@ export const useWebRTC = ({
         stream.removeTrack(videoTrack);
       }
 
-      // Push null into every sender so the remote side gets no track
+      // Push null into every sender so the remote side sees no video
       // (not a black frame — a proper removed track).
       for (const pc of peerConnections.current.values()) {
-        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        const sender =
+          pc.getSenders().find(s => s.track?.kind === 'video') ||
+          pc.getTransceivers().find(t => t.mid !== null && t.receiver.track?.kind === 'video')?.sender;
         if (sender) await sender.replaceTrack(null);
       }
 
@@ -214,14 +216,17 @@ export const useWebRTC = ({
       stream.addTrack(newTrack);
 
       // Push new track into every sender via replaceTrack (no renegotiation).
+      // Because we always add a video transceiver in createPeerConnection,
+      // there is ALWAYS a video sender — we just need to find it.
       for (const pc of peerConnections.current.values()) {
-        const sender = pc.getSenders().find(s => s.track?.kind === 'video' || s.track === null);
+        // Find by: active video track, OR null track on a video transceiver
+        const sender =
+          pc.getSenders().find(s => s.track?.kind === 'video') ||
+          pc.getTransceivers().find(t => t.mid !== null && t.receiver.track?.kind === 'video')?.sender;
         if (sender) {
           await sender.replaceTrack(newTrack);
         } else {
-          // No video sender exists yet (e.g. started with video off).
-          // addTrack WILL trigger onnegotiationneeded — that's correct here.
-          pc.addTrack(newTrack, stream);
+          console.warn(`[WebRTC] No video sender/transceiver found on PC — this should not happen`);
         }
       }
     }
@@ -306,14 +311,31 @@ export const useWebRTC = ({
       isSettingRemoteAnswerPending: false,
     });
 
-    // Add existing local tracks.
+    // Add existing local tracks or ensure senders exist.
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => {
-        console.log(`[WebRTC] Adding ${track.kind} track to PC for ${targetSocketId}`);
-        pc.addTrack(track, localStreamRef.current!);
-      });
+      const stream = localStreamRef.current;
+      const audioTrack = stream.getAudioTracks()[0];
+      const videoTrack = stream.getVideoTracks()[0];
+
+      if (audioTrack) {
+        console.log(`[WebRTC] Adding audio track to PC for ${targetSocketId}`);
+        pc.addTrack(audioTrack, stream);
+      } else {
+        console.log(`[WebRTC] Adding audio transceiver to PC for ${targetSocketId}`);
+        pc.addTransceiver('audio', { direction: 'sendrecv', streams: [stream] });
+      }
+
+      if (videoTrack) {
+        console.log(`[WebRTC] Adding video track to PC for ${targetSocketId}`);
+        pc.addTrack(videoTrack, stream);
+      } else {
+        console.log(`[WebRTC] Adding video transceiver to PC for ${targetSocketId}`);
+        pc.addTransceiver('video', { direction: 'sendrecv', streams: [stream] });
+      }
     } else {
       console.warn(`[WebRTC] No local stream when creating PC for ${targetSocketId}`);
+      pc.addTransceiver('audio', { direction: 'sendrecv' });
+      pc.addTransceiver('video', { direction: 'sendrecv' });
     }
 
     // ── Perfect Negotiation: onnegotiationneeded ────────────────────────────
@@ -586,7 +608,6 @@ export const useWebRTC = ({
         });
       };
       socket.on('media-state-changed', handleMediaStateChange);
-      socket.on('media-state-change', handleMediaStateChange);
 
       socket.on('raise-hand', ({ socketId, raisedHand: raised }) => {
         setPeers(prev => {
@@ -617,7 +638,6 @@ export const useWebRTC = ({
       socket.off('ice-candidate');
       socket.off('user-left');
       socket.off('media-state-changed');
-      socket.off('media-state-change');
       socket.off('raise-hand');
 
       peerConnections.current.forEach(pc => pc.close());

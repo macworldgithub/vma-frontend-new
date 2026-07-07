@@ -48,8 +48,20 @@ export default function MeetingRoomPage() {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportDownloaded, setReportDownloaded] = useState(false);
 
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [initialAudio] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const pref = sessionStorage.getItem('vma_pref_audio');
+      return pref !== null ? pref === 'true' : true;
+    }
+    return true;
+  });
+  const [initialVideo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const pref = sessionStorage.getItem('vma_pref_video');
+      return pref !== null ? pref === 'true' : true;
+    }
+    return true;
+  });
   const [screenSharing, setScreenSharing] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -74,11 +86,7 @@ export default function MeetingRoomPage() {
         setMeetingTitle(data.title || '');
         setHostId(data.hostId);
 
-        // Read preferences from pre-join
-        const prefAudio = sessionStorage.getItem('vma_pref_audio');
-        const prefVideo = sessionStorage.getItem('vma_pref_video');
-        if (prefAudio !== null) setAudioEnabled(prefAudio === 'true');
-        if (prefVideo !== null) setVideoEnabled(prefVideo === 'true');
+
       } catch {
         router.push('/dashboard');
       }
@@ -144,14 +152,22 @@ export default function MeetingRoomPage() {
     };
   }, [token, roomId]);
 
-  // WebRTC hook
-  const { peers, localStream, updateLocalStreamTrack, raisedHand, toggleRaiseHand } = useWebRTC({
+  const { 
+    peers, 
+    localStream, 
+    raisedHand, 
+    toggleRaiseHand,
+    audioEnabled,
+    videoEnabled,
+    toggleAudio,
+    toggleVideo
+  } = useWebRTC({
     roomId,
     socket,
     userId: user?.id || '',
     userName: user?.name || 'Guest',
-    initialAudio: audioEnabled,
-    initialVideo: videoEnabled,
+    initialAudio,
+    initialVideo,
   });
 
   // Deepgram transcription — captures each participant's audio and sends
@@ -166,49 +182,7 @@ export default function MeetingRoomPage() {
     hasPeers: true, // Always enable transcription, even if testing alone
   });
 
-  // Toggle audio
-  const toggleAudio = useCallback(async () => {
-    if (localStream) {
-      const track = localStream.getAudioTracks()[0];
-      if (track) {
-        track.enabled = !track.enabled;
-        setAudioEnabled(track.enabled);
-        socket?.emit('media-state-change', { roomId, audioEnabled: track.enabled, videoEnabled });
-      } else {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const newTrack = stream.getAudioTracks()[0];
-          await updateLocalStreamTrack(newTrack);
-          setAudioEnabled(true);
-          socket?.emit('media-state-change', { roomId, audioEnabled: true, videoEnabled });
-        } catch (err) {
-          console.error('Failed to get audio track', err);
-        }
-      }
-    }
-  }, [localStream, socket, roomId, videoEnabled, updateLocalStreamTrack]);
 
-  // Toggle video
-  const toggleVideo = useCallback(async () => {
-    if (localStream) {
-      const track = localStream.getVideoTracks()[0];
-      if (track) {
-        track.enabled = !track.enabled;
-        setVideoEnabled(track.enabled);
-        socket?.emit('media-state-change', { roomId, audioEnabled, videoEnabled: track.enabled });
-      } else {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          const newTrack = stream.getVideoTracks()[0];
-          await updateLocalStreamTrack(newTrack);
-          setVideoEnabled(true);
-          socket?.emit('media-state-change', { roomId, audioEnabled, videoEnabled: true });
-        } catch (err) {
-          console.error('Failed to get video track', err);
-        }
-      }
-    }
-  }, [localStream, socket, roomId, audioEnabled, updateLocalStreamTrack]);
 
   // Toggle screen share
   const toggleScreenShare = useCallback(async () => {
