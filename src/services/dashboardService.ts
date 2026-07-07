@@ -45,6 +45,14 @@ export interface TopUser {
   meetingsHosted: number;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const dashboardService = {
   getStats: async (): Promise<DashboardStats> => {
     const response = await api.get('/dashboard/stats');
@@ -54,9 +62,12 @@ export const dashboardService = {
     const response = await api.get(`/dashboard/meeting-history?days=${days}`);
     return response.data;
   },
-  getRecentMeetings: async (limit: number = 20): Promise<RecentMeeting[]> => {
-    const response = await api.get(`/dashboard/recent-meetings?limit=${limit}`);
-    return response.data.map((meeting: RecentMeeting) => {
+  getRecentMeetings: async (page: number = 1, limit: number = 20, search?: string, status?: string): Promise<PaginatedResponse<RecentMeeting>> => {
+    let url = `/dashboard/recent-meetings?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status && status !== 'all') url += `&status=${encodeURIComponent(status)}`;
+    const response = await api.get(url);
+    const data = response.data.data.map((meeting: RecentMeeting) => {
       let duration = meeting.duration;
       if (!duration && meeting.actualStartTime) {
         const start = new Date(meeting.actualStartTime).getTime();
@@ -65,6 +76,7 @@ export const dashboardService = {
       }
       return { ...meeting, duration };
     });
+    return { ...response.data, data };
   },
   getTopUsers: async (limit: number = 10): Promise<TopUser[]> => {
     const response = await api.get(`/dashboard/top-users?limit=${limit}`);

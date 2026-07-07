@@ -25,14 +25,24 @@ export default function AdminPage() {
   const router = useRouter();
   const { user } = useAuthStore();
 
-  // State for different data segments
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [history, setHistory] = useState<MeetingHistoryItem[]>([]);
   const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  
+  // Pagination State
+  const [userPage, setUserPage] = useState(1);
+  const [userTotalPages, setUserTotalPages] = useState(1);
+  const [userTotal, setUserTotal] = useState(0);
+  const [meetingPage, setMeetingPage] = useState(1);
+  const [meetingTotalPages, setMeetingTotalPages] = useState(1);
+  const [meetingSearch, setMeetingSearch] = useState('');
+  const [meetingStatusFilter, setMeetingStatusFilter] = useState('all');
 
   const [loading, setLoading] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingMeetings, setLoadingMeetings] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [tab, setTab] = useState<'analytics' | 'users' | 'meetings'>('analytics');
 
@@ -50,50 +60,62 @@ export default function AdminPage() {
     }
   }, [user, router]);
 
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await api.get('/users', {
+        params: { page: userPage, limit: 10, search: userSearch, role: roleFilter }
+      });
+      setUsers(res.data.data || []);
+      setUserTotalPages(res.data.totalPages || 1);
+      setUserTotal(res.data.total || 0);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const fetchRecentMeetings = async () => {
+    setLoadingMeetings(true);
+    try {
+      const res = await dashboardService.getRecentMeetings(meetingPage, 10, meetingSearch, meetingStatusFilter);
+      setRecentMeetings(res.data || []);
+      setMeetingTotalPages(res.totalPages || 1);
+    } catch (err) {
+      console.error('Failed to fetch recent meetings:', err);
+    } finally {
+      setLoadingMeetings(false);
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [s, h, r, t, u] = await Promise.all([
+      const [s, h, t] = await Promise.all([
         dashboardService.getStats(),
         dashboardService.getMeetingHistory(30),
-        dashboardService.getRecentMeetings(10),
         dashboardService.getTopUsers(5),
-        api.get('/users').then(res => res.data).catch(() => []),
       ]);
-
       setStats(s);
       setHistory(h);
-      setRecentMeetings(r);
       setTopUsers(t);
-      setUsers(u);
     } catch (err) {
-      console.error('Failed to fetch admin dashboard data:', err);
+      console.error('Failed to fetch admin dashboard stats:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtered users based on search query and role filter
-  const filteredUsers = useMemo(() => {
-    let result = users;
+  useEffect(() => {
+    fetchUsers();
+  }, [userPage, userSearch, roleFilter]);
 
-    // Filter by search query (name or email)
-    if (userSearch.trim()) {
-      const query = userSearch.toLowerCase().trim();
-      result = result.filter(
-        (u: any) =>
-          u.name?.toLowerCase().includes(query) ||
-          u.email?.toLowerCase().includes(query)
-      );
-    }
+  useEffect(() => {
+    fetchRecentMeetings();
+  }, [meetingPage, meetingSearch, meetingStatusFilter]);
 
-    // Filter by role
-    if (roleFilter !== 'all') {
-      result = result.filter((u: any) => u.role === roleFilter);
-    }
-
-    return result;
-  }, [users, userSearch, roleFilter]);
+  // Deprecated: We use backend filtering now
 
   const deleteUser = async (id: string) => {
     if (!confirm('Are you sure you want to remove this user? This will revoke all access.')) return;
@@ -119,7 +141,8 @@ export default function AdminPage() {
   const handleExportLogs = async () => {
     setExporting(true);
     try {
-      const meetingsToExport = await dashboardService.getRecentMeetings(100);
+      const response = await dashboardService.getRecentMeetings(1, 100);
+      const meetingsToExport = response.data;
       const headers = ['Meeting ID', 'Title', 'Status', 'Host ID', 'Meeting Code', 'Duration', 'Created At', 'Max Participants'];
       
       const csvRows = [
@@ -167,8 +190,7 @@ export default function AdminPage() {
   };
 
   const handleUserModalSuccess = () => {
-    // Refetch users after add/edit
-    api.get('/users').then(res => setUsers(res.data)).catch(() => {});
+    fetchUsers();
   };
 
   useEffect(() => {
@@ -294,7 +316,10 @@ export default function AdminPage() {
                 </div>
 
                 {/* Recent Activity Mini Table */}
-                <RecentMeetingsTable meetings={recentMeetings} />
+                <RecentMeetingsTable 
+                  meetings={recentMeetings.slice(0, 5)} 
+                  // No pagination for mini table on dashboard
+                />
               </div>
             )}
 
@@ -354,7 +379,13 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {filteredUsers.length === 0 ? (
+                      {loadingUsers ? (
+                        <tr>
+                          <td colSpan={4} className="p-12 text-center text-muted-foreground font-bold text-sm">
+                            Loading users...
+                          </td>
+                        </tr>
+                      ) : users.length === 0 ? (
                         <tr>
                           <td colSpan={4} className="p-12 text-center">
                             <div className="flex flex-col items-center gap-3">
@@ -366,7 +397,7 @@ export default function AdminPage() {
                           </td>
                         </tr>
                       ) : (
-                        filteredUsers.map((u: any) => (
+                        users.map((u: any) => (
                           <tr key={u._id} className="hover:bg-muted/20 transition-colors group">
                             <td className="p-6">
                               <div className="flex items-center gap-4">
@@ -420,19 +451,49 @@ export default function AdminPage() {
                   </table>
                 </div>
 
-                {/* Results count */}
-                {(userSearch || roleFilter !== 'all') && filteredUsers.length > 0 && (
-                  <div className="px-6 py-3 border-t border-border bg-muted/20">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      Showing {filteredUsers.length} of {users.length} users
-                    </p>
-                  </div>
-                )}
+                {/* Results count and Pagination */}
+                <div className="px-6 py-4 border-t border-border bg-muted/20 flex items-center justify-between">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    Showing {users.length} {userTotal > users.length ? `of ${userTotal}` : ''} users {userSearch || roleFilter !== 'all' ? '(filtered)' : ''}
+                  </p>
+                  
+                  {userTotalPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setUserPage(userPage - 1)}
+                        disabled={userPage <= 1}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        Prev
+                      </button>
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-2">
+                        {userPage} / {userTotalPages}
+                      </span>
+                      <button
+                        onClick={() => setUserPage(userPage + 1)}
+                        disabled={userPage >= userTotalPages}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:border-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {tab === 'meetings' && (
-              <RecentMeetingsTable meetings={recentMeetings} />
+              <RecentMeetingsTable 
+                meetings={recentMeetings} 
+                currentPage={meetingPage}
+                totalPages={meetingTotalPages}
+                onPageChange={setMeetingPage}
+                search={meetingSearch}
+                onSearchChange={setMeetingSearch}
+                statusFilter={meetingStatusFilter}
+                onStatusFilterChange={setMeetingStatusFilter}
+                showFilters={true}
+              />
             )}
           </div>
         )}
