@@ -60,7 +60,7 @@ export const useWebRTC = ({
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const mySocketId = useRef<string>('');
-  
+
   // Ref mirrors so callbacks always see current values without stale closures.
   const audioEnabledRef = useRef(initialAudio);
   const videoEnabledRef = useRef(initialVideo);
@@ -97,7 +97,7 @@ export const useWebRTC = ({
 
     const next = !audioEnabledRef.current;
     audioTrack.enabled = next;         // ← keep the track alive for Deepgram
-    
+
     // Manage the Mediasoup producer
     const producer = audioProducerRef.current;
     if (producer) {
@@ -167,7 +167,7 @@ export const useWebRTC = ({
       // If we have a send transport, create a new producer for this track
       if (sendTransport && !videoProducerRef.current) {
         try {
-          const producer = await sendTransport.produce({ 
+          const producer = await sendTransport.produce({
             track: newTrack,
             encodings: [
               { maxBitrate: 100000, scaleResolutionDownBy: 4 },
@@ -178,13 +178,13 @@ export const useWebRTC = ({
             appData: { kind: 'video' }
           });
           videoProducerRef.current = producer;
-          
+
           producer.on('trackended', () => {
-             console.log('[WebRTC] Video track ended');
-             toggleVideo(); // automatically turn off if hardware is disconnected
+            console.log('[WebRTC] Video track ended');
+            toggleVideo(); // automatically turn off if hardware is disconnected
           });
           producer.on('transportclose', () => {
-             videoProducerRef.current = null;
+            videoProducerRef.current = null;
           });
         } catch (error) {
           console.error('[WebRTC] Failed to produce video', error);
@@ -298,7 +298,7 @@ export const useWebRTC = ({
 
     socket.on('room-joined', async ({ participants, routerRtpCapabilities, existingProducers }) => {
       console.log(`[WebRTC] Room joined. Participants: ${participants.length}`);
-      
+
       // Add existing participants to state (with empty streams initially)
       const initialPeers = new Map<string, Peer>();
       for (const p of participants) {
@@ -323,12 +323,12 @@ export const useWebRTC = ({
 
         // Create Transports
         await setupTransports(device);
-        
+
         // Consume existing producers
         if (existingProducers && existingProducers.length > 0) {
-           for (const producer of existingProducers) {
-             await consumeRemote(producer);
-           }
+          for (const producer of existingProducers) {
+            await consumeRemote(producer);
+          }
         }
       } catch (error) {
         console.error('[WebRTC] Failed to initialize Mediasoup', error);
@@ -385,10 +385,10 @@ export const useWebRTC = ({
       console.log(`[WebRTC] New remote producer: ${producerData.kind}`);
       await consumeRemote(producerData);
     });
-    
+
     socket.on('producerClosed', ({ producerId, socketId }) => {
       console.log(`[WebRTC] Remote producer closed: ${producerId}`);
-      
+
       // Find the consumer corresponding to this producer
       let targetConsumerId: string | null = null;
       for (const [id, consumer] of consumersRef.current.entries()) {
@@ -411,7 +411,7 @@ export const useWebRTC = ({
             }
             return next;
           });
-          
+
           consumer.close();
           consumersRef.current.delete(targetConsumerId);
         }
@@ -426,7 +426,7 @@ export const useWebRTC = ({
         ...sendTransportData,
         iceServers: sendTransportData.iceServers,
       });
-      
+
       sendTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
           await emitWithAck('connectWebRtcTransport', { roomId, transportId: sendTransport.id, dtlsParameters });
@@ -452,28 +452,28 @@ export const useWebRTC = ({
       });
 
       sendTransportRef.current = sendTransport;
-      
+
       // Start producing local media if any
       if (localStreamRef.current) {
         const audioTrack = localStreamRef.current.getAudioTracks()[0];
         if (audioTrack && audioEnabledRef.current) {
-           const producer = await sendTransport.produce({ track: audioTrack, appData: { kind: 'audio' } });
-           audioProducerRef.current = producer;
+          const producer = await sendTransport.produce({ track: audioTrack, appData: { kind: 'audio' } });
+          audioProducerRef.current = producer;
         }
-        
+
         const videoTrack = localStreamRef.current.getVideoTracks()[0];
         if (videoTrack && videoEnabledRef.current) {
-           const producer = await sendTransport.produce({
-             track: videoTrack,
-             encodings: [
-               { maxBitrate: 100000, scaleResolutionDownBy: 4 },
-               { maxBitrate: 300000, scaleResolutionDownBy: 2 },
-               { maxBitrate: 900000, scaleResolutionDownBy: 1 },
-             ],
-             codecOptions: { videoGoogleStartBitrate: 1000 },
-             appData: { kind: 'video' }
-           });
-           videoProducerRef.current = producer;
+          const producer = await sendTransport.produce({
+            track: videoTrack,
+            encodings: [
+              { maxBitrate: 100000, scaleResolutionDownBy: 4 },
+              { maxBitrate: 300000, scaleResolutionDownBy: 2 },
+              { maxBitrate: 900000, scaleResolutionDownBy: 1 },
+            ],
+            codecOptions: { videoGoogleStartBitrate: 1000 },
+            appData: { kind: 'video' }
+          });
+          videoProducerRef.current = producer;
         }
       }
 
@@ -483,7 +483,7 @@ export const useWebRTC = ({
         ...recvTransportData,
         iceServers: recvTransportData.iceServers,
       });
-      
+
       recvTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
           await emitWithAck('connectWebRtcTransport', { roomId, transportId: recvTransport.id, dtlsParameters });
@@ -492,79 +492,105 @@ export const useWebRTC = ({
           errback(error);
         }
       });
-      
+
       recvTransportRef.current = recvTransport;
+
+      sendTransport.on('connectionstatechange', async (state) => {
+        console.log('[WebRTC] send:', state);
+        if (state === 'disconnected' || state === 'failed') {
+          try {
+            const { iceParameters } = await emitWithAck('restartIce', { roomId, transportId: sendTransport.id });
+            await sendTransport.restartIce({ iceParameters });
+            console.log('[WebRTC] send transport ICE restarted');
+          } catch (err) {
+            console.error('[WebRTC] send ICE restart failed', err);
+          }
+        }
+      });
+
+      recvTransport.on('connectionstatechange', async (state) => {
+        console.log('[WebRTC] recv:', state);
+        if (state === 'disconnected' || state === 'failed') {
+          try {
+            const { iceParameters } = await emitWithAck('restartIce', { roomId, transportId: recvTransport.id });
+            await recvTransport.restartIce({ iceParameters });
+            console.log('[WebRTC] recv transport ICE restarted');
+          } catch (err) {
+            console.error('[WebRTC] recv ICE restart failed', err);
+          }
+        }
+      });
     };
-    
+
     // ── Helper: Consume Remote Producer ──────────────────────────────
     const consumeRemote = async (producerData: any) => {
       const device = deviceRef.current;
       const recvTransport = recvTransportRef.current;
       if (!device || !recvTransport) return;
-      
+
       const { producerId, socketId } = producerData;
-      
+
       try {
         const { id, kind, rtpParameters } = await emitWithAck('consume', {
-           roomId,
-           producerId,
-           rtpCapabilities: device.rtpCapabilities
+          roomId,
+          producerId,
+          rtpCapabilities: device.rtpCapabilities
         });
-        
+
         const consumer = await recvTransport.consume({
-           id,
-           producerId,
-           kind,
-           rtpParameters
+          id,
+          producerId,
+          kind,
+          rtpParameters
         });
-        
+
         consumersRef.current.set(consumer.id, consumer);
-        
+
         // Add the track to the corresponding peer's MediaStream
         setPeers(prev => {
-           const next = new Map(prev);
-           let peer = next.get(socketId);
-           if (!peer) {
-              // Should have been created by user-joined, but just in case
-              peer = {
-                 socketId,
-                 userId: producerData.userId || '',
-                 userName: producerData.userName || '',
-                 stream: new MediaStream(),
-                 audioEnabled: true,
-                 videoEnabled: true,
-                 raisedHand: false,
-              };
-           }
-           
-           peer.stream.addTrack(consumer.track);
-           next.set(socketId, { ...peer });
-           return next;
+          const next = new Map(prev);
+          let peer = next.get(socketId);
+          if (!peer) {
+            // Should have been created by user-joined, but just in case
+            peer = {
+              socketId,
+              userId: producerData.userId || '',
+              userName: producerData.userName || '',
+              stream: new MediaStream(),
+              audioEnabled: true,
+              videoEnabled: true,
+              raisedHand: false,
+            };
+          }
+
+          peer.stream.addTrack(consumer.track);
+          next.set(socketId, { ...peer });
+          return next;
         });
-        
+
         // The server creates consumers in "paused" state. Resume it.
         await emitWithAck('resumeConsumer', { roomId, consumerId: consumer.id });
         consumer.resume();
-        
+
       } catch (error) {
         console.error(`[WebRTC] Failed to consume producer ${producerId}`, error);
       }
     };
-    
+
     // ── Helper: Promise-wrapper for socket.emit ───────────────────────
     const emitWithAck = (event: string, data: any): Promise<any> => {
-       return new Promise((resolve, reject) => {
-          socket.emit(event, data, (response: any) => {
-             // If backend uses return statements without callbacks, nestjs typically
-             // sends { event: 'something', data: {...} } back via normal events, not ACKs.
-             // Wait, our backend returns objects. NestJS Gateway @SubscribeMessage returning an object 
-             // acts as an Acknowledgement.
-             if (response?.event === 'error') return reject(new Error(response.data?.message));
-             resolve(response?.data || response);
-          });
-       });
+      return new Promise((resolve, reject) => {
+        socket.emit(event, data, (response: any) => {
+          // If backend uses return statements without callbacks, nestjs typically
+          // sends { event: 'something', data: {...} } back via normal events, not ACKs.
+          // Wait, our backend returns objects. NestJS Gateway @SubscribeMessage returning an object 
+          // acts as an Acknowledgement.
+          if (response?.event === 'error') return reject(new Error(response.data?.message));
+          resolve(response?.data || response);
+        });
+      });
     };
-    
+
     // Workaround for NestJS not natively using socket.io ack callbacks 
     // when returning data from @SubscribeMessage. Actually, it DOES use ACK callbacks.
     // If a NestJS gateway returns a value from a method, it is sent as the ACK response.
@@ -582,7 +608,7 @@ export const useWebRTC = ({
 
       if (sendTransportRef.current) sendTransportRef.current.close();
       if (recvTransportRef.current) recvTransportRef.current.close();
-      
+
       consumersRef.current.forEach(c => c.close());
       consumersRef.current.clear();
 
@@ -608,9 +634,9 @@ export const useWebRTC = ({
 
     // Update Mediasoup Producer
     if (newTrack.kind === 'audio' && audioProducerRef.current) {
-       await audioProducerRef.current.replaceTrack({ track: newTrack });
+      await audioProducerRef.current.replaceTrack({ track: newTrack });
     } else if (newTrack.kind === 'video' && videoProducerRef.current) {
-       await videoProducerRef.current.replaceTrack({ track: newTrack });
+      await videoProducerRef.current.replaceTrack({ track: newTrack });
     }
   }, []);
 
