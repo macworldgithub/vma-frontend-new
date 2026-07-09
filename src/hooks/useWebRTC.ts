@@ -572,6 +572,26 @@ export const useWebRTC = ({
         await emitWithAck('resumeConsumer', { roomId, consumerId: consumer.id });
         consumer.resume();
 
+        if (kind === 'video') {
+          const statsInterval = setInterval(async () => {
+            try {
+              const stats = await consumer.getStats();
+              stats.forEach((r: any) => {
+                if (r.type === 'inbound-rtp' && r.kind === 'video') {
+                  console.log(
+                    `[Stats] video packetsLost=${r.packetsLost} jitter=${r.jitter} framesDropped=${r.framesDropped}`
+                  );
+                }
+              });
+            } catch (err) {
+              clearInterval(statsInterval); // consumer likely closed
+            }
+          }, 5000);
+
+          // Stop polling once this consumer closes, so it doesn't run forever
+          consumer.on('transportclose', () => clearInterval(statsInterval));
+          consumer.on('trackended', () => clearInterval(statsInterval));
+        }
       } catch (error) {
         console.error(`[WebRTC] Failed to consume producer ${producerId}`, error);
       }
