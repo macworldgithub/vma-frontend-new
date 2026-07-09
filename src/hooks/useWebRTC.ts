@@ -167,7 +167,16 @@ export const useWebRTC = ({
       // If we have a send transport, create a new producer for this track
       if (sendTransport && !videoProducerRef.current) {
         try {
-          const producer = await sendTransport.produce({ track: newTrack, appData: { kind: 'video' } });
+          const producer = await sendTransport.produce({ 
+            track: newTrack,
+            encodings: [
+              { maxBitrate: 100000, scaleResolutionDownBy: 4 },
+              { maxBitrate: 300000, scaleResolutionDownBy: 2 },
+              { maxBitrate: 900000, scaleResolutionDownBy: 1 },
+            ],
+            codecOptions: { videoGoogleStartBitrate: 1000 },
+            appData: { kind: 'video' }
+          });
           videoProducerRef.current = producer;
           
           producer.on('trackended', () => {
@@ -454,7 +463,16 @@ export const useWebRTC = ({
         
         const videoTrack = localStreamRef.current.getVideoTracks()[0];
         if (videoTrack && videoEnabledRef.current) {
-           const producer = await sendTransport.produce({ track: videoTrack, appData: { kind: 'video' } });
+           const producer = await sendTransport.produce({
+             track: videoTrack,
+             encodings: [
+               { maxBitrate: 100000, scaleResolutionDownBy: 4 },
+               { maxBitrate: 300000, scaleResolutionDownBy: 2 },
+               { maxBitrate: 900000, scaleResolutionDownBy: 1 },
+             ],
+             codecOptions: { videoGoogleStartBitrate: 1000 },
+             appData: { kind: 'video' }
+           });
            videoProducerRef.current = producer;
         }
       }
