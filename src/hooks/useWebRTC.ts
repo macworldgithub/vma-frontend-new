@@ -387,7 +387,10 @@ export const useWebRTC = ({
     const setupTransports = async (device: Device) => {
       // 1. Send Transport
       const sendTransportData = await emitWithAck('createWebRtcTransport', { roomId, direction: 'send' });
-      const sendTransport = device.createSendTransport(sendTransportData);
+      const sendTransport = device.createSendTransport({
+        ...sendTransportData,
+        iceServers: sendTransportData.iceServers,
+      });
       
       sendTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
@@ -432,7 +435,10 @@ export const useWebRTC = ({
 
       // 2. Receive Transport
       const recvTransportData = await emitWithAck('createWebRtcTransport', { roomId, direction: 'recv' });
-      const recvTransport = device.createRecvTransport(recvTransportData);
+      const recvTransport = device.createRecvTransport({
+        ...recvTransportData,
+        iceServers: recvTransportData.iceServers,
+      });
       
       recvTransport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
