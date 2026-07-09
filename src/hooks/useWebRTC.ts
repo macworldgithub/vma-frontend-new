@@ -379,8 +379,34 @@ export const useWebRTC = ({
     
     socket.on('producerClosed', ({ producerId, socketId }) => {
       console.log(`[WebRTC] Remote producer closed: ${producerId}`);
-      // The consumer transportclose/producerclose events usually handle cleanup, 
-      // but we can manually clean up here too if needed.
+      
+      // Find the consumer corresponding to this producer
+      let targetConsumerId: string | null = null;
+      for (const [id, consumer] of consumersRef.current.entries()) {
+        if (consumer.producerId === producerId) {
+          targetConsumerId = id;
+          break;
+        }
+      }
+
+      if (targetConsumerId) {
+        const consumer = consumersRef.current.get(targetConsumerId);
+        if (consumer) {
+          // Remove the track from the peer's stream so the UI updates
+          setPeers((prev) => {
+            const next = new Map(prev);
+            const peer = next.get(socketId);
+            if (peer) {
+              peer.stream.removeTrack(consumer.track);
+              next.set(socketId, { ...peer });
+            }
+            return next;
+          });
+          
+          consumer.close();
+          consumersRef.current.delete(targetConsumerId);
+        }
+      }
     });
 
     // ── Helper: Setup Transports ──────────────────────────────────────
