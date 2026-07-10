@@ -162,6 +162,7 @@ export default function MeetingRoomPage() {
     screenSharing,
     toggleScreenShare,
     screenShareError,
+    removePeer,
   } = useWebRTC({
     roomId,
     socket,
@@ -216,7 +217,8 @@ export default function MeetingRoomPage() {
   // this is just the client-side trigger)
   const kickParticipant = useCallback((targetUserId: string) => {
     socket?.emit('kick-participant', { roomId, targetUserId });
-  }, [socket, roomId]);
+    removePeer(targetUserId);
+  }, [socket, roomId, removePeer]);
 
   // Generate PDF report from transcript
   const generateReport = useCallback(async () => {

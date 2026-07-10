@@ -462,13 +462,27 @@ export const useWebRTC = ({
       });
     });
 
-    socket.on('user-left', ({ socketId }) => {
-      console.log('[WebRTC] user-left:', socketId);
+    socket.on('user-left', (payload) => {
+      console.log('[WebRTC] user-left:', payload);
       setPeers(prev => {
         const next = new Map(prev);
-        next.delete(socketId);
-        // Clean up any screen-share virtual peer this user may have had
-        next.delete(`${socketId}-screen`);
+        const socketId = typeof payload === 'string' ? payload : payload?.socketId;
+        const userId = payload?.userId;
+        
+        if (socketId) {
+          next.delete(socketId);
+          next.delete(`${socketId}-screen`);
+        }
+        
+        if (userId) {
+          for (const [key, peer] of next.entries()) {
+            if (peer.userId === userId) {
+              next.delete(key);
+              next.delete(`${key}-screen`);
+            }
+          }
+        }
+        
         return next;
       });
     });
@@ -794,6 +808,19 @@ export const useWebRTC = ({
     }
   }, []);
 
+  const removePeer = useCallback((targetUserId: string) => {
+    setPeers(prev => {
+      const next = new Map(prev);
+      for (const [key, peer] of next.entries()) {
+        if (peer.userId === targetUserId) {
+          next.delete(key);
+          next.delete(`${key}-screen`);
+        }
+      }
+      return next;
+    });
+  }, []);
+
   return {
     peers,
     localStream,
@@ -807,5 +834,6 @@ export const useWebRTC = ({
     screenSharing,
     toggleScreenShare,
     screenShareError,
+    removePeer,
   };
 };

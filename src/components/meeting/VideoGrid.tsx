@@ -164,11 +164,8 @@ ${isScreenShare
 
       {/* ── Raised-Hand Badge ─────────────────────────────────────────────── */}
       {raisedHand && (
-        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-amber-100 border border-amber-300 backdrop-blur-md shadow-md animate-bounce-subtle">
+        <div className="absolute top-4 left-4 flex items-center justify-center h-8 w-8 rounded-full bg-amber-100 border border-amber-300 backdrop-blur-md shadow-md animate-bounce-subtle z-10" title="Hand Raised">
           <Hand className="h-4 w-4 text-amber-600" />
-          <span className="text-[9px] font-black text-amber-800 uppercase tracking-widest">
-            Hand Raised
-          </span>
         </div>
       )}
 
@@ -268,7 +265,10 @@ export const VideoGrid = ({
   const screenPeer = peerArray.find(
     (p) => p.isScreenShare || p.socketId.endsWith('-screen')
   );
-  const cameraPeers = peerArray.filter((p) => p !== screenPeer);
+  // Filter out any invalid peers (e.g., zombie peers with no username and no tracks)
+  const cameraPeers = peerArray.filter(
+    (p) => p !== screenPeer && (p.userName || p.stream.getTracks().length > 0)
+  );
 
   // ── Spotlight layout: a screen share is active ─────────────────────────
   // The shared screen takes over the main viewing area (using object-contain
