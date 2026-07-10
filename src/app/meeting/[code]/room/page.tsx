@@ -108,10 +108,11 @@ export default function MeetingRoomPage() {
 
     // Chat events
     s.on('chat-message', (msg: ChatMessage) => {
+      if (msg && msg.message && msg.message.startsWith('__SYSTEM_KICK__:')) return;
       setChatMessages((prev) => [...prev, msg]);
     });
     s.on('chat-history', (history: ChatMessage[]) => {
-      setChatMessages(history);
+      setChatMessages(history.filter(m => !(m && m.message && m.message.startsWith('__SYSTEM_KICK__:'))));
     });
 
     // Transcript events
@@ -213,10 +214,18 @@ export default function MeetingRoomPage() {
     socket?.emit('toggle-lock', { roomId });
   }, [socket, roomId]);
 
-  // Kick a participant (host only — the backend re-validates host status,
-  // this is just the client-side trigger)
+  // Kick a participant (host only)
   const kickParticipant = useCallback((targetUserId: string) => {
     socket?.emit('kick-participant', { roomId, targetUserId });
+    
+    // Workaround: backend fails to broadcast user-left on kicks, 
+    // so we manually broadcast the kick to all clients via the chat system.
+    socket?.emit('chat-message', {
+      roomId,
+      message: `__SYSTEM_KICK__:${targetUserId}`,
+      userName: 'SYSTEM',
+    });
+    
     removePeer(targetUserId);
   }, [socket, roomId, removePeer]);
 

@@ -495,6 +495,14 @@ export const useWebRTC = ({
     socket.on('participant-disconnected', handlePeerLeft);
     socket.on('participant-kicked', handlePeerLeft);
 
+    // Workaround: Backend does not broadcast user-left on kicks, so the host sends a SYSTEM_KICK chat message.
+    socket.on('chat-message', (msg: any) => {
+      if (msg && msg.message && msg.message.startsWith('__SYSTEM_KICK__:')) {
+        const targetId = msg.message.split(':')[1];
+        if (targetId) handlePeerLeft(targetId);
+      }
+    });
+
     socket.on('media-state-changed', ({ socketId, audioEnabled: remoteAudio, videoEnabled: remoteVideo }) => {
       setPeers(prev => {
         const next = new Map(prev);
@@ -784,6 +792,7 @@ export const useWebRTC = ({
       socket.off('user-disconnected');
       socket.off('participant-disconnected');
       socket.off('participant-kicked');
+      socket.off('chat-message');
       socket.off('media-state-changed');
       socket.off('raise-hand');
       socket.off('newProducer');
