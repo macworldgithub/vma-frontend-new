@@ -285,24 +285,6 @@ export const ControlBar = ({
           {showMenu && (
             <div className="absolute bottom-20 right-0 w-48 bg-card border border-border rounded-2xl shadow-xl backdrop-blur-xl p-2 space-y-1">
               <MenuBtn
-                active={screenSharing}
-                onClick={() => {
-                  onToggleScreenShare();
-                  setShowMenu(false);
-                }}
-                label={screenSharing ? "Stop Sharing" : "Share Screen"}
-                accent={
-                  screenSharing ? "bg-primary/20 text-primary" : ""
-                }
-              >
-                {screenSharing ? (
-                  <MonitorOff className="h-4 w-4" />
-                ) : (
-                  <Monitor className="h-4 w-4" />
-                )}
-              </MenuBtn>
-
-              <MenuBtn
                 active={transcriptOpen}
                 onClick={() => {
                   onToggleTranscript();

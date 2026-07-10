@@ -100,31 +100,61 @@ const VideoTile = ({
   return (
     <div
       ref={tileRef}
-      className="relative rounded-3xl overflow-hidden bg-card border border-border flex items-center justify-center group transition-all duration-500 hover:border-primary/30 hover:shadow-xl h-full w-full"
+      className={`
+relative
+overflow-hidden
+flex
+items-center
+justify-center
+transition-all
+duration-500
+h-full
+w-full
+${isScreenShare
+          ? "rounded-none sm:rounded-3xl bg-black border-0"
+          : "rounded-3xl bg-card border border-border hover:border-primary/30 hover:shadow-xl"}
+`}
     >
       {!isLocal && stream && <audio ref={audioRef} autoPlay playsInline />}
 
       {videoEnabled && stream ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          key={`video-${socketId || 'local'}`}
-          className={`w-full h-full object-cover transition-transform duration-300 ${isLocal ? 'mirror' : ''} ${isScreenShare ? 'object-contain bg-black' : ''}`}
-          style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-          }}
-        />
+        <>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted={isLocal}
+            key={`video-${socketId || "local"}`}
+            className={[
+              "w-full",
+              "h-full",
+              "transition-transform",
+              "duration-300",
+              isScreenShare ? "object-contain bg-black" : "object-cover",
+              isLocal ? "mirror" : "",
+            ].join(" ")}
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+            }}
+          />
+
+          {isScreenShare && (
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-xs font-semibold text-white shadow-lg backdrop-blur-md">
+              <span className="text-base">🖥</span>
+              <span>{userName} is presenting</span>
+            </div>
+          )}
+        </>
       ) : (
-        <div className="flex flex-col items-center justify-center w-full h-full bg-muted/40">
+        <div className="flex h-full w-full flex-col items-center justify-center bg-muted/40">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl animate-pulse" />
-            <div className="relative h-20 w-20 rounded-2xl bg-card border border-border flex items-center justify-center text-3xl font-black text-primary italic shadow-md">
-              {userName?.[0]?.toUpperCase() || '?'}
+            <div className="absolute inset-0 animate-pulse rounded-full bg-primary/10 blur-2xl" />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-border bg-card text-3xl font-black italic text-primary shadow-md">
+              {userName?.[0]?.toUpperCase() || "?"}
             </div>
           </div>
-          <p className="mt-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+
+          <p className="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
             Camera Deactivated
           </p>
         </div>
@@ -141,62 +171,68 @@ const VideoTile = ({
       )}
 
       {/* ── Top Controls Overlay ──────────────────────────────────────────── */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
-        <button
-          onClick={zoomOut}
-          className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
-        >
-          <ZoomOut className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={zoomIn}
-          className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
-        >
-          <ZoomIn className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={toggleFullscreen}
-          className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
-        >
-          <Maximize2 className="h-3.5 w-3.5" />
-        </button>
-        {canKick && (
-          <button
-            onClick={handleKick}
-            title={`Remove ${userName}`}
-            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/90 text-rose-500 hover:text-white backdrop-blur-md border border-rose-500/20 shadow-sm transition-colors"
-          >
-            <UserMinus className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-
-      {/* ── Bottom Information Overlay ────────────────────────────────────── */}
-      <div className="absolute bottom-20 lg:bottom-6 left-4 right-4 flex items-center justify-between pointer-events-none">
-        <div className="glass px-4 py-2 rounded-2xl border border-border flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
-            <span className="text-[10px] font-black text-foreground uppercase italic tracking-wider">
-              {userName}
-              {isLocal && <span className="text-primary ml-1">(HOST)</span>}
-            </span>
+      {!isScreenShare && (
+        <>
+          <div className="absolute top-4 right-4 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+            <button
+              onClick={zoomOut}
+              className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
+            >
+              <ZoomOut className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={zoomIn}
+              className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
+            >
+              <ZoomIn className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 rounded-xl bg-white/70 hover:bg-white/95 text-foreground hover:text-primary backdrop-blur-md border border-border shadow-sm transition-colors"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+            {canKick && (
+              <button
+                onClick={handleKick}
+                title={`Remove ${userName}`}
+                className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/90 text-rose-500 hover:text-white backdrop-blur-md border border-rose-500/20 shadow-sm transition-colors"
+              >
+                <UserMinus className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {!isScreenShare && !audioEnabled && (
-            <div className="h-9 w-9 rounded-xl bg-rose-500/10 border border-rose-500/20 backdrop-blur-md flex items-center justify-center">
-              <MicOff className="h-4 w-4 text-rose-500" />
+        </>
+      )}
+      {/* ── Bottom Information Overlay ────────────────────────────────────── */}
+      {!isScreenShare && (
+        <>
+          <div className="absolute bottom-20 lg:bottom-6 left-4 right-4 flex items-center justify-between pointer-events-none">
+            <div className="glass px-4 py-2 rounded-2xl border border-border flex items-center gap-3 backdrop-blur-xl pointer-events-auto">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
+                <span className="text-[10px] font-black text-foreground uppercase italic tracking-wider">
+                  {userName}
+                  {isLocal && <span className="text-primary ml-1">(HOST)</span>}
+                </span>
+              </div>
             </div>
-          )}
-          {!isScreenShare && !videoEnabled && (
-            <div className="h-9 w-9 rounded-xl bg-muted border border-border backdrop-blur-md flex items-center justify-center">
-              <VideoOff className="h-4 w-4 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-      </div>
 
+            <div className="flex items-center gap-2 pointer-events-auto">
+              {!isScreenShare && !audioEnabled && (
+                <div className="h-9 w-9 rounded-xl bg-rose-500/10 border border-rose-500/20 backdrop-blur-md flex items-center justify-center">
+                  <MicOff className="h-4 w-4 text-rose-500" />
+                </div>
+              )}
+              {!isScreenShare && !videoEnabled && (
+                <div className="h-9 w-9 rounded-xl bg-muted border border-border backdrop-blur-md flex items-center justify-center">
+                  <VideoOff className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
       {/* Active Speaker Border */}
       <div className="absolute inset-0 border-2 border-primary opacity-0 pointer-events-none transition-opacity duration-300 rounded-3xl" />
     </div>
@@ -231,8 +267,8 @@ export const VideoGrid = ({
   // grid, which previously squeezed the screen share into one small cell.
   if (screenPeer) {
     return (
-      <div className="h-full w-full p-2 sm:p-4 md:p-6 bg-background overflow-hidden flex flex-col gap-2 sm:gap-3">
-        <div className="flex-1 min-h-0">
+      <div className="h-full w-full bg-background overflow-hidden flex flex-col p-0 sm:p-3 md:p-6 gap-2">
+        <div className="flex-1 min-h-0 flex items-center justify-center bg-black rounded-none sm:rounded-3xl overflow-hidden">
           <VideoTile
             stream={screenPeer.stream}
             userName={screenPeer.userName}
@@ -243,8 +279,8 @@ export const VideoGrid = ({
           />
         </div>
 
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto shrink-0 h-20 sm:h-24 md:h-28">
-          <div className="h-full aspect-video shrink-0">
+        <div className="flex gap-2 overflow-x-auto overflow-y-hidden shrink-0 h-14 sm:h-20 md:h-28 px-2 pb-2">
+          <div className="h-full aspect-[16/9] shrink-0">
             <VideoTile
               stream={localStream}
               userName={localUserName}
@@ -256,7 +292,7 @@ export const VideoGrid = ({
           </div>
 
           {cameraPeers.map((peer) => (
-            <div key={peer.socketId} className="h-full aspect-video shrink-0">
+            <div key={peer.socketId} className="h-full aspect-[16/9] shrink-0">
               <VideoTile
                 stream={peer.stream}
                 userName={peer.userName}
