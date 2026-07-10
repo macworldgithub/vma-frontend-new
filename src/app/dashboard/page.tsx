@@ -11,10 +11,12 @@ import { MeetingCard } from '@/components/dashboard/MeetingCard';
 import { NewMeetingModal } from '@/components/dashboard/NewMeetingModal';
 import { meetingService } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const [meetings, setMeetings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +26,14 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'SCHEDULED' | 'LIVE'>('ALL');
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('meetingLocked') === 'true') {
+      toast.error(
+        'This meeting is currently locked. Please wait for the host to unlock it.'
+      );
+    }
+  }, [searchParams]);
 
   const fetchMeetings = async () => {
     setIsLoading(true);
@@ -172,11 +182,10 @@ export default function DashboardPage() {
           <div className="relative">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${
-                showFilters || statusFilter !== 'ALL'
-                  ? 'bg-primary/10 border-primary/30 text-primary'
-                  : 'bg-white border-border text-foreground hover:text-primary'
-              }`}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border text-[8px] sm:text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${showFilters || statusFilter !== 'ALL'
+                ? 'bg-primary/10 border-primary/30 text-primary'
+                : 'bg-white border-border text-foreground hover:text-primary'
+                }`}
             >
               <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               FILTERS
@@ -201,11 +210,10 @@ export default function DashboardPage() {
                         setStatusFilter(status);
                         setShowFilters(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                        statusFilter === status
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                      }`}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === status
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        }`}
                     >
                       {status === 'ALL' ? 'All Sessions' : status}
                     </button>
