@@ -25,6 +25,7 @@ interface Peer {
   audioEnabled: boolean;
   videoEnabled: boolean;
   raisedHand?: boolean;
+  isScreenShare?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -49,6 +50,12 @@ export const useWebRTC = ({
   // after initialisation. Deepgram's useEffect depends on this reference; it
   // must not be replaced when we swap tracks in/out.
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+
+  // Screen-share state
+  const [screenSharing, setScreenSharing] = useState(false);
+  const screenSharingRef = useRef(false);
+  const screenProducerRef = useRef<Producer | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
 
   // Mediasoup state
   const deviceRef = useRef<Device | null>(null);
@@ -207,6 +214,80 @@ export const useWebRTC = ({
   }, [roomId, emitMediaState]);
 
   // ---------------------------------------------------------------------------
+  // toggleScreenShare
+  // ---------------------------------------------------------------------------
+  // NOTE: we branch on screenSharingRef (not the `screenSharing` state) so that
+  // the `track.onended` callback below — which fires when the browser's native
+  // "Stop sharing" UI is used — always sees the current value instead of the
+  // stale one captured when this callback was created.
+  const toggleScreenShare = useCallback(async () => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    // ── Turning screen share OFF ───────────────────────────────────────────
+    if (screenSharingRef.current) {
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
+
+      const producer = screenProducerRef.current;
+      if (producer) {
+        producer.close();
+        screenProducerRef.current = null;
+        socket.emit('closeProducer', { roomId, producerId: producer.id });
+      }
+
+      screenSharingRef.current = false;
+      setScreenSharing(false);
+      return;
+    }
+
+    // ── Turning screen share ON ────────────────────────────────────────────
+    const sendTransport = sendTransportRef.current;
+    if (!sendTransport) {
+      console.warn('[WebRTC] toggleScreenShare: send transport not ready yet');
+      return;
+    }
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    } catch (err) {
+      console.log('[WebRTC] Screen share cancelled by user');
+      return;
+    }
+
+    const track = stream.getVideoTracks()[0];
+    screenStreamRef.current = stream;
+
+    try {
+      const producer = await sendTransport.produce({
+        track,
+        encodings: [{ maxBitrate: 1_500_000 }],
+        appData: { kind: 'screen' },
+      });
+      screenProducerRef.current = producer;
+
+      // Fires when the user stops sharing via the browser's native control
+      // (e.g. the "Stop sharing" bar) rather than our own UI button.
+      track.onended = () => {
+        toggleScreenShare();
+      };
+
+      producer.on('transportclose', () => {
+        screenProducerRef.current = null;
+      });
+
+      screenSharingRef.current = true;
+      setScreenSharing(true);
+    } catch (error) {
+      console.error('[WebRTC] Failed to produce screen share', error);
+      stream.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
+
+  // ---------------------------------------------------------------------------
   // Raise hand
   // ---------------------------------------------------------------------------
   const toggleRaiseHand = useCallback(() => {
@@ -359,6 +440,8 @@ export const useWebRTC = ({
       setPeers(prev => {
         const next = new Map(prev);
         next.delete(socketId);
+        // Clean up any screen-share virtual peer this user may have had
+        next.delete(`${socketId}-screen`);
         return next;
       });
     });
@@ -382,7 +465,7 @@ export const useWebRTC = ({
     });
 
     socket.on('newProducer', async (producerData) => {
-      console.log(`[WebRTC] New remote producer: ${producerData.kind}`);
+      console.log(`[WebRTC] New remote producer: ${producerData.kind}`, producerData.appData);
       await consumeRemote(producerData);
     });
 
@@ -401,9 +484,20 @@ export const useWebRTC = ({
       if (targetConsumerId) {
         const consumer = consumersRef.current.get(targetConsumerId);
         if (consumer) {
-          // Remove the track from the peer's stream so the UI updates
           setPeers((prev) => {
             const next = new Map(prev);
+
+            // If this producer belonged to a screen-share virtual peer,
+            // remove the whole virtual tile rather than just the track.
+            const screenKey = `${socketId}-screen`;
+            const screenPeer = next.get(screenKey);
+            if (screenPeer && screenPeer.stream.getTracks().includes(consumer.track)) {
+              next.delete(screenKey);
+              return next;
+            }
+
+            // Otherwise remove the track from the peer's (camera) stream so
+            // the UI updates.
             const peer = next.get(socketId);
             if (peer) {
               peer.stream.removeTrack(consumer.track);
@@ -528,7 +622,11 @@ export const useWebRTC = ({
       const recvTransport = recvTransportRef.current;
       if (!device || !recvTransport) return;
 
-      const { producerId, socketId } = producerData;
+      const { producerId, socketId, appData } = producerData;
+      const isScreen = appData?.kind === 'screen';
+      // Screen shares get their own "virtual peer" tile so they render
+      // separately from the presenter's camera feed in the VideoGrid.
+      const peerKey = isScreen ? `${socketId}-screen` : socketId;
 
       try {
         const { id, kind, rtpParameters } = await emitWithAck('consume', {
@@ -549,22 +647,25 @@ export const useWebRTC = ({
         // Add the track to the corresponding peer's MediaStream
         setPeers(prev => {
           const next = new Map(prev);
-          let peer = next.get(socketId);
+          let peer = next.get(peerKey);
           if (!peer) {
-            // Should have been created by user-joined, but just in case
+            const basePeer = next.get(socketId);
             peer = {
-              socketId,
-              userId: producerData.userId || '',
-              userName: producerData.userName || '',
+              socketId: peerKey,
+              userId: producerData.userId || basePeer?.userId || '',
+              userName: isScreen
+                ? `${producerData.userName || basePeer?.userName || 'Someone'}'s screen`
+                : (producerData.userName || ''),
               stream: new MediaStream(),
               audioEnabled: true,
               videoEnabled: true,
               raisedHand: false,
+              isScreenShare: isScreen,
             };
           }
 
           peer.stream.addTrack(consumer.track);
-          next.set(socketId, { ...peer });
+          next.set(peerKey, { ...peer });
           return next;
         });
 
@@ -634,6 +735,12 @@ export const useWebRTC = ({
 
       localStreamRef.current?.getTracks().forEach(t => t.stop());
       localStreamRef.current = null;
+
+      // Screen share cleanup
+      screenStreamRef.current?.getTracks().forEach(t => t.stop());
+      screenStreamRef.current = null;
+      screenProducerRef.current = null;
+      screenSharingRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, roomId, userId, userName, initialAudio, initialVideo]);
@@ -670,5 +777,7 @@ export const useWebRTC = ({
     updateLocalStreamTrack,
     raisedHand,
     toggleRaiseHand,
+    screenSharing,
+    toggleScreenShare,
   };
 };

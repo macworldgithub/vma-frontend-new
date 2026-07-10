@@ -62,7 +62,6 @@ export default function MeetingRoomPage() {
     }
     return true;
   });
-  const [screenSharing, setScreenSharing] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showCopied, setShowCopied] = useState(false);
@@ -72,7 +71,6 @@ export default function MeetingRoomPage() {
   const [transcripts, setTranscripts] = useState<any[]>([]);
   const [activeSubtitle, setActiveSubtitle] = useState({ speaker: '', text: '' });
 
-  const screenStreamRef = useRef<MediaStream | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
   // Fetch meeting info
@@ -152,15 +150,17 @@ export default function MeetingRoomPage() {
     };
   }, [token, roomId]);
 
-  const { 
-    peers, 
-    localStream, 
-    raisedHand, 
+  const {
+    peers,
+    localStream,
+    raisedHand,
     toggleRaiseHand,
     audioEnabled,
     videoEnabled,
     toggleAudio,
-    toggleVideo
+    toggleVideo,
+    screenSharing,
+    toggleScreenShare,
   } = useWebRTC({
     roomId,
     socket,
@@ -181,30 +181,6 @@ export default function MeetingRoomPage() {
     localStream,
     hasPeers: true, // Always enable transcription, even if testing alone
   });
-
-
-
-  // Toggle screen share
-  const toggleScreenShare = useCallback(async () => {
-    if (screenSharing) {
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-      socket?.emit('screen-share-stop', { roomId });
-      setScreenSharing(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        screenStreamRef.current = stream;
-        socket?.emit('screen-share-start', { roomId });
-        setScreenSharing(true);
-        stream.getVideoTracks()[0].onended = () => {
-          socket?.emit('screen-share-stop', { roomId });
-          setScreenSharing(false);
-        };
-      } catch {
-        console.log('Screen share cancelled');
-      }
-    }
-  }, [screenSharing, socket, roomId]);
 
   // Send chat
   const sendChat = useCallback((message: string) => {
@@ -235,22 +211,17 @@ export default function MeetingRoomPage() {
     socket?.emit('toggle-lock', { roomId });
   }, [socket, roomId]);
 
+  // Kick a participant (host only — the backend re-validates host status,
+  // this is just the client-side trigger)
+  const kickParticipant = useCallback((targetUserId: string) => {
+    socket?.emit('kick-participant', { roomId, targetUserId });
+  }, [socket, roomId]);
+
   // Generate PDF report from transcript
   const generateReport = useCallback(async () => {
     if (reportLoading) return;
     setReportLoading(true);
     try {
-      // Build a formatted transcript string from all transcript blocks
-      // const transcriptText = transcripts
-      //   .map(
-      //     (t) =>
-      //       `[${new Date(t.timestamp).toLocaleTimeString([], {
-      //         hour: '2-digit',
-      //         minute: '2-digit',
-      //       })}] ${t.userName}: ${t.text}`
-      //   )
-      //   .join('\n');
-
       const transcriptText =
         transcripts.length > 0
           ? transcripts
@@ -423,6 +394,8 @@ export default function MeetingRoomPage() {
             localAudioEnabled={audioEnabled}
             localVideoEnabled={videoEnabled}
             localRaisedHand={raisedHand}
+            isHost={isHost}
+            onKickParticipant={kickParticipant}
           />
         </div>
         {chatOpen && (

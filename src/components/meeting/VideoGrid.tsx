@@ -7,7 +7,8 @@ import {
   Maximize2,
   ZoomIn,
   ZoomOut,
-  Hand
+  Hand,
+  UserMinus,
 } from 'lucide-react';
 
 interface Peer {
@@ -18,6 +19,7 @@ interface Peer {
   audioEnabled: boolean;
   videoEnabled: boolean;
   raisedHand?: boolean;
+  isScreenShare?: boolean;
 }
 
 interface VideoGridProps {
@@ -26,7 +28,9 @@ interface VideoGridProps {
   localUserName: string;
   localAudioEnabled: boolean;
   localVideoEnabled: boolean;
-  localRaisedHand?: boolean; // <-- ADD THIS
+  localRaisedHand?: boolean;
+  isHost?: boolean;
+  onKickParticipant?: (targetUserId: string) => void;
 }
 
 // ─── VideoTile ────────────────────────────────────────────────────────────────
@@ -38,7 +42,11 @@ const VideoTile = ({
   videoEnabled,
   isLocal,
   socketId,
-  raisedHand, // <-- NOW DESTRUCTURED
+  userId,
+  raisedHand,
+  isScreenShare,
+  canKick,
+  onKick,
 }: {
   stream: MediaStream | null;
   userName: string;
@@ -46,7 +54,11 @@ const VideoTile = ({
   videoEnabled: boolean;
   isLocal?: boolean;
   socketId?: string;
+  userId?: string;
   raisedHand?: boolean;
+  isScreenShare?: boolean;
+  canKick?: boolean;
+  onKick?: (targetUserId: string) => void;
 }) => {
   const [zoom, setZoom] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -78,6 +90,13 @@ const VideoTile = ({
   const zoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
   const zoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 1));
 
+  const handleKick = () => {
+    if (!userId || !onKick) return;
+    if (window.confirm(`Remove ${userName} from the meeting?`)) {
+      onKick(userId);
+    }
+  };
+
   return (
     <div
       ref={tileRef}
@@ -92,7 +111,7 @@ const VideoTile = ({
           playsInline
           muted
           key={`video-${socketId || 'local'}`}
-          className={`w-full h-full object-cover transition-transform duration-300 ${isLocal ? 'mirror' : ''}`}
+          className={`w-full h-full object-cover transition-transform duration-300 ${isLocal ? 'mirror' : ''} ${isScreenShare ? 'object-contain bg-black' : ''}`}
           style={{
             transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
           }}
@@ -141,6 +160,15 @@ const VideoTile = ({
         >
           <Maximize2 className="h-3.5 w-3.5" />
         </button>
+        {canKick && (
+          <button
+            onClick={handleKick}
+            title={`Remove ${userName}`}
+            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/90 text-rose-500 hover:text-white backdrop-blur-md border border-rose-500/20 shadow-sm transition-colors"
+          >
+            <UserMinus className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {/* ── Bottom Information Overlay ────────────────────────────────────── */}
@@ -156,12 +184,12 @@ const VideoTile = ({
         </div>
 
         <div className="flex items-center gap-2 pointer-events-auto">
-          {!audioEnabled && (
+          {!isScreenShare && !audioEnabled && (
             <div className="h-9 w-9 rounded-xl bg-rose-500/10 border border-rose-500/20 backdrop-blur-md flex items-center justify-center">
               <MicOff className="h-4 w-4 text-rose-500" />
             </div>
           )}
-          {!videoEnabled && (
+          {!isScreenShare && !videoEnabled && (
             <div className="h-9 w-9 rounded-xl bg-muted border border-border backdrop-blur-md flex items-center justify-center">
               <VideoOff className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -184,6 +212,8 @@ export const VideoGrid = ({
   localAudioEnabled,
   localVideoEnabled,
   localRaisedHand,
+  isHost,
+  onKickParticipant,
 }: VideoGridProps) => {
   const peerArray = Array.from(peers.values());
   const participants = [null, ...peerArray];
@@ -214,17 +244,28 @@ export const VideoGrid = ({
           raisedHand={localRaisedHand}
         />
 
-        {peerArray.map((peer) => (
-          <VideoTile
-            key={peer.socketId}
-            stream={peer.stream}
-            userName={peer.userName}
-            audioEnabled={peer.audioEnabled}
-            videoEnabled={peer.videoEnabled}
-            socketId={peer.socketId}
-            raisedHand={peer.raisedHand} // <-- ALREADY CORRECT, now actually renders
-          />
-        ))}
+        {peerArray.map((peer) => {
+          // Screen-share tiles are "virtual peers" whose socketId ends with
+          // "-screen" — they don't represent a kickable participant, so we
+          // never show mic/camera icons or a kick button on them.
+          const isScreenTile = peer.isScreenShare || peer.socketId.endsWith('-screen');
+
+          return (
+            <VideoTile
+              key={peer.socketId}
+              stream={peer.stream}
+              userName={peer.userName}
+              audioEnabled={peer.audioEnabled}
+              videoEnabled={peer.videoEnabled}
+              socketId={peer.socketId}
+              userId={peer.userId}
+              raisedHand={peer.raisedHand}
+              isScreenShare={isScreenTile}
+              canKick={Boolean(isHost && !isScreenTile && onKickParticipant)}
+              onKick={onKickParticipant}
+            />
+          );
+        })}
       </div>
     </div>
   );
