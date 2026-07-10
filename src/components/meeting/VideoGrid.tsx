@@ -41,6 +41,7 @@ const VideoTile = ({
   audioEnabled,
   videoEnabled,
   isLocal,
+  isHost,
   socketId,
   userId,
   raisedHand,
@@ -53,6 +54,7 @@ const VideoTile = ({
   audioEnabled: boolean;
   videoEnabled: boolean;
   isLocal?: boolean;
+  isHost?: boolean;
   socketId?: string;
   userId?: string;
   raisedHand?: boolean;
@@ -213,7 +215,15 @@ ${isScreenShare
                 <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
                 <span className="text-[10px] font-black text-foreground uppercase italic tracking-wider">
                   {userName}
-                  {isLocal && <span className="text-primary ml-1">(HOST)</span>}
+
+                  {isLocal && (
+                    <span
+                      className={`ml-2 ${isHost ? "text-primary" : "text-muted-foreground"
+                        }`}
+                    >
+                      ({isHost ? "HOST" : "PARTICIPANT"})
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
@@ -287,6 +297,7 @@ export const VideoGrid = ({
               audioEnabled={localAudioEnabled}
               videoEnabled={localVideoEnabled}
               isLocal
+              isHost={isHost}
               raisedHand={localRaisedHand}
             />
           </div>
@@ -337,6 +348,7 @@ export const VideoGrid = ({
           audioEnabled={localAudioEnabled}
           videoEnabled={localVideoEnabled}
           isLocal
+          isHost={isHost}
           raisedHand={localRaisedHand}
         />
 
