@@ -462,30 +462,38 @@ export const useWebRTC = ({
       });
     });
 
-    socket.on('user-left', (payload) => {
-      console.log('[WebRTC] user-left:', payload);
+    const handlePeerLeft = (payload: any) => {
+      console.log('[WebRTC] peer left event:', payload);
       setPeers(prev => {
         const next = new Map(prev);
-        const socketId = typeof payload === 'string' ? payload : payload?.socketId;
-        const userId = payload?.userId;
-        
-        if (socketId) {
-          next.delete(socketId);
-          next.delete(`${socketId}-screen`);
+        let idToRemove = null;
+        if (typeof payload === 'string') {
+          idToRemove = payload;
+        } else if (payload) {
+          idToRemove = payload.socketId || payload.userId || payload.peerId || payload.id || payload.participantId || payload.targetUserId;
         }
         
-        if (userId) {
+        if (idToRemove) {
+          next.delete(idToRemove);
+          next.delete(`${idToRemove}-screen`);
+          
           for (const [key, peer] of next.entries()) {
-            if (peer.userId === userId) {
+            if (peer.socketId === idToRemove || peer.userId === idToRemove) {
               next.delete(key);
               next.delete(`${key}-screen`);
             }
           }
         }
-        
         return next;
       });
-    });
+    };
+
+    socket.on('user-left', handlePeerLeft);
+    socket.on('participant-left', handlePeerLeft);
+    socket.on('peer-left', handlePeerLeft);
+    socket.on('user-disconnected', handlePeerLeft);
+    socket.on('participant-disconnected', handlePeerLeft);
+    socket.on('participant-kicked', handlePeerLeft);
 
     socket.on('media-state-changed', ({ socketId, audioEnabled: remoteAudio, videoEnabled: remoteVideo }) => {
       setPeers(prev => {
@@ -771,6 +779,11 @@ export const useWebRTC = ({
       socket.off('room-joined');
       socket.off('user-joined');
       socket.off('user-left');
+      socket.off('participant-left');
+      socket.off('peer-left');
+      socket.off('user-disconnected');
+      socket.off('participant-disconnected');
+      socket.off('participant-kicked');
       socket.off('media-state-changed');
       socket.off('raise-hand');
       socket.off('newProducer');
