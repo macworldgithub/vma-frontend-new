@@ -265,9 +265,9 @@ export const VideoGrid = ({
   const screenPeer = peerArray.find(
     (p) => p.isScreenShare || p.socketId.endsWith('-screen')
   );
-  // Filter out any invalid peers (e.g., zombie peers with no username and no tracks)
+  // Filter out any invalid peers (e.g., zombie peers with no username)
   const cameraPeers = peerArray.filter(
-    (p) => p !== screenPeer && (p.userName || p.stream.getTracks().length > 0)
+    (p) => p !== screenPeer && p.userName && p.userName.trim().length > 0
   );
 
   // ── Spotlight layout: a screen share is active ─────────────────────────

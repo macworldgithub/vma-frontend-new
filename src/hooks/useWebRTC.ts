@@ -691,12 +691,20 @@ export const useWebRTC = ({
           let peer = next.get(peerKey);
           if (!peer) {
             const basePeer = next.get(socketId);
+            
+            // If the base peer no longer exists (e.g., they left or were kicked 
+            // while we were waiting for the consume ack), abort creating a ghost peer.
+            if (!basePeer) {
+              console.warn('[WebRTC] Aborting track add; base peer not found:', socketId);
+              return next;
+            }
+
             peer = {
               socketId: peerKey,
-              userId: producerData.userId || basePeer?.userId || '',
+              userId: producerData.userId || basePeer.userId || '',
               userName: isScreen
-                ? `${producerData.userName || basePeer?.userName || 'Someone'}'s screen`
-                : (producerData.userName || ''),
+                ? `${producerData.userName || basePeer.userName || 'Someone'}'s screen`
+                : (producerData.userName || basePeer.userName || ''),
               stream: new MediaStream(),
               audioEnabled: true,
               videoEnabled: true,
