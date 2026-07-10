@@ -8,7 +8,8 @@ import {
   Copy, Check, ExternalLink, XCircle, CheckCircle2,
   MessageSquare, CalendarDays, Trash2, Shield, Calendar,
   Play, Users, Lock, Unlock, Sparkles, Send, UserCheck,
-  Plus
+  Plus,
+  FileDown
 } from 'lucide-react';
 import { meetingService, Meeting } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
@@ -153,6 +154,60 @@ export default function MyMeetingsPage() {
     });
   };
 
+  const handleDownloadReport = async (meeting: Meeting) => {
+    try {
+      const { messages } = await meetingService.getChatHistory(meeting._id);
+
+      const transcriptText =
+        messages.length > 0
+          ? messages
+            .map(
+              (m: any) =>
+                `[${new Date(m.sentAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}] ${m.userName}: ${m.message}`
+            )
+            .join("\n")
+          : "No messages available.";
+
+      const response = await fetch(
+        "https://vma-microservice.omnisuiteai.com/report/pdf",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            transcript: transcriptText,
+            meeting_title: meeting.title,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to generate report");
+      }
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${meeting.title}-Report.pdf`;
+
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate meeting report.");
+    }
+  };
+
   return (
     <div className="space-y-10 pb-20 relative min-h-screen">
 
@@ -295,16 +350,28 @@ export default function MyMeetingsPage() {
                   <div className="flex gap-2">
 
                     {/* View Chat Action for Completed Meetings */}
-                    {meeting.status === 'ENDED' && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => loadChatHistory(meeting)}
-                        className="rounded-lg sm:rounded-xl px-2.5 sm:px-3 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase border border-border bg-muted/50"
-                      >
-                        <MessageSquare className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
-                        TELEMETRY
-                      </Button>
+                    {meeting.status === "ENDED" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadReport(meeting)}
+                          className="rounded-lg sm:rounded-xl px-2.5 sm:px-3 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary"
+                        >
+                          <FileDown className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                          REPORT
+                        </Button>
+
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => loadChatHistory(meeting)}
+                          className="rounded-lg sm:rounded-xl px-2.5 sm:px-3 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase border border-border bg-muted/50"
+                        >
+                          <MessageSquare className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                          TELEMETRY
+                        </Button>
+                      </>
                     )}
 
                     {/* Join / Start Actions */}
