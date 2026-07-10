@@ -133,8 +133,8 @@ export const ControlBar = ({
   );
 
   return (
-    <div className="absolute bottom-1 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[95%] sm:w-auto">
-      <div className="glass px-3 sm:px-8 py-2.5 sm:py-4 rounded-[20px] sm:rounded-[32px] flex items-center gap-2 sm:gap-3 md:gap-6 border border-border shadow-xl backdrop-blur-2xl pointer-events-auto">
+    <div className="absolute bottom-1 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-max max-w-[95vw]">
+      <div className="glass px-2 xs:px-3 sm:px-8 py-2.5 sm:py-4 rounded-[20px] sm:rounded-[32px] flex items-center justify-center gap-1.5 xs:gap-2 sm:gap-3 md:gap-6 border border-border shadow-xl backdrop-blur-2xl pointer-events-auto">
         {/* Media Controls Group - Left Side */}
         <div className="flex items-center gap-2 sm:gap-4">
           <ControlBtn
@@ -272,7 +272,7 @@ export const ControlBar = ({
         </div>
 
 
-        <div className="lg:hidden relative md:ml-auto">
+        <div className="lg:hidden relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl flex items-center justify-center bg-muted border border-border text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all backdrop-blur-xl"
