@@ -161,6 +161,7 @@ export default function MeetingRoomPage() {
     toggleVideo,
     screenSharing,
     toggleScreenShare,
+    screenShareError,
   } = useWebRTC({
     roomId,
     socket,
@@ -283,6 +284,17 @@ export default function MeetingRoomPage() {
     }
   }, [kicked, router]);
 
+  // Auto-dismiss the screen-share error banner after a few seconds
+  const [showScreenShareError, setShowScreenShareError] = useState(false);
+  useEffect(() => {
+    if (screenShareError) {
+      setShowScreenShareError(true);
+      const timeout = setTimeout(() => setShowScreenShareError(false), 5000);
+      return () => clearTimeout(timeout);
+    }
+    setShowScreenShareError(false);
+  }, [screenShareError]);
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
@@ -383,6 +395,11 @@ export default function MeetingRoomPage() {
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-full border-primary/30 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-300">
           <Shield className="h-4 w-4" />
           Secure Link Copied
+        </div>
+      )}
+      {showScreenShareError && screenShareError && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-2xl border-rose-500/30 bg-rose-500/10 text-rose-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 max-w-[90vw] text-center animate-in slide-in-from-top-4 fade-in duration-300">
+          {screenShareError}
         </div>
       )}
       <div className="flex-1 flex overflow-hidden relative">

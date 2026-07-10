@@ -216,7 +216,67 @@ export const VideoGrid = ({
   onKickParticipant,
 }: VideoGridProps) => {
   const peerArray = Array.from(peers.values());
-  const participants = [null, ...peerArray];
+
+  // Screen-share tiles are "virtual peers" whose socketId ends with
+  // "-screen" — they don't represent a kickable participant.
+  const screenPeer = peerArray.find(
+    (p) => p.isScreenShare || p.socketId.endsWith('-screen')
+  );
+  const cameraPeers = peerArray.filter((p) => p !== screenPeer);
+
+  // ── Spotlight layout: a screen share is active ─────────────────────────
+  // The shared screen takes over the main viewing area (using object-contain
+  // so nothing is cropped), and everyone's camera — including local — drops
+  // into a scrollable filmstrip below/beside it. This replaces the equal-size
+  // grid, which previously squeezed the screen share into one small cell.
+  if (screenPeer) {
+    return (
+      <div className="h-full w-full p-2 sm:p-4 md:p-6 bg-background overflow-hidden flex flex-col gap-2 sm:gap-3">
+        <div className="flex-1 min-h-0">
+          <VideoTile
+            stream={screenPeer.stream}
+            userName={screenPeer.userName}
+            audioEnabled={screenPeer.audioEnabled}
+            videoEnabled={screenPeer.videoEnabled}
+            socketId={screenPeer.socketId}
+            isScreenShare
+          />
+        </div>
+
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto shrink-0 h-20 sm:h-24 md:h-28">
+          <div className="h-full aspect-video shrink-0">
+            <VideoTile
+              stream={localStream}
+              userName={localUserName}
+              audioEnabled={localAudioEnabled}
+              videoEnabled={localVideoEnabled}
+              isLocal
+              raisedHand={localRaisedHand}
+            />
+          </div>
+
+          {cameraPeers.map((peer) => (
+            <div key={peer.socketId} className="h-full aspect-video shrink-0">
+              <VideoTile
+                stream={peer.stream}
+                userName={peer.userName}
+                audioEnabled={peer.audioEnabled}
+                videoEnabled={peer.videoEnabled}
+                socketId={peer.socketId}
+                userId={peer.userId}
+                raisedHand={peer.raisedHand}
+                canKick={Boolean(isHost && onKickParticipant)}
+                onKick={onKickParticipant}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Standard grid layout: no active screen share ───────────────────────
+  const participants = [null, ...cameraPeers];
   const count = participants.length;
 
   const getGridCols = () => {
@@ -244,28 +304,20 @@ export const VideoGrid = ({
           raisedHand={localRaisedHand}
         />
 
-        {peerArray.map((peer) => {
-          // Screen-share tiles are "virtual peers" whose socketId ends with
-          // "-screen" — they don't represent a kickable participant, so we
-          // never show mic/camera icons or a kick button on them.
-          const isScreenTile = peer.isScreenShare || peer.socketId.endsWith('-screen');
-
-          return (
-            <VideoTile
-              key={peer.socketId}
-              stream={peer.stream}
-              userName={peer.userName}
-              audioEnabled={peer.audioEnabled}
-              videoEnabled={peer.videoEnabled}
-              socketId={peer.socketId}
-              userId={peer.userId}
-              raisedHand={peer.raisedHand}
-              isScreenShare={isScreenTile}
-              canKick={Boolean(isHost && !isScreenTile && onKickParticipant)}
-              onKick={onKickParticipant}
-            />
-          );
-        })}
+        {cameraPeers.map((peer) => (
+          <VideoTile
+            key={peer.socketId}
+            stream={peer.stream}
+            userName={peer.userName}
+            audioEnabled={peer.audioEnabled}
+            videoEnabled={peer.videoEnabled}
+            socketId={peer.socketId}
+            userId={peer.userId}
+            raisedHand={peer.raisedHand}
+            canKick={Boolean(isHost && onKickParticipant)}
+            onKick={onKickParticipant}
+          />
+        ))}
       </div>
     </div>
   );

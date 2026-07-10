@@ -53,6 +53,7 @@ export const useWebRTC = ({
 
   // Screen-share state
   const [screenSharing, setScreenSharing] = useState(false);
+  const [screenShareError, setScreenShareError] = useState<string | null>(null);
   const screenSharingRef = useRef(false);
   const screenProducerRef = useRef<Producer | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
@@ -224,6 +225,8 @@ export const useWebRTC = ({
     const socket = socketRef.current;
     if (!socket) return;
 
+    setScreenShareError(null);
+
     // ── Turning screen share OFF ───────────────────────────────────────────
     if (screenSharingRef.current) {
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -245,18 +248,41 @@ export const useWebRTC = ({
     const sendTransport = sendTransportRef.current;
     if (!sendTransport) {
       console.warn('[WebRTC] toggleScreenShare: send transport not ready yet');
+      setScreenShareError('Still connecting — try again in a moment.');
+      return;
+    }
+
+    // Most mobile browsers (iOS Safari entirely, and most Android browsers)
+    // do not implement getDisplayMedia. Without this check, calling it just
+    // throws or silently resolves to nothing and the user sees no feedback
+    // at all — surface a clear message instead.
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      console.warn('[WebRTC] getDisplayMedia not supported on this device/browser');
+      setScreenShareError(
+        'Screen sharing isn\'t supported on this browser/device. Try a desktop browser like Chrome or Edge.'
+      );
       return;
     }
 
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-    } catch (err) {
-      console.log('[WebRTC] Screen share cancelled by user');
+    } catch (err: any) {
+      if (err?.name === 'NotAllowedError') {
+        console.log('[WebRTC] Screen share cancelled by user');
+      } else {
+        console.error('[WebRTC] getDisplayMedia failed', err);
+        setScreenShareError('Could not start screen sharing. Please try again.');
+      }
       return;
     }
 
     const track = stream.getVideoTracks()[0];
+    if (!track) {
+      stream.getTracks().forEach((t) => t.stop());
+      setScreenShareError('No screen video track was returned. Please try again.');
+      return;
+    }
     screenStreamRef.current = stream;
 
     try {
@@ -283,6 +309,7 @@ export const useWebRTC = ({
       console.error('[WebRTC] Failed to produce screen share', error);
       stream.getTracks().forEach((t) => t.stop());
       screenStreamRef.current = null;
+      setScreenShareError('Failed to start screen sharing. Please try again.');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
@@ -779,5 +806,6 @@ export const useWebRTC = ({
     toggleRaiseHand,
     screenSharing,
     toggleScreenShare,
+    screenShareError,
   };
 };
