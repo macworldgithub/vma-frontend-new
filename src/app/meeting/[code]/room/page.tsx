@@ -79,11 +79,17 @@ export default function MeetingRoomPage() {
     const init = async () => {
       try {
         const { data } = await api.get(`/meetings/join/${code}`);
+        console.log(data, "DATA")
+        // Prevent non-hosts from entering locked rooms
+        if (data.isLocked && data.hostId !== user?.id) {
+          router.push('/dashboard?meetingLocked=true');
+          return;
+        }
+
         setRoomId(data.roomId);
         setMeetingId(data.meetingId);
         setMeetingTitle(data.title || '');
         setHostId(data.hostId);
-
 
       } catch {
         router.push('/dashboard');
@@ -217,7 +223,7 @@ export default function MeetingRoomPage() {
   // Kick a participant (host only)
   const kickParticipant = useCallback((targetUserId: string) => {
     socket?.emit('kick-participant', { roomId, targetUserId });
-    
+
     // Workaround: backend fails to broadcast user-left on kicks, 
     // so we manually broadcast the kick to all clients via the chat system.
     socket?.emit('chat-message', {
@@ -225,7 +231,7 @@ export default function MeetingRoomPage() {
       message: `__SYSTEM_KICK__:${targetUserId}`,
       userName: 'SYSTEM',
     });
-    
+
     removePeer(targetUserId);
   }, [socket, roomId, removePeer]);
 
