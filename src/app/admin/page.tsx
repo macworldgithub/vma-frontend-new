@@ -20,6 +20,7 @@ import { MeetingChart } from '@/components/admin/MeetingChart';
 import { RecentMeetingsTable } from '@/components/admin/RecentMeetingsTable';
 import { TopUsersList } from '@/components/admin/TopUsersList';
 import { UserFormModal } from '@/components/admin/UserFormModal';
+import { AdminPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -265,9 +266,7 @@ export default function AdminPage() {
         </div>
 
         {loading && !stats ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
-            {[1, 2, 3].map(i => <div key={i} className="h-32 glass-card bg-card border-border rounded-2xl" />)}
-          </div>
+          <AdminPageSkeleton />
         ) : (
           <div className="animate-fade-in-up">
             {tab === 'analytics' && (

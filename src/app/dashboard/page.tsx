@@ -12,6 +12,7 @@ import { NewMeetingModal } from '@/components/dashboard/NewMeetingModal';
 import { meetingService } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import { DashboardSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -70,6 +71,10 @@ export default function DashboardPage() {
   };
 
   const activeFilterCount = (searchQuery ? 1 : 0) + (statusFilter !== 'ALL' ? 1 : 0);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-10 pb-20">
@@ -231,13 +236,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Meetings Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-64 glass-card rounded-4xl animate-pulse border-border bg-muted/20" />
-          ))}
-        </div>
-      ) : filteredMeetings.length > 0 ? (
+      {filteredMeetings.length > 0 ? (
         <>
           {/* Results count when filtering */}
           {(searchQuery || statusFilter !== 'ALL') && (

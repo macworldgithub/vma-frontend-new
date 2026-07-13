@@ -13,6 +13,7 @@ import {
 import { meetingService, Meeting } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
+import { MeetingsPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
 export default function MyMeetingsPage() {
   const router = useRouter();
@@ -229,11 +230,7 @@ export default function MyMeetingsPage() {
 
       {/* Sessions Content */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="glass-card rounded-[20px] sm:rounded-[24px] border-border h-64 p-4 sm:p-6 space-y-6 shimmer relative overflow-hidden" />
-          ))}
-        </div>
+        <MeetingsPageSkeleton />
       ) : filteredMeetings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           {filteredMeetings.map((meeting) => {

@@ -6,6 +6,7 @@ import { calendarService } from '@/services/calendarService';
 import { Button } from '@/components/ui/Button';
 import { RefreshCw, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { CalendarPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
 interface CalendarEvent {
   _id: string;
@@ -112,12 +113,7 @@ export default function CalendarPage() {
   const filteredEvents = events.filter((event) => event.provider === 'microsoft');
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <RefreshCw className="h-12 w-12 text-primary animate-spin" />
-        <p className="text-muted-foreground animate-pulse font-medium uppercase tracking-widest text-xs">Accessing Calendar Data...</p>
-      </div>
-    );
+    return <CalendarPageSkeleton />;
   }
 
   return (
