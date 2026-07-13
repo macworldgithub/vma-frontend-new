@@ -13,6 +13,7 @@ import { meetingService } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { DashboardSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
 export default function DashboardPage() {
   const router = useRouter();
