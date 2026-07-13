@@ -54,6 +54,7 @@ export default function AdminPage() {
   // User form modal state
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -91,6 +92,7 @@ export default function AdminPage() {
   };
 
   const fetchData = async () => {
+    setIsRefreshing(true);
     setLoading(true);
     try {
       const [s, h, t] = await Promise.all([
@@ -105,6 +107,7 @@ export default function AdminPage() {
       console.error('Failed to fetch admin dashboard stats:', err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -222,15 +225,19 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={fetchData}
-            className="rounded-full border-border bg-white hover:bg-muted shadow-sm"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
+       <div className="flex items-center gap-3">
+  <Button
+    variant="outline"
+    size="icon"
+    onClick={fetchData}
+    disabled={isRefreshing}
+    className="rounded-full border-border bg-white hover:bg-muted shadow-sm"
+    title="Refresh Dashboard"
+  >
+    <RefreshCw 
+      className={`h-4 w-4 transition-transform ${isRefreshing ? 'animate-spin' : ''}`} 
+    />
+  </Button>
           <Button 
             onClick={handleExportLogs}
             disabled={exporting}
@@ -265,9 +272,9 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {loading && !stats ? (
-          <AdminPageSkeleton />
-        ) : (
+        {(loading && !stats) || isRefreshing ? (
+  <AdminPageSkeleton />
+) :(
           <div className="animate-fade-in-up">
             {tab === 'analytics' && (
               <div className="space-y-8">
