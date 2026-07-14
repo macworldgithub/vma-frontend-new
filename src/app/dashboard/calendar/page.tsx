@@ -61,8 +61,9 @@ export default function CalendarPage() {
         setConnectedProviders(Array.from(detected));
         setIsConnected(detected.size > 0);
       } else {
-        setConnectedProviders(providers);
-        setIsConnected(providers.length > 0);
+        const providerStrings = providers.map((p: any) => typeof p === 'string' ? p : p.provider);
+        setConnectedProviders(providerStrings);
+        setIsConnected(providerStrings.length > 0);
       }
     } catch (err: any) {
       if (
