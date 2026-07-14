@@ -1,11 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { calendarService } from '@/services/calendarService';
-import { Button } from '@/components/ui/Button';
-import { RefreshCw, ExternalLink, CheckCircle2 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
 import { CalendarPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
