@@ -1,18 +1,30 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { Users, Video, Shield, RefreshCw, Activity, Search, ArrowLeft, UserPlus, Pencil, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { useAuthStore } from '@/store/authStore';
-import api from '@/lib/axios';
+import React, { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Users,
+  Video,
+  Shield,
+  RefreshCw,
+  Activity,
+  Search,
+  ArrowLeft,
+  UserPlus,
+  Pencil,
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { useAuthStore } from "@/store/authStore";
+import api from "@/lib/axios";
+import { toast } from "sonner";
 import {
   dashboardService,
   DashboardStats,
   MeetingHistoryItem,
   RecentMeeting,
-  TopUser
-} from '@/services/dashboardService';
+  TopUser,
+} from "@/services/dashboardService";
 
 // Dashboard Components
 import { StatCard } from '@/components/admin/StatCard';
@@ -21,6 +33,11 @@ import { RecentMeetingsTable } from '@/components/admin/RecentMeetingsTable';
 import { TopUsersList } from '@/components/admin/TopUsersList';
 import { UserFormModal } from '@/components/admin/UserFormModal';
 import { AdminPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
+import { StatCard } from "@/components/admin/StatCard";
+import { MeetingChart } from "@/components/admin/MeetingChart";
+import { RecentMeetingsTable } from "@/components/admin/RecentMeetingsTable";
+import { TopUsersList } from "@/components/admin/TopUsersList";
+import { UserFormModal } from "@/components/admin/UserFormModal";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -31,25 +48,29 @@ export default function AdminPage() {
   const [recentMeetings, setRecentMeetings] = useState<RecentMeeting[]>([]);
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  
+
   // Pagination State
   const [userPage, setUserPage] = useState(1);
   const [userTotalPages, setUserTotalPages] = useState(1);
   const [userTotal, setUserTotal] = useState(0);
   const [meetingPage, setMeetingPage] = useState(1);
   const [meetingTotalPages, setMeetingTotalPages] = useState(1);
-  const [meetingSearch, setMeetingSearch] = useState('');
-  const [meetingStatusFilter, setMeetingStatusFilter] = useState('all');
+  const [meetingSearch, setMeetingSearch] = useState("");
+  const [meetingStatusFilter, setMeetingStatusFilter] = useState("all");
 
   const [loading, setLoading] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingMeetings, setLoadingMeetings] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [tab, setTab] = useState<'analytics' | 'users' | 'meetings'>('analytics');
+  const [tab, setTab] = useState<"analytics" | "users" | "meetings">(
+    "analytics",
+  );
 
   // User directory search & filter state
-  const [userSearch, setUserSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'staff'>('all');
+  const [userSearch, setUserSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "staff">(
+    "all",
+  );
 
   // User form modal state
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -57,22 +78,27 @@ export default function AdminPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (user?.role !== 'admin') {
-      router.push('/dashboard');
+    if (user?.role !== "admin") {
+      router.push("/dashboard");
     }
   }, [user, router]);
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      const res = await api.get('/users', {
-        params: { page: userPage, limit: 10, search: userSearch, role: roleFilter }
+      const res = await api.get("/users", {
+        params: {
+          page: userPage,
+          limit: 10,
+          search: userSearch,
+          role: roleFilter,
+        },
       });
       setUsers(res.data.data || []);
       setUserTotalPages(res.data.totalPages || 1);
       setUserTotal(res.data.total || 0);
     } catch (err) {
-      console.error('Failed to fetch users:', err);
+      console.error("Failed to fetch users:", err);
     } finally {
       setLoadingUsers(false);
     }
@@ -81,11 +107,16 @@ export default function AdminPage() {
   const fetchRecentMeetings = async () => {
     setLoadingMeetings(true);
     try {
-      const res = await dashboardService.getRecentMeetings(meetingPage, 10, meetingSearch, meetingStatusFilter);
+      const res = await dashboardService.getRecentMeetings(
+        meetingPage,
+        10,
+        meetingSearch,
+        meetingStatusFilter,
+      );
       setRecentMeetings(res.data || []);
       setMeetingTotalPages(res.totalPages || 1);
     } catch (err) {
-      console.error('Failed to fetch recent meetings:', err);
+      console.error("Failed to fetch recent meetings:", err);
     } finally {
       setLoadingMeetings(false);
     }
@@ -104,7 +135,7 @@ export default function AdminPage() {
       setHistory(h);
       setTopUsers(t);
     } catch (err) {
-      console.error('Failed to fetch admin dashboard stats:', err);
+      console.error("Failed to fetch admin dashboard stats:", err);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -122,17 +153,22 @@ export default function AdminPage() {
   // Deprecated: We use backend filtering now
 
   const deleteUser = async (id: string) => {
-    if (!confirm('Are you sure you want to remove this user? This will revoke all access.')) return;
+    if (
+      !confirm(
+        "Are you sure you want to remove this user? This will revoke all access.",
+      )
+    )
+      return;
     try {
       await api.delete(`/users/${id}`);
-      setUsers(users.filter(u => u._id !== id));
+      setUsers(users.filter((u) => u._id !== id));
     } catch (err) {
-      alert('Failed to remove user.');
+      alert("Failed to remove user.");
     }
   };
 
   const formatDuration = (seconds?: number) => {
-    if (!seconds) return '--';
+    if (!seconds) return "--";
     if (seconds < 60) return `${seconds}s`;
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -147,11 +183,20 @@ export default function AdminPage() {
     try {
       const response = await dashboardService.getRecentMeetings(1, 100);
       const meetingsToExport = response.data;
-      const headers = ['Meeting ID', 'Title', 'Status', 'Host ID', 'Meeting Code', 'Duration', 'Created At', 'Max Participants'];
-      
+      const headers = [
+        "Meeting ID",
+        "Title",
+        "Status",
+        "Host ID",
+        "Meeting Code",
+        "Duration",
+        "Created At",
+        "Max Participants",
+      ];
+
       const csvRows = [
-        headers.join(','),
-        ...meetingsToExport.map(meeting => {
+        headers.join(","),
+        ...meetingsToExport.map((meeting) => {
           const titleEscaped = `"${meeting.title.replace(/"/g, '""')}"`;
           return [
             meeting._id,
@@ -161,23 +206,27 @@ export default function AdminPage() {
             meeting.meetingCode,
             formatDuration(meeting.duration),
             meeting.createdAt,
-            meeting.maxParticipants
-          ].join(',');
-        })
+            meeting.maxParticipants,
+          ].join(",");
+        }),
       ];
-      
-      const csvContent = csvRows.join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `vma_system_meeting_logs_${new Date().toISOString().split('T')[0]}.csv`);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `vma_system_meeting_logs_${new Date().toISOString().split("T")[0]}.csv`,
+      );
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      toast.success("System logs exported successfully.");
     } catch (err) {
-      console.error('Failed to export system logs:', err);
-      alert('Failed to export system logs.');
+      console.error("Failed to export system logs:", err);
+      toast.error("Failed to export system logs.");
     } finally {
       setExporting(false);
     }
@@ -208,7 +257,7 @@ export default function AdminPage() {
         <div className="relative flex items-center gap-4">
           {/* Go Back Button */}
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push("/dashboard")}
             className="relative z-10 p-2.5 sm:p-3 rounded-xl border border-border bg-white hover:bg-muted shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
             title="Back to Dashboard"
           >
@@ -239,32 +288,42 @@ export default function AdminPage() {
     />
   </Button>
           <Button 
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={fetchData}
+            className="rounded-full border-border bg-white hover:bg-muted shadow-sm"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </Button>
+          <Button
             onClick={handleExportLogs}
             disabled={exporting}
             className="hidden sm:flex gap-2 font-black uppercase tracking-widest text-[10px]"
           >
-            {exporting ? 'Exporting...' : 'Export System Logs'}
+            {exporting ? "Exporting..." : "Export System Logs"}
           </Button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto space-y-8">
-
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-1 p-1 bg-muted/60 border border-border rounded-2xl w-full sm:w-fit justify-center sm:justify-start">
           {[
-            { id: 'analytics', label: 'Analytics', icon: Activity },
-            { id: 'users', label: 'User Directory', icon: Users },
-            { id: 'meetings', label: 'Session Logs', icon: Video },
+            { id: "analytics", label: "Analytics", icon: Activity },
+            { id: "users", label: "User Directory", icon: Users },
+            { id: "meetings", label: "Session Logs", icon: Video },
           ].map((item) => (
             <button
               key={item.id}
               onClick={() => setTab(item.id as any)}
-              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all ${tab === item.id
-                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                : 'text-muted-foreground hover:text-primary hover:bg-muted/40'
-                }`}
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-xl text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all ${
+                tab === item.id
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  : "text-muted-foreground hover:text-primary hover:bg-muted/40"
+              }`}
             >
               <item.icon className="h-3 w-3" />
               {item.label}
@@ -275,8 +334,18 @@ export default function AdminPage() {
         {(loading && !stats) || isRefreshing ? (
   <AdminPageSkeleton />
 ) :(
+        {loading && !stats ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-32 glass-card bg-card border-border rounded-2xl"
+              />
+            ))}
+          </div>
+        ) : (
           <div className="animate-fade-in-up">
-            {tab === 'analytics' && (
+            {tab === "analytics" && (
               <div className="space-y-8">
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -322,19 +391,23 @@ export default function AdminPage() {
                 </div>
 
                 {/* Recent Activity Mini Table */}
-                <RecentMeetingsTable 
-                  meetings={recentMeetings.slice(0, 5)} 
+                <RecentMeetingsTable
+                  meetings={recentMeetings.slice(0, 5)}
                   // No pagination for mini table on dashboard
                 />
               </div>
             )}
 
-            {tab === 'users' && (
+            {tab === "users" && (
               <div className="glass-card rounded-3xl overflow-hidden border-border bg-card relative shadow-sm">
                 <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-black text-foreground uppercase">Staff <span className="text-primary">Directory</span></h3>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Manage User Access & Roles</p>
+                    <h3 className="text-lg font-black text-foreground uppercase">
+                      Staff <span className="text-primary">Directory</span>
+                    </h3>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Manage User Access & Roles
+                    </p>
                   </div>
                   <div className="flex items-center gap-3 flex-wrap">
                     {/* Search Input */}
@@ -387,7 +460,10 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-border">
                       {loadingUsers ? (
                         <tr>
-                          <td colSpan={4} className="p-12 text-center text-muted-foreground font-bold text-sm">
+                          <td
+                            colSpan={4}
+                            className="p-12 text-center text-muted-foreground font-bold text-sm"
+                          >
                             Loading users...
                           </td>
                         </tr>
@@ -397,38 +473,54 @@ export default function AdminPage() {
                             <div className="flex flex-col items-center gap-3">
                               <Users className="h-10 w-10 text-muted-foreground/40" />
                               <p className="text-sm font-bold text-muted-foreground">
-                                {userSearch || roleFilter !== 'all' ? 'No users match your search criteria' : 'No users found'}
+                                {userSearch || roleFilter !== "all"
+                                  ? "No users match your search criteria"
+                                  : "No users found"}
                               </p>
                             </div>
                           </td>
                         </tr>
                       ) : (
                         users.map((u: any) => (
-                          <tr key={u._id} className="hover:bg-muted/20 transition-colors group">
+                          <tr
+                            key={u._id}
+                            className="hover:bg-muted/20 transition-colors group"
+                          >
                             <td className="p-6">
                               <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center font-black text-primary border border-border group-hover:border-primary/30 transition-all duration-500 transform group-hover:scale-105">
                                   {u.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="text-foreground font-bold tracking-tight text-base">{u.name}</div>
-                                  <div className="text-xs text-muted-foreground font-medium">{u.email}</div>
+                                  <div className="text-foreground font-bold tracking-tight text-base">
+                                    {u.name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground font-medium">
+                                    {u.email}
+                                  </div>
                                 </div>
                               </div>
                             </td>
                             <td className="p-6">
                               <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${u.isActive !== false ? 'bg-primary shadow-[0_0_8px_var(--color-primary)]' : 'bg-slate-400'}`} />
+                                <div
+                                  className={`w-2 h-2 rounded-full ${u.isActive !== false ? "bg-primary shadow-[0_0_8px_var(--color-primary)]" : "bg-slate-400"}`}
+                                />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                                  {u.isActive !== false ? 'Verified Active' : 'Deactivated'}
+                                  {u.isActive !== false
+                                    ? "Verified Active"
+                                    : "Deactivated"}
                                 </span>
                               </div>
                             </td>
                             <td className="p-6">
-                              <span className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter ${u.role === 'admin'
-                                ? 'bg-primary/20 text-primary border border-primary/20 shadow-sm'
-                                : 'bg-muted text-muted-foreground border border-border'
-                                }`}>
+                              <span
+                                className={`text-[10px] px-4 py-1.5 rounded-full font-black uppercase tracking-tighter ${
+                                  u.role === "admin"
+                                    ? "bg-primary/20 text-primary border border-primary/20 shadow-sm"
+                                    : "bg-muted text-muted-foreground border border-border"
+                                }`}
+                              >
                                 {u.role}
                               </span>
                             </td>
@@ -460,9 +552,11 @@ export default function AdminPage() {
                 {/* Results count and Pagination */}
                 <div className="px-6 py-4 border-t border-border bg-muted/20 flex items-center justify-between">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                    Showing {users.length} {userTotal > users.length ? `of ${userTotal}` : ''} users {userSearch || roleFilter !== 'all' ? '(filtered)' : ''}
+                    Showing {users.length}{" "}
+                    {userTotal > users.length ? `of ${userTotal}` : ""} users{" "}
+                    {userSearch || roleFilter !== "all" ? "(filtered)" : ""}
                   </p>
-                  
+
                   {userTotalPages > 1 && (
                     <div className="flex items-center gap-2">
                       <button
@@ -488,9 +582,9 @@ export default function AdminPage() {
               </div>
             )}
 
-            {tab === 'meetings' && (
-              <RecentMeetingsTable 
-                meetings={recentMeetings} 
+            {tab === "meetings" && (
+              <RecentMeetingsTable
+                meetings={recentMeetings}
                 currentPage={meetingPage}
                 totalPages={meetingTotalPages}
                 onPageChange={setMeetingPage}

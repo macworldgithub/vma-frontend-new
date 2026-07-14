@@ -1,18 +1,19 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { io, Socket } from 'socket.io-client';
-import { useAuthStore } from '@/store/authStore';
-import { useWebRTC } from '@/hooks/useWebRTC';
-import { VideoGrid } from '@/components/meeting/VideoGrid';
-import { ControlBar } from '@/components/meeting/ControlBar';
-import { ChatPanel } from '@/components/meeting/ChatPanel';
-import { TranscriptPanel } from '@/components/meeting/TranscriptPanel';
-import { ClosedCaptions } from '@/components/meeting/ClosedCaptions';
-import { useDeepgramTranscription } from '@/hooks/useDeepgramTranscription';
-import api from '@/lib/axios';
-import { Shield, FileDown, Loader2, ArrowLeft } from 'lucide-react';
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { io, Socket } from "socket.io-client";
+import { useAuthStore } from "@/store/authStore";
+import { useWebRTC } from "@/hooks/useWebRTC";
+import { VideoGrid } from "@/components/meeting/VideoGrid";
+import { ControlBar } from "@/components/meeting/ControlBar";
+import { ChatPanel } from "@/components/meeting/ChatPanel";
+import { TranscriptPanel } from "@/components/meeting/TranscriptPanel";
+import { ClosedCaptions } from "@/components/meeting/ClosedCaptions";
+import { useDeepgramTranscription } from "@/hooks/useDeepgramTranscription";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { Shield, FileDown, Loader2, ArrowLeft } from "lucide-react";
 
 interface ChatMessage {
   id?: string;
@@ -35,13 +36,15 @@ export default function MeetingRoomPage() {
   // Rendering a static skeleton until the component has mounted ensures
   // both sides produce identical HTML on the very first paint.
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [roomId, setRoomId] = useState('');
-  const [meetingId, setMeetingId] = useState('');
-  const [meetingTitle, setMeetingTitle] = useState('');
-  const [hostId, setHostId] = useState('');
+  const [roomId, setRoomId] = useState("");
+  const [meetingId, setMeetingId] = useState("");
+  const [meetingTitle, setMeetingTitle] = useState("");
+  const [hostId, setHostId] = useState("");
   const [isLocked, setIsLocked] = useState(false);
   const [meetingEnded, setMeetingEnded] = useState(false);
   const [kicked, setKicked] = useState(false);
@@ -49,16 +52,16 @@ export default function MeetingRoomPage() {
   const [reportDownloaded, setReportDownloaded] = useState(false);
 
   const [initialAudio] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const pref = sessionStorage.getItem('vma_pref_audio');
-      return pref !== null ? pref === 'true' : true;
+    if (typeof window !== "undefined") {
+      const pref = sessionStorage.getItem("vma_pref_audio");
+      return pref !== null ? pref === "true" : true;
     }
     return true;
   });
   const [initialVideo] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const pref = sessionStorage.getItem('vma_pref_video');
-      return pref !== null ? pref === 'true' : true;
+    if (typeof window !== "undefined") {
+      const pref = sessionStorage.getItem("vma_pref_video");
+      return pref !== null ? pref === "true" : true;
     }
     return true;
   });
@@ -69,7 +72,10 @@ export default function MeetingRoomPage() {
   const [transcriptionEnabled, setTranscriptionEnabled] = useState(true);
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [transcripts, setTranscripts] = useState<any[]>([]);
-  const [activeSubtitle, setActiveSubtitle] = useState({ speaker: '', text: '' });
+  const [activeSubtitle, setActiveSubtitle] = useState({
+    speaker: "",
+    text: "",
+  });
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -79,20 +85,19 @@ export default function MeetingRoomPage() {
     const init = async () => {
       try {
         const { data } = await api.get(`/meetings/join/${code}`);
-        console.log(data, "DATA")
+        console.log(data, "DATA");
         // Prevent non-hosts from entering locked rooms
         if (data.isLocked && data.hostId !== user?.id) {
-          router.push('/dashboard?meetingLocked=true');
+          router.push("/dashboard?meetingLocked=true");
           return;
         }
 
         setRoomId(data.roomId);
         setMeetingId(data.meetingId);
-        setMeetingTitle(data.title || '');
+        setMeetingTitle(data.title || "");
         setHostId(data.hostId);
-
       } catch {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }
     };
     init();
@@ -104,53 +109,63 @@ export default function MeetingRoomPage() {
 
     const s = io(process.env.NEXT_PUBLIC_API_URL, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ["websocket"],
       extraHeaders: {
-        'ngrok-skip-browser-warning': 'true',
+        "ngrok-skip-browser-warning": "true",
       },
     });
 
-    s.on('connect', () => console.log('Socket connected'));
+    s.on("connect", () => console.log("Socket connected"));
 
     // Chat events
-    s.on('chat-message', (msg: ChatMessage) => {
-      if (msg && msg.message && msg.message.startsWith('__SYSTEM_KICK__:')) return;
+    s.on("chat-message", (msg: ChatMessage) => {
+      if (msg && msg.message && msg.message.startsWith("__SYSTEM_KICK__:"))
+        return;
       setChatMessages((prev) => [...prev, msg]);
     });
-    s.on('chat-history', (history: ChatMessage[]) => {
-      setChatMessages(history.filter(m => !(m && m.message && m.message.startsWith('__SYSTEM_KICK__:'))));
+    s.on("chat-history", (history: ChatMessage[]) => {
+      setChatMessages(
+        history.filter(
+          (m) => !(m && m.message && m.message.startsWith("__SYSTEM_KICK__:")),
+        ),
+      );
     });
 
     // Transcript events
-    s.on('new-transcript', (t: any) => {
+    s.on("new-transcript", (t: any) => {
       setTranscripts((prev) => [...prev, t]);
       // Clear interim subtitle when final transcription arrives
-      setActiveSubtitle({ speaker: '', text: '' });
+      setActiveSubtitle({ speaker: "", text: "" });
     });
-    s.on('new-transcript-interim', (data: { userId: string; userName: string; text: string }) => {
-      setActiveSubtitle({ speaker: data.userName, text: data.text });
-    });
-    s.on('transcript-history', (history: any[]) => {
+    s.on(
+      "new-transcript-interim",
+      (data: { userId: string; userName: string; text: string }) => {
+        setActiveSubtitle({ speaker: data.userName, text: data.text });
+      },
+    );
+    s.on("transcript-history", (history: any[]) => {
       setTranscripts(history);
     });
 
     // After socket fully joins the Socket.IO room, re-fetch history to catch
     // any messages sent in the brief window between connect and join-room.
-    s.on('room-joined', () => {
-      s.emit('get-chat-history', { roomId });
-      s.emit('get-transcript-history', { roomId });
+    s.on("room-joined", () => {
+      s.emit("get-chat-history", { roomId });
+      s.emit("get-transcript-history", { roomId });
     });
 
     // Meeting lifecycle events
-    s.on('meeting-ended', () => setMeetingEnded(true));
-    s.on('kicked', () => setKicked(true));
-    s.on('room-locked', (data: { isLocked: boolean }) => setIsLocked(data.isLocked));
+    s.on("meeting-ended", () => setMeetingEnded(true));
+    s.on("kicked", () => setKicked(true));
+    s.on("room-locked", (data: { isLocked: boolean }) =>
+      setIsLocked(data.isLocked),
+    );
 
     socketRef.current = s;
     setSocket(s);
 
     // Request chat history
-    s.emit('get-chat-history', { roomId });
+    s.emit("get-chat-history", { roomId });
 
     return () => {
       s.disconnect();
@@ -173,8 +188,8 @@ export default function MeetingRoomPage() {
   } = useWebRTC({
     roomId,
     socket,
-    userId: user?.id || '',
-    userName: user?.name || 'Guest',
+    userId: user?.id || "",
+    userName: user?.name || "Guest",
     initialAudio,
     initialVideo,
   });
@@ -192,9 +207,12 @@ export default function MeetingRoomPage() {
   });
 
   // Send chat
-  const sendChat = useCallback((message: string) => {
-    socket?.emit('chat-message', { roomId, message });
-  }, [socket, roomId]);
+  const sendChat = useCallback(
+    (message: string) => {
+      socket?.emit("chat-message", { roomId, message });
+    },
+    [socket, roomId],
+  );
 
   // Copy Link
   const copyLink = useCallback(() => {
@@ -206,34 +224,37 @@ export default function MeetingRoomPage() {
 
   // Leave meeting
   const leaveMeeting = useCallback(() => {
-    socket?.emit('leave-room', { roomId });
-    router.push('/dashboard');
+    socket?.emit("leave-room", { roomId });
+    router.push("/dashboard");
   }, [socket, roomId, router]);
 
   // End meeting (host)
   const endMeeting = useCallback(() => {
-    socket?.emit('end-meeting', { roomId });
+    socket?.emit("end-meeting", { roomId });
   }, [socket, roomId]);
 
   // Lock toggle (host)
   const toggleLock = useCallback(() => {
-    socket?.emit('toggle-lock', { roomId });
+    socket?.emit("toggle-lock", { roomId });
   }, [socket, roomId]);
 
   // Kick a participant (host only)
-  const kickParticipant = useCallback((targetUserId: string) => {
-    socket?.emit('kick-participant', { roomId, targetUserId });
+  const kickParticipant = useCallback(
+    (targetUserId: string) => {
+      socket?.emit("kick-participant", { roomId, targetUserId });
 
-    // Workaround: backend fails to broadcast user-left on kicks, 
-    // so we manually broadcast the kick to all clients via the chat system.
-    socket?.emit('chat-message', {
-      roomId,
-      message: `__SYSTEM_KICK__:${targetUserId}`,
-      userName: 'SYSTEM',
-    });
+      // Workaround: backend fails to broadcast user-left on kicks,
+      // so we manually broadcast the kick to all clients via the chat system.
+      socket?.emit("chat-message", {
+        roomId,
+        message: `__SYSTEM_KICK__:${targetUserId}`,
+        userName: "SYSTEM",
+      });
 
-    removePeer(targetUserId);
-  }, [socket, roomId, removePeer]);
+      removePeer(targetUserId);
+    },
+    [socket, roomId, removePeer],
+  );
 
   // Generate PDF report from transcript
   const generateReport = useCallback(async () => {
@@ -243,14 +264,14 @@ export default function MeetingRoomPage() {
       const transcriptText =
         transcripts.length > 0
           ? transcripts
-            .map(
-              (t) =>
-                `[${new Date(t.timestamp).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}] ${t.userName}: ${t.text}`
-            )
-            .join('\n')
+              .map(
+                (t) =>
+                  `[${new Date(t.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}] ${t.userName}: ${t.text}`,
+              )
+              .join("\n")
           : `
 [09:00] John Smith: Good morning everyone, thank you for Fjoining today's project review meeting.
 [09:01] Sarah Johnson: The frontend dashboard is now 90% complete and ready for QA testing.
@@ -261,33 +282,37 @@ export default function MeetingRoomPage() {
 [09:18] John Smith: Thanks everyone. Meeting adjourned.
 `;
 
-      const response = await fetch('https://vma-microservice.omnisuiteai.com/report/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transcript: transcriptText,
-          meeting_title: meetingTitle || 'Untitled Meeting',
-        }),
-      });
+      const response = await fetch(
+        "https://vma-microservice.omnisuiteai.com/report/pdf",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transcript: transcriptText,
+            meeting_title: meetingTitle || "Untitled Meeting",
+          }),
+        },
+      );
 
-      if (!response.ok) throw new Error('Failed to generate report');
+      if (!response.ok) throw new Error("Failed to generate report");
 
-      const blob = await response.blob()
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       // Extract filename from Content-Disposition header or use default
-      const disposition = response.headers.get('Content-Disposition');
+      const disposition = response.headers.get("Content-Disposition");
       const filenameMatch = disposition?.match(/filename="(.+?)"/);
-      a.download = filenameMatch ? filenameMatch[1] : 'VMA_Report.pdf';
+      a.download = filenameMatch ? filenameMatch[1] : "VMA_Report.pdf";
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       setReportDownloaded(true);
+      toast.success("You have downloaded the report.");
     } catch (err) {
-      console.error('Failed to generate report:', err);
-      alert('Failed to generate the meeting report. Please try again.');
+      console.error("Failed to generate report:", err);
+      toast.error("Failed to generate the meeting report. Please try again.");
     } finally {
       setReportLoading(false);
     }
@@ -296,7 +321,7 @@ export default function MeetingRoomPage() {
   // Redirect only kicked users automatically; meeting-ended users stay to download report
   useEffect(() => {
     if (kicked) {
-      const timeout = setTimeout(() => router.push('/dashboard'), 3000);
+      const timeout = setTimeout(() => router.push("/dashboard"), 3000);
       return () => clearTimeout(timeout);
     }
   }, [kicked, router]);
@@ -334,21 +359,27 @@ export default function MeetingRoomPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter leading-tight">Session <span className="text-primary">Concluded</span></h2>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Secure Tunnel Successfully Terminated</p>
+            <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter leading-tight">
+              Session <span className="text-primary">Concluded</span>
+            </h2>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+              Secure Tunnel Successfully Terminated
+            </p>
           </div>
           <div className="p-4 rounded-2xl bg-muted border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
-            The meeting data has been encrypted and archived. Download the meeting report or return to your dashboard.
+            The meeting data has been encrypted and archived. Download the
+            meeting report or return to your dashboard.
           </div>
 
           {/* Generate Report Button */}
           <button
             onClick={generateReport}
             disabled={reportLoading}
-            className={`w-full h-14 rounded-2xl flex items-center justify-center font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${reportDownloaded
-              ? 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30'
-              : 'bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30 hover:-translate-y-0.5'
-              } ${reportLoading ? 'opacity-70 cursor-wait' : 'active:scale-[0.98]'}`}
+            className={`w-full h-14 rounded-2xl flex items-center justify-center font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 border shadow-xl ${
+              reportDownloaded
+                ? "bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30"
+                : "bg-primary/20 text-primary border-primary/30 shadow-primary/10 hover:bg-primary/30 hover:-translate-y-0.5"
+            } ${reportLoading ? "opacity-70 cursor-wait" : "active:scale-[0.98]"}`}
           >
             {reportLoading ? (
               <>
@@ -356,19 +387,15 @@ export default function MeetingRoomPage() {
                 Generating Report...
               </>
             ) : reportDownloaded ? (
-              <>
-                Download Again
-              </>
+              <>Download Again</>
             ) : (
-              <>
-                Download Meeting Report
-              </>
+              <>Download Meeting Report</>
             )}
           </button>
 
           {/* Return to Dashboard */}
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push("/dashboard")}
             className="w-full py-3 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] hover:text-primary transition-colors flex items-center justify-center gap-2"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -390,11 +417,16 @@ export default function MeetingRoomPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter leading-tight">Access <span className="text-rose-500">Revoked</span></h2>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Permissions terminated by host</p>
+            <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter leading-tight">
+              Access <span className="text-rose-500">Revoked</span>
+            </h2>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+              Permissions terminated by host
+            </p>
           </div>
           <div className="p-4 rounded-2xl bg-muted border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
-            Your connection to this secure session has been severed. Redirecting to dashboard...
+            Your connection to this secure session has been severed. Redirecting
+            to dashboard...
           </div>
           <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-rose-500 animate-[progress_3s_linear_forwards]" />
@@ -420,11 +452,13 @@ export default function MeetingRoomPage() {
         </div>
       )}
       <div className="flex-1 flex overflow-hidden relative">
-        <div className={`flex-1 transition-all ${chatOpen || transcriptOpen ? 'mr-0' : ''}`}>
+        <div
+          className={`flex-1 transition-all ${chatOpen || transcriptOpen ? "mr-0" : ""}`}
+        >
           <VideoGrid
             peers={peers}
             localStream={localStream}
-            localUserName={user?.name || 'You'}
+            localUserName={user?.name || "You"}
             localAudioEnabled={audioEnabled}
             localVideoEnabled={videoEnabled}
             localRaisedHand={raisedHand}
@@ -437,14 +471,14 @@ export default function MeetingRoomPage() {
             messages={chatMessages}
             onSend={sendChat}
             onClose={() => setChatOpen(false)}
-            currentUserId={user?.id || ''}
+            currentUserId={user?.id || ""}
           />
         )}
         {transcriptOpen && (
           <TranscriptPanel
             transcripts={transcripts}
             onClose={() => setTranscriptOpen(false)}
-            currentUserId={user?.id || ''}
+            currentUserId={user?.id || ""}
           />
         )}
         <ClosedCaptions

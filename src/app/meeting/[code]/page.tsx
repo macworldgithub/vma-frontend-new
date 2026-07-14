@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "sonner";
 import api from "@/lib/axios";
 
 export default function JoinPage() {
@@ -34,7 +35,9 @@ export default function JoinPage() {
   // two renders and trigger Next.js's hydration error which crashes the
   // router and shows a 404.  We render a static skeleton until mounted.
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [meeting, setMeeting] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,13 +148,16 @@ export default function JoinPage() {
         await api.post(`/meetings/${meeting.meetingId}/start`);
       } catch (err) {
         console.error("Failed to start meeting:", err);
-        alert("Could not start meeting. Please try again.");
+        toast.error("Could not start meeting. Please try again.");
         setIsStarting(false);
         return;
       }
     }
 
-    router.push(`/meeting/${code}/room`);
+    toast.success("You have entered the meeting room.");
+    setTimeout(() => {
+      router.push(`/meeting/${code}/room`);
+    }, 120);
   };
 
   // Show identical skeleton on server + initial client paint, then also
