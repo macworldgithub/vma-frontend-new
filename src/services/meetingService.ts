@@ -18,6 +18,15 @@ export interface Meeting {
   endTime?: string;
   roomId?: string;
   maxParticipants: number;
+  recallBotId?: string;
+  botStatus?: string;
+  summaryData?: {
+    executive_summary?: string;
+    action_items?: { task: string; assignee?: string; deadline?: string }[];
+    key_decisions?: string[];
+    risks?: string[];
+    [key: string]: any;
+  };
 }
 
 export interface JoinMeetingInfo {
@@ -81,6 +90,11 @@ export const meetingService = {
 
   cancelMeeting: async (id: string): Promise<Meeting> => {
     const response = await api.post(`/meetings/${id}/cancel`);
+    return response.data;
+  },
+
+  summonBot: async (data: { title: string; meetingLink: string; platform: string }): Promise<{ message: string; meetingId: string }> => {
+    const response = await api.post('/bot/summon', data);
     return response.data;
   },
 };

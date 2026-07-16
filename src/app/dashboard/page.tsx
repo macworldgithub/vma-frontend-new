@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  Plus, Video, Calendar as CalendarIcon,
+  Plus, Video, Calendar as CalendarIcon, Bot,
   RefreshCw, User, Shield, Activity, Users,
   Search, SlidersHorizontal, ChevronRight, ChevronDown, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { MeetingCard } from '@/components/dashboard/MeetingCard';
 import { NewMeetingModal } from '@/components/dashboard/NewMeetingModal';
+import { SummonBotModal } from '@/components/dashboard/SummonBotModal';
 import { meetingService } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSummonModalOpen, setIsSummonModalOpen] = useState(false);
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,6 +82,11 @@ export default function DashboardPage() {
     router.push(`/meeting/${code}`);
   };
 
+  const handleBotSummoned = (meetingId: string) => {
+    setIsSummonModalOpen(false);
+    fetchMeetings();
+  };
+
   const activeFilterCount = (searchQuery ? 1 : 0) + (statusFilter !== 'ALL' ? 1 : 0);
 
   if (isLoading) {
@@ -110,6 +117,14 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
             <Button
               className="h-11 sm:h-14 px-4 sm:px-6 rounded-xl sm:rounded-2xl gap-2.5 sm:gap-3 text-sm sm:text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 w-full sm:w-auto justify-center"
+              onClick={() => setIsSummonModalOpen(true)}
+            >
+              <Bot className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+              SUMMON BOT
+            </Button>
+            <Button
+              variant="outline"
+              className="h-11 sm:h-14 px-4 sm:px-6 rounded-xl sm:rounded-2xl gap-2.5 sm:gap-3 text-sm sm:text-base font-black uppercase tracking-widest bg-white shadow-sm w-full sm:w-auto justify-center"
               onClick={() => setIsModalOpen(true)}
             >
               NEW SESSION
@@ -299,6 +314,13 @@ export default function DashboardPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleMeetingCreated}
+      />
+
+      {/* Summon Bot Modal */}
+      <SummonBotModal
+        isOpen={isSummonModalOpen}
+        onClose={() => setIsSummonModalOpen(false)}
+        onSuccess={handleBotSummoned}
       />
     </div>
   );

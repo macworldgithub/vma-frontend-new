@@ -8,7 +8,7 @@ import {
   Copy, Check, ExternalLink, XCircle, CheckCircle2,
   MessageSquare, CalendarDays, Trash2, Shield, Calendar,
   Play, Users, Lock, Unlock, Sparkles, Send, UserCheck,
-  Plus,
+  Plus, BrainCircuit,
   FileDown
 } from 'lucide-react';
 import { meetingService, Meeting } from '@/services/meetingService';
@@ -26,10 +26,10 @@ export default function MyMeetingsPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Historical Chat Drawer States
-  const [activeChatSession, setActiveChatSession] = useState<Meeting | null>(null);
+  const [activeChatSession, setActiveChatSession] = useState<any | null>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
-  console.log(chatMessages, "111")
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [activeDrawerTab, setActiveDrawerTab] = useState<'chat' | 'summary'>('summary');
 
   useEffect(() => {
     fetchMeetings();
@@ -80,6 +80,7 @@ export default function MyMeetingsPage() {
 
   const loadChatHistory = async (meeting: Meeting) => {
     setActiveChatSession(meeting);
+    setActiveDrawerTab('summary');
     setIsLoadingChat(true);
     try {
       const response = await meetingService.getChatHistory(meeting._id);
@@ -478,6 +479,22 @@ export default function MyMeetingsPage() {
                 </button>
               </div>
 
+              {/* Tabs */}
+              <div className="flex gap-4 border-b border-border pt-2">
+                <button
+                  onClick={() => setActiveDrawerTab('summary')}
+                  className={`pb-2 px-1 text-xs font-black uppercase tracking-widest transition-colors border-b-2 ${activeDrawerTab === 'summary' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                >
+                  AI Intelligence
+                </button>
+                <button
+                  onClick={() => setActiveDrawerTab('chat')}
+                  className={`pb-2 px-1 text-xs font-black uppercase tracking-widest transition-colors border-b-2 ${activeDrawerTab === 'chat' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                >
+                  Raw Telemetry
+                </button>
+              </div>
+
               <div className="flex gap-2 items-center flex-wrap">
                 <span className="text-[10px] font-black text-muted-foreground bg-muted px-2 py-0.5 rounded tracking-widest font-mono">
                   {activeChatSession.meetingCode}
@@ -491,61 +508,133 @@ export default function MyMeetingsPage() {
               </div>
             </div>
 
-            {/* Drawer Chat Message List */}
+            {/* Drawer Content */}
             <div className="flex-1 p-6 overflow-y-auto space-y-4 min-h-[300px]">
-              {isLoadingChat ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex flex-col gap-2 max-w-[80%] even:ml-auto">
-                      <div className="h-4 w-20 bg-muted rounded shimmer" />
-                      <div className="h-12 w-64 bg-muted rounded-xl shimmer" />
-                    </div>
-                  ))}
-                </div>
-              ) : chatMessages.length > 0 ? (
-                chatMessages.map((msg, index) => {
-                  const isUser = msg.userId === user?.id;
-
-                  return (
-                    <div
-                      key={msg._id || index}
-                      className={`flex flex-col max-w-[80%] ${isUser ? 'ml-auto items-end' : 'items-start'
-                        }`}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1 px-1">
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-                          {msg.userName}
-                        </span>
-
-                        <span className="text-[8px] text-muted-foreground font-mono">
-                          {new Date(msg.sentAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+              {activeDrawerTab === 'summary' ? (
+                activeChatSession.summaryData ? (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    {/* Executive Summary */}
+                    {activeChatSession.summaryData.executive_summary && (
+                      <div className="space-y-2">
+                        <h4 className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest">
+                          <BrainCircuit className="h-4 w-4" />
+                          Executive Summary
+                        </h4>
+                        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 text-sm leading-relaxed text-foreground">
+                          {activeChatSession.summaryData.executive_summary}
+                        </div>
                       </div>
-
-                      <div
-                        className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
-                          ? 'bg-primary/10 border-primary/20 text-foreground rounded-tr-none'
-                          : 'bg-muted/50 border-border text-foreground rounded-tl-none'
-                          }`}
-                      >
-                        {msg.message}
+                    )}
+                    
+                    {/* Action Items */}
+                    {activeChatSession.summaryData.action_items && activeChatSession.summaryData.action_items.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="flex items-center gap-2 text-[10px] font-black text-accent uppercase tracking-widest">
+                          <CheckCircle2 className="h-4 w-4" />
+                          Action Items
+                        </h4>
+                        <div className="space-y-2">
+                          {activeChatSession.summaryData.action_items.map((item: any, idx: number) => (
+                            <div key={idx} className="p-3 rounded-xl border border-border bg-card flex justify-between gap-4">
+                              <span className="text-sm font-medium">{item.task}</span>
+                              <div className="flex flex-col items-end gap-1 shrink-0">
+                                <span className="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                  {item.assignee || 'Unassigned'}
+                                </span>
+                                {item.deadline && (
+                                  <span className="text-[8px] font-black text-muted-foreground">{item.deadline}</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
+                    )}
+
+                    {/* Key Decisions */}
+                    {activeChatSession.summaryData.key_decisions && activeChatSession.summaryData.key_decisions.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="flex items-center gap-2 text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                          <Sparkles className="h-4 w-4" />
+                          Key Decisions
+                        </h4>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-1">
+                          {activeChatSession.summaryData.key_decisions.map((desc: string, idx: number) => (
+                            <li key={idx}>{desc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50 py-20">
+                    <div className="w-12 h-12 rounded-full bg-muted border border-border flex items-center justify-center">
+                      <BrainCircuit className="h-6 w-6 text-muted-foreground" />
                     </div>
-                  );
-                })
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-black text-foreground uppercase tracking-wider">No Summary Available</h4>
+                      <p className="text-xs text-muted-foreground">The AI bot is processing or hasn't attended this meeting.</p>
+                    </div>
+                  </div>
+                )
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50 py-20">
-                  <div className="w-12 h-12 rounded-full bg-muted border border-border flex items-center justify-center">
-                    <MessageSquare className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-black text-foreground uppercase tracking-wider">No Messages Audited</h4>
-                    <p className="text-xs text-muted-foreground">No chat messages were recorded in this room.</p>
-                  </div>
-                </div>
+                /* Chat Telemetry */
+                <>
+                  {isLoadingChat ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex flex-col gap-2 max-w-[80%] even:ml-auto">
+                          <div className="h-4 w-20 bg-muted rounded shimmer" />
+                          <div className="h-12 w-64 bg-muted rounded-xl shimmer" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : chatMessages.length > 0 ? (
+                    chatMessages.map((msg, index) => {
+                      const isUser = msg.userId === user?.id;
+
+                      return (
+                        <div
+                          key={msg._id || index}
+                          className={`flex flex-col max-w-[80%] ${isUser ? 'ml-auto items-end' : 'items-start'
+                            }`}
+                        >
+                          <div className="flex items-center gap-1.5 mb-1 px-1">
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                              {msg.userName}
+                            </span>
+
+                            <span className="text-[8px] text-muted-foreground font-mono">
+                              {new Date(msg.sentAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
+                              ? 'bg-primary/10 border-primary/20 text-foreground rounded-tr-none'
+                              : 'bg-muted/50 border-border text-foreground rounded-tl-none'
+                              }`}
+                          >
+                            {msg.message}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50 py-20">
+                      <div className="w-12 h-12 rounded-full bg-muted border border-border flex items-center justify-center">
+                        <MessageSquare className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-black text-foreground uppercase tracking-wider">No Messages Audited</h4>
+                        <p className="text-xs text-muted-foreground">No chat messages were recorded in this room.</p>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
