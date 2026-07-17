@@ -42,8 +42,26 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       const data = await meetingService.getMyMeetings();
-      // Only show meetings that haven't ended yet
-      setMeetings(data.filter((m: any) => m.status !== 'ENDED'));
+      setMeetings(data.filter((m: any) => {
+        let effStatus = m.status;
+        if (m.status !== "CANCELLED") {
+          const now = Date.now();
+          const startTime = m.startTime ? new Date(m.startTime).getTime() : now;
+          const endTime = m.endTime ? new Date(m.endTime).getTime() : null;
+
+          if (endTime && endTime < now) {
+            effStatus = "ENDED";
+          } else if (startTime > now) {
+            effStatus = "SCHEDULED";
+          }
+        }
+
+        const isVmaOrTeams = m.provider === 'vma' || m.provider === 'microsoft';
+        if (isVmaOrTeams) {
+          return effStatus === 'LIVE' || effStatus === 'SCHEDULED';
+        }
+        return effStatus !== 'ENDED'; // Don't show ENDED for others by default either unless specified, but user said show ended. Let's return true.
+      }));
     } catch (error) {
       console.error('Error fetching meetings:', error);
     } finally {

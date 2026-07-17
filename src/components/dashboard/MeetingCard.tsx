@@ -19,8 +19,11 @@ interface MeetingCardProps {
     meetingCode: string;
     status: "SCHEDULED" | "LIVE" | "ENDED" | "CANCELLED";
     startTime?: string;
+    endTime?: string;
     participantCount?: number;
     hostId?: string;
+    provider?: string;
+    meetingLink?: string;
   };
 }
 
@@ -46,10 +49,27 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
     },
   };
 
-  const currentStatus = statusConfig[meeting.status];
+  let effectiveStatus = meeting.status;
+  if (meeting.status !== "CANCELLED") {
+    const now = Date.now();
+    const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
+    const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
+
+    if (endTime && endTime < now) {
+      effectiveStatus = "ENDED";
+    } else if (startTime > now) {
+      effectiveStatus = "SCHEDULED";
+    }
+  }
+  
+  const currentStatus = statusConfig[effectiveStatus];
 
   const handleJoin = () => {
-    router.push(`/meeting/${meeting.meetingCode}`);
+    if (meeting.provider !== 'vma' && meeting.meetingLink) {
+      window.open(meeting.meetingLink, '_blank');
+    } else {
+      router.push(`/meeting/${meeting.meetingCode}`);
+    }
   };
 
   return (
@@ -69,7 +89,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
               <span className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded border border-border">
                 {meeting.meetingCode}
               </span>
-              {meeting.status === "LIVE" && (
+              {effectiveStatus === "LIVE" && (
                 <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_var(--color-primary)]" />
               )}
             </div>
@@ -117,23 +137,23 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
                   <Users className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
                 </div>
               ))}
-              {meeting.status === "LIVE" && (
+              {effectiveStatus === "LIVE" && (
                 <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary/20 border border-background flex items-center justify-center text-[7px] sm:text-[8px] font-black text-primary">
                   +{meeting.participantCount || 0}
                 </div>
               )}
             </div>
             <span className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
-              {meeting.status === "LIVE" ? "Active" : "Ready"}
+              {effectiveStatus === "LIVE" ? "Active" : "Ready"}
             </span>
           </div>
 
           <div className="relative z-50">
             <button
               type="button"
-              onClick={() => router.push(`/meeting/${meeting.meetingCode}`)}
+              onClick={handleJoin}
               disabled={
-                meeting.status === "ENDED" || meeting.status === "CANCELLED"
+                effectiveStatus === "ENDED" || effectiveStatus === "CANCELLED" || effectiveStatus === "SCHEDULED"
               }
               className={`
       w-full sm:w-auto
@@ -148,11 +168,11 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       text-[10px]
       transition-all
       touch-manipulation
-      ${meeting.status === "LIVE"
+      ${effectiveStatus === "LIVE"
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border border-border bg-primary text-primary-foreground hover:bg-primary/90"
                 }
-      ${meeting.status === "ENDED" || meeting.status === "CANCELLED"
+      ${effectiveStatus === "ENDED" || effectiveStatus === "CANCELLED" || effectiveStatus === "SCHEDULED"
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer"
                 }

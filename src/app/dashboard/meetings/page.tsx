@@ -60,7 +60,11 @@ export default function MyMeetingsPage() {
   const handleStartSession = async (meeting: Meeting) => {
     try {
       await meetingService.startMeeting(meeting._id);
-      router.push(`/meeting/${meeting.meetingCode}/room`);
+      if (meeting.provider !== 'vma' && meeting.meetingLink) {
+        window.open(meeting.meetingLink, '_blank');
+      } else {
+        router.push(`/meeting/${meeting.meetingCode}/room`);
+      }
     } catch (error) {
       console.error('Failed to start meeting:', error);
       alert('Could not start meeting. Please try again.');
@@ -158,41 +162,7 @@ export default function MyMeetingsPage() {
 
   const handleDownloadReport = async (meeting: Meeting) => {
     try {
-      const { messages } = await meetingService.getChatHistory(meeting._id);
-
-      const transcriptText =
-        messages.length > 0
-          ? messages
-            .map(
-              (m: any) =>
-                `[${new Date(m.sentAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}] ${m.userName}: ${m.message}`
-            )
-            .join("\n")
-          : "No messages available.";
-
-      const response = await fetch(
-        "https://vma-microservice.omnisuiteai.com/report/pdf",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            transcript: transcriptText,
-            meeting_title: meeting.title,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to generate report");
-      }
-
-      const blob = await response.blob();
-
+      const blob = await meetingService.downloadMeetingReport(meeting._id);
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement("a");
@@ -206,7 +176,7 @@ export default function MyMeetingsPage() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert("Failed to generate meeting report.");
+      alert("Failed to download meeting report.");
     }
   };
 
@@ -291,6 +261,18 @@ export default function MyMeetingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           {filteredMeetings.map((meeting) => {
             const isHost = meeting.hostId === user?.id;
+            let effectiveStatus = meeting.status;
+            if (meeting.status !== "CANCELLED") {
+              const now = Date.now();
+              const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
+              const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
+
+              if (endTime && endTime < now) {
+                effectiveStatus = "ENDED";
+              } else if (startTime > now) {
+                effectiveStatus = "SCHEDULED";
+              }
+            }
 
             return (
               <div
@@ -299,9 +281,9 @@ export default function MyMeetingsPage() {
               >
 
                 {/* Visual Status Indicator Line */}
-                <div className={`absolute top-0 left-0 w-full h-[3px] opacity-35 group-hover:opacity-100 transition-opacity duration-300 ${meeting.status === 'LIVE' ? 'bg-primary shadow-[0_0_8px_var(--color-primary)]' :
-                  meeting.status === 'SCHEDULED' ? 'bg-primary shadow-[0_0_8px_var(--color-primary)]' :
-                    meeting.status === 'ENDED' ? 'bg-slate-500' : 'bg-rose-500'
+                <div className={`absolute top-0 left-0 w-full h-[3px] opacity-35 group-hover:opacity-100 transition-opacity duration-300 ${effectiveStatus === 'LIVE' ? 'bg-primary shadow-[0_0_8px_var(--color-primary)]' :
+                  effectiveStatus === 'SCHEDULED' ? 'bg-primary shadow-[0_0_8px_var(--color-primary)]' :
+                    effectiveStatus === 'ENDED' ? 'bg-slate-500' : 'bg-rose-500'
                   }`} />
 
                 <div className="space-y-4">
@@ -311,7 +293,7 @@ export default function MyMeetingsPage() {
                       <CalendarDays className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-accent" />
                       <span>{formatDate(meeting.startTime)}</span>
                     </div>
-                    {getStatusBadge(meeting.status)}
+                    {getStatusBadge(effectiveStatus)}
                   </div>
 
                   {/* Meeting Title & Code */}
@@ -321,7 +303,7 @@ export default function MyMeetingsPage() {
                     </h3>
                     <div className="flex items-center gap-2">
                       <span className="text-[8px] sm:text-[10px] font-black text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded tracking-widest font-mono">
-                        {meeting.meetingCode}
+                        {meeting.meetingCode || meeting.platform?.replace('_', ' ')?.toUpperCase() || 'EXTERNAL'}
                       </span>
                       <button
                         onClick={() => handleCopyCode(meeting.meetingCode, meeting._id)}
@@ -348,7 +330,7 @@ export default function MyMeetingsPage() {
                   <div className="flex gap-2">
 
                     {/* View Chat Action for Completed Meetings */}
-                    {meeting.status === "ENDED" && (
+                    {effectiveStatus === "ENDED" && (
                       <>
                         <Button
                           variant="outline"
@@ -373,20 +355,33 @@ export default function MyMeetingsPage() {
                     )}
 
                     {/* Join / Start Actions */}
-                    {meeting.status === 'LIVE' && (
-                      <Link href={`/meeting/${meeting.meetingCode}`}>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 border-primary"
-                        >
-                          <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
-                          ENTER MEETING
-                        </Button>
-                      </Link>
+                    {effectiveStatus === 'LIVE' && (
+                      meeting.provider !== 'vma' && meeting.meetingLink ? (
+                        <a href={meeting.meetingLink} target="_blank" rel="noopener noreferrer">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 border-primary"
+                          >
+                            <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
+                            ENTER MEETING
+                          </Button>
+                        </a>
+                      ) : (
+                        <Link href={`/meeting/${meeting.meetingCode}`}>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow-lg shadow-primary/20 border-primary"
+                          >
+                            <Play className="h-3 sm:h-3.5 w-3 sm:w-3.5 fill-current" />
+                            ENTER MEETING
+                          </Button>
+                        </Link>
+                      )
                     )}
 
-                    {meeting.status === 'SCHEDULED' && (
+                    {effectiveStatus === 'SCHEDULED' && (
                       <>
                         {isHost ? (
                           <>
@@ -410,16 +405,29 @@ export default function MyMeetingsPage() {
                             </Button>
                           </>
                         ) : (
-                          <Link href={`/meeting/${meeting.meetingCode}`}>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase"
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                              LOBBY
-                            </Button>
-                          </Link>
+                          meeting.provider !== 'vma' && meeting.meetingLink ? (
+                            <a href={meeting.meetingLink} target="_blank" rel="noopener noreferrer">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                LOBBY
+                              </Button>
+                            </a>
+                          ) : (
+                            <Link href={`/meeting/${meeting.meetingCode}`}>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="rounded-lg sm:rounded-xl px-3 sm:px-4 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                LOBBY
+                              </Button>
+                            </Link>
+                          )
                         )}
                       </>
                     )}

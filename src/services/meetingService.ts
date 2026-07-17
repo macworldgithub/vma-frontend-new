@@ -20,6 +20,8 @@ export interface Meeting {
   maxParticipants: number;
   recallBotId?: string;
   botStatus?: string;
+  provider?: string;
+  platform?: string;
   summaryData?: {
     executive_summary?: string;
     action_items?: { task: string; assignee?: string; deadline?: string }[];
@@ -95,6 +97,13 @@ export const meetingService = {
 
   summonBot: async (data: { title: string; meetingLink: string; platform: string }): Promise<{ message: string; meetingId: string }> => {
     const response = await api.post('/bot/summon', data);
+    return response.data;
+  },
+
+  downloadMeetingReport: async (id: string): Promise<Blob> => {
+    const response = await api.get(`/bot/meeting/${id}/report`, {
+      responseType: 'blob',
+    });
     return response.data;
   },
 };
