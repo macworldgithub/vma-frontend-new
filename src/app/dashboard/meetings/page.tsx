@@ -9,7 +9,7 @@ import {
   MessageSquare, CalendarDays, Trash2, Shield, Calendar,
   Play, Users, Lock, Unlock, Sparkles, Send, UserCheck,
   Plus, BrainCircuit,
-  FileDown
+  FileDown, RefreshCw
 } from 'lucide-react';
 import { meetingService, Meeting } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
@@ -30,6 +30,7 @@ export default function MyMeetingsPage() {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [activeDrawerTab, setActiveDrawerTab] = useState<'chat' | 'summary'>('summary');
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMeetings();
@@ -161,6 +162,7 @@ export default function MyMeetingsPage() {
   };
 
   const handleDownloadReport = async (meeting: Meeting) => {
+    setDownloadingReportId(meeting._id);
     try {
       const blob = await meetingService.downloadMeetingReport(meeting._id);
       const url = window.URL.createObjectURL(blob);
@@ -177,6 +179,8 @@ export default function MyMeetingsPage() {
     } catch (err) {
       console.error(err);
       alert("Failed to download meeting report.");
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
@@ -336,9 +340,14 @@ export default function MyMeetingsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownloadReport(meeting)}
+                          disabled={downloadingReportId === meeting._id}
                           className="rounded-lg sm:rounded-xl px-2.5 sm:px-3 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary"
                         >
-                          <FileDown className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                          {downloadingReportId === meeting._id ? (
+                            <RefreshCw className="h-3 sm:h-3.5 w-3 sm:w-3.5 animate-spin" />
+                          ) : (
+                            <FileDown className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                          )}
                           REPORT
                         </Button>
 
