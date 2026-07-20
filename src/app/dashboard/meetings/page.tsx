@@ -100,8 +100,8 @@ export default function MyMeetingsPage() {
   // Filter Logic
   const filteredMeetings = meetings.filter((meeting) => {
     const matchesSearch =
-      meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      meeting.meetingCode.toLowerCase().includes(searchQuery.toLowerCase());
+      (meeting.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (meeting.meetingCode || '').toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'ALL' || meeting.status === statusFilter;
 

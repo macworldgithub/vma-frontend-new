@@ -8,11 +8,13 @@ interface SummonBotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (meetingId: string) => void;
+  initialTitle?: string;
+  initialMeetingLink?: string;
 }
 
-export function SummonBotModal({ isOpen, onClose, onSuccess }: SummonBotModalProps) {
-  const [title, setTitle] = useState('');
-  const [meetingLink, setMeetingLink] = useState('');
+export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', initialMeetingLink = '' }: SummonBotModalProps) {
+  const [title, setTitle] = useState(initialTitle);
+  const [meetingLink, setMeetingLink] = useState(initialMeetingLink);
   const [platform, setPlatform] = useState('microsoft_teams');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,8 +38,8 @@ export function SummonBotModal({ isOpen, onClose, onSuccess }: SummonBotModalPro
       onSuccess(response.meetingId);
       
       // Reset form
-      setTitle('');
-      setMeetingLink('');
+      setTitle(initialTitle);
+      setMeetingLink(initialMeetingLink);
       setPlatform('microsoft_teams');
     } catch (error: any) {
       console.error('Failed to summon bot:', error);

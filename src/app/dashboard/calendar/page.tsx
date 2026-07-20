@@ -5,7 +5,8 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { calendarService } from "@/services/calendarService";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, ExternalLink, CheckCircle2 } from "lucide-react";
+import { RefreshCw, ExternalLink, CheckCircle2, Copy, Bot } from "lucide-react";
+import { SummonBotModal } from "@/components/dashboard/SummonBotModal";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
 
@@ -43,6 +44,18 @@ export default function CalendarPage() {
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSummonBotOpen, setIsSummonBotOpen] = useState(false);
+  const [selectedEventToSummon, setSelectedEventToSummon] = useState<CalendarEvent | null>(null);
+
+  const handleCopyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    toast.success('Meeting link copied!');
+  };
+
+  const handleSummonBotClick = (event: CalendarEvent) => {
+    setSelectedEventToSummon(event);
+    setIsSummonBotOpen(true);
+  };
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -291,16 +304,36 @@ export default function CalendarPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   {event.meetingLink && (
-                    <Button
-                      variant="outline"
-                      className="gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white"
-                      onClick={() => window.open(event.meetingLink, "_blank")}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Join Meeting / Calendar
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white flex-shrink-0"
+                        onClick={() => handleCopyLink(event.meetingLink!)}
+                        title="Copy meeting link"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white"
+                        onClick={() => window.open(event.meetingLink, "_blank")}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="hidden sm:inline">Join Meeting</span>
+                        <span className="sm:hidden">Join</span>
+                      </Button>
+                      <Button
+                        className="gap-2 shadow-lg shadow-primary/20"
+                        onClick={() => handleSummonBotClick(event)}
+                      >
+                        <Bot className="h-4 w-4" />
+                        <span className="hidden sm:inline">Summon Bot</span>
+                        <span className="sm:hidden">Summon</span>
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -308,6 +341,20 @@ export default function CalendarPage() {
           </div>
         </div>
       )}
+
+      <SummonBotModal
+        isOpen={isSummonBotOpen}
+        onClose={() => {
+          setIsSummonBotOpen(false);
+          setSelectedEventToSummon(null);
+        }}
+        onSuccess={() => {
+          setIsSummonBotOpen(false);
+          setSelectedEventToSummon(null);
+        }}
+        initialTitle={selectedEventToSummon?.title || ''}
+        initialMeetingLink={selectedEventToSummon?.meetingLink || ''}
+      />
     </div>
   );
 }
