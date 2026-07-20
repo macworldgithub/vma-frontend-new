@@ -95,7 +95,7 @@ export const meetingService = {
     return response.data;
   },
 
-  summonBot: async (data: { title: string; meetingLink: string; platform: string }): Promise<{ message: string; meetingId: string }> => {
+  summonBot: async (data: { title: string; meetingLink: string; platform: string; meetingId?: string }): Promise<{ message: string; meetingId: string }> => {
     const response = await api.post('/bot/summon', data);
     return response.data;
   },

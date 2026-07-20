@@ -9,6 +9,7 @@ import { RefreshCw, ExternalLink, CheckCircle2, Copy, Bot } from "lucide-react";
 import { SummonBotModal } from "@/components/dashboard/SummonBotModal";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
+import { meetingService } from "@/services/meetingService";
 
 interface CalendarEvent {
   _id: string;
@@ -52,9 +53,27 @@ export default function CalendarPage() {
     toast.success('Meeting link copied!');
   };
 
-  const handleSummonBotClick = (event: CalendarEvent) => {
-    setSelectedEventToSummon(event);
-    setIsSummonBotOpen(true);
+  const handleDeployBotClick = async (event: CalendarEvent) => {
+    try {
+      if (!event.meetingLink) {
+        toast.error("No meeting link available to deploy bot.");
+        return;
+      }
+      toast.info("Deploying Bot...");
+      
+      await meetingService.summonBot({
+        title: event.title,
+        meetingLink: event.meetingLink,
+        platform: event.platform === "teams" ? "teams" : event.platform,
+        meetingId: event._id,
+      });
+      
+      toast.success("Bot deployed successfully!");
+      fetchEvents();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to deploy bot.");
+    }
   };
 
   const fetchEvents = async () => {
@@ -327,11 +346,11 @@ export default function CalendarPage() {
                       </Button>
                       <Button
                         className="gap-2 shadow-lg shadow-primary/20"
-                        onClick={() => handleSummonBotClick(event)}
+                        onClick={() => handleDeployBotClick(event)}
                       >
                         <Bot className="h-4 w-4" />
-                        <span className="hidden sm:inline">Summon Bot</span>
-                        <span className="sm:hidden">Summon</span>
+                        <span className="hidden sm:inline">Deploy Bot</span>
+                        <span className="sm:hidden">Deploy</span>
                       </Button>
                     </>
                   )}
