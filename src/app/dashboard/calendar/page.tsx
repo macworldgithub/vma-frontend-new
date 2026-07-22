@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { calendarService } from "@/services/calendarService";
 import { Button } from "@/components/ui/Button";
@@ -39,8 +39,10 @@ export default function CalendarPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [dbMeetings, setDbMeetings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const isSyncingRef = useRef(false);
   const [isConnected, setIsConnected] = useState(false);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -60,27 +62,31 @@ export default function CalendarPage() {
         return;
       }
       toast.info("Deploying Bot...");
-      
+
       await meetingService.summonBot({
         title: event.title,
         meetingLink: event.meetingLink,
         platform: event.platform === "teams" ? "teams" : event.platform,
         meetingId: event._id,
       });
-      
+
       toast.success("Bot deployed successfully!");
-      fetchEvents();
+      fetchEvents(true);
     } catch (error) {
       console.error(error);
       toast.error("Failed to deploy bot.");
     }
   };
 
-  const fetchEvents = async () => {
-    setIsLoading(true);
+  const fetchEvents = async (background = false) => {
+    if (!background) setIsLoading(true);
     try {
-      const response = await calendarService.getEvents();
+      const [response, myMeetings] = await Promise.all([
+        calendarService.getEvents(),
+        meetingService.getMyMeetings().catch(() => [])
+      ]);
       setEvents(response.data || []);
+      setDbMeetings(myMeetings || []);
 
       const providers = response.connectedProviders || [];
       if (providers.length === 0 && response.data?.length > 0) {
@@ -113,8 +119,45 @@ export default function CalendarPage() {
     }
   };
 
+  const performSync = async (silent = true) => {
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
+    setIsSyncing(true);
+    try {
+      await calendarService.syncCalendar();
+      await fetchEvents(true);
+      if (!silent) toast.success("Calendar sync completed successfully.");
+    } catch (err) {
+      if (!silent) toast.error("Sync failed. Please try again later.");
+    } finally {
+      isSyncingRef.current = false;
+      setIsSyncing(false);
+    }
+  };
+
   useEffect(() => {
-    fetchEvents();
+    const init = async () => {
+      await fetchEvents();
+      await performSync(true);
+    };
+    init();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        performSync(true);
+      }
+    };
+    const handleFocus = () => {
+      performSync(true);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   useEffect(() => {
@@ -134,19 +177,6 @@ export default function CalendarPage() {
       window.location.href = authUrl;
     } catch (err) {
       alert("Failed to initialize Microsoft connection.");
-    }
-  };
-
-  const handleSync = async () => {
-    setIsSyncing(true);
-    try {
-      await calendarService.syncCalendar();
-      await fetchEvents();
-      toast.success("Calendar sync completed successfully.");
-    } catch (err) {
-      toast.error("Sync failed. Please try again later.");
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -188,17 +218,12 @@ export default function CalendarPage() {
                 <CheckCircle2 className="h-3 w-3" />
                 Linked to Teams
               </div>
-              <Button
-                onClick={handleSync}
-                disabled={isSyncing}
-                variant="outline"
-                className="gap-2 bg-white border-border text-foreground hover:bg-muted shadow-sm"
-              >
-                <RefreshCw
-                  className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
-                />
-                {isSyncing ? "Syncing..." : "Sync Now"}
-              </Button>
+              {isSyncing && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full animate-in fade-in">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  <span className="text-xs font-medium">Syncing...</span>
+                </div>
+              )}
             </>
           ) : (
             <Button
@@ -266,9 +291,6 @@ export default function CalendarPage() {
           <p className="text-muted-foreground font-medium">
             No upcoming meetings found in your Teams calendar.
           </p>
-          <Button variant="outline" onClick={handleSync} disabled={isSyncing}>
-            Force Refresh
-          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -279,7 +301,10 @@ export default function CalendarPage() {
           </div>
 
           <div className="space-y-4">
-            {filteredEvents.map((event) => (
+            {filteredEvents.map((event) => {
+              const isDeployed = event.meetingLink ? dbMeetings.some(m => m.meetingLink === event.meetingLink && (m.recallBotId || (m.botStatus && m.botStatus !== 'none'))) : false;
+              
+              return (
               <div
                 key={event._id}
                 className="glass-card p-6 rounded-2xl group border-border bg-card hover-float flex flex-col md:flex-row md:items-center justify-between gap-6"
@@ -344,19 +369,23 @@ export default function CalendarPage() {
                         <span className="hidden sm:inline">Join Meeting</span>
                         <span className="sm:hidden">Join</span>
                       </Button>
-                      <Button
-                        className="gap-2 shadow-lg shadow-primary/20"
-                        onClick={() => handleDeployBotClick(event)}
-                      >
-                        <Bot className="h-4 w-4" />
-                        <span className="hidden sm:inline">Deploy Bot</span>
-                        <span className="sm:hidden">Deploy</span>
-                      </Button>
+                      <div className="relative group/btn" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
+                        <Button
+                          className={`gap-2 shadow-lg shadow-primary/20 w-full disabled:opacity-50 ${isDeployed ? 'cursor-not-allowed' : ''}`}
+                          onClick={() => handleDeployBotClick(event)}
+                          disabled={isDeployed}
+                        >
+                          <Bot className="h-4 w-4" />
+                          <span className="hidden sm:inline">{isDeployed ? "Bot Deployed" : "Deploy Bot"}</span>
+                          <span className="sm:hidden">{isDeployed ? "Deployed" : "Deploy"}</span>
+                        </Button>
+                      </div>
                     </>
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

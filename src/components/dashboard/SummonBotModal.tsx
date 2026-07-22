@@ -17,6 +17,19 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
   const [meetingLink, setMeetingLink] = useState(initialMeetingLink);
   const [platform, setPlatform] = useState('microsoft_teams');
   const [isLoading, setIsLoading] = useState(false);
+  const [deployedLinks, setDeployedLinks] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      meetingService.getMyMeetings()
+        .then(meetings => {
+          setDeployedLinks(meetings.filter((m: any) => m.recallBotId || (m.botStatus && m.botStatus !== 'none')).map((m: any) => m.meetingLink).filter(Boolean));
+        })
+        .catch(console.error);
+    }
+  }, [isOpen]);
+
+  const isDeployed = meetingLink.trim() !== '' && deployedLinks.includes(meetingLink.trim());
 
   if (!isOpen) return null;
 
@@ -132,6 +145,11 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
               </div>
             </div>
 
+            {isDeployed && (
+              <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-600 text-[10px] font-black uppercase tracking-widest">
+                Bot has already been deployed to that meeting.
+              </div>
+            )}
             <div className="pt-4 flex gap-3">
               <Button 
                 type="button" 
@@ -141,23 +159,25 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading || !title.trim() || !meetingLink.trim()}
-                className="flex-[2] rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Deploying...
-                  </>
-                ) : (
-                  <>
-                    Deploy Bot
-                    <Bot className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
+              <div className="flex-[2] relative" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading || !title.trim() || !meetingLink.trim() || isDeployed}
+                  className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50 cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Deploying...
+                    </>
+                  ) : (
+                    <>
+                      {isDeployed ? "Bot Deployed" : "Deploy Bot"}
+                      <Bot className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </form>
         </div>

@@ -266,7 +266,11 @@ export default function MyMeetingsPage() {
           {filteredMeetings.map((meeting) => {
             const isHost = meeting.hostId === user?.id;
             let effectiveStatus = meeting.status;
-            if (meeting.status !== "CANCELLED") {
+            const isBotDone = meeting.botStatus === 'done' || meeting.botStatus === 'fatal' || meeting.botStatus === 'call_ended';
+            
+            if (meeting.status === 'ENDED' || meeting.status === 'CANCELLED' || isBotDone) {
+              effectiveStatus = meeting.status === 'CANCELLED' ? 'CANCELLED' : 'ENDED';
+            } else {
               const now = Date.now();
               const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
               const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;

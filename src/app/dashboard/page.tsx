@@ -44,7 +44,11 @@ export default function DashboardPage() {
       const data = await meetingService.getMyMeetings();
       setMeetings(data.filter((m: any) => {
         let effStatus = m.status;
-        if (m.status !== "CANCELLED") {
+        const isBotDone = m.botStatus === 'done' || m.botStatus === 'fatal' || m.botStatus === 'call_ended';
+        
+        if (m.status === 'ENDED' || m.status === 'CANCELLED' || isBotDone) {
+          effStatus = m.status === 'CANCELLED' ? 'CANCELLED' : 'ENDED';
+        } else {
           const now = Date.now();
           const startTime = m.startTime ? new Date(m.startTime).getTime() : now;
           const endTime = m.endTime ? new Date(m.endTime).getTime() : null;
