@@ -610,6 +610,59 @@ export default function MyMeetingsPage() {
                         </div>
                       ))}
                     </div>
+                  ) : activeChatSession?.summaryData?.transcript ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-4 px-1 pb-2 border-b border-border/50">
+                        <BrainCircuit className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                          AI Audio Transcript
+                        </span>
+                      </div>
+                      {activeChatSession.summaryData.transcript.split('\n').filter((l: string) => l.trim().length > 0).map((line: string, index: number) => {
+                        const splitIdx = line.indexOf(':');
+                        let speaker = 'Unknown';
+                        let text = line;
+                        let timestamp = '';
+
+                        if (splitIdx !== -1) {
+                          speaker = line.substring(0, splitIdx).trim();
+                          text = line.substring(splitIdx + 1).trim();
+
+                          const timeMatch = speaker.match(/^\[(.*?)\]\s*(.*)$/);
+                          if (timeMatch) {
+                            timestamp = timeMatch[1];
+                            speaker = timeMatch[2];
+                          }
+                        }
+                        const isUser = user?.name ? speaker.toLowerCase().includes(user.name.toLowerCase()) : false;
+
+                        return (
+                          <div
+                            key={`trans-${index}`}
+                            className={`flex flex-col max-w-[80%] ${isUser ? 'ml-auto items-end' : 'items-start'}`}
+                          >
+                            <div className="flex items-center gap-1.5 mb-1 px-1">
+                              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                                {speaker}
+                              </span>
+                              {timestamp && (
+                                <span className="text-[8px] text-muted-foreground font-mono">
+                                  {timestamp}
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              className={`p-3.5 rounded-2xl text-sm border font-medium leading-relaxed ${isUser
+                                ? 'bg-primary/10 border-primary/20 text-foreground rounded-tr-none'
+                                : 'bg-muted/50 border-border text-foreground rounded-tl-none'
+                                }`}
+                            >
+                              {text}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   ) : chatMessages.length > 0 ? (
                     chatMessages.map((msg, index) => {
                       const isUser = msg.userId === user?.id;
