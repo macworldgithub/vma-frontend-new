@@ -16,6 +16,36 @@ import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import { MeetingsPageSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
+const getEffectiveMeetingStatus = (meeting: Meeting): 'SCHEDULED' | 'LIVE' | 'ENDED' | 'CANCELLED' => {
+  const isBotDone = meeting.botStatus === 'done' || meeting.botStatus === 'fatal' || meeting.botStatus === 'call_ended';
+
+  if (meeting.status === 'CANCELLED') {
+    return 'CANCELLED';
+  }
+
+  if (meeting.status === 'ENDED' || isBotDone) {
+    return 'ENDED';
+  }
+
+  const now = Date.now();
+  const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
+  const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
+
+  if (endTime && endTime < now) {
+    return 'ENDED';
+  }
+
+  if (meeting.status === 'LIVE') {
+    return 'LIVE';
+  }
+
+  if (startTime > now) {
+    return 'SCHEDULED';
+  }
+
+  return 'LIVE';
+};
+
 export default function MyMeetingsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -98,13 +128,18 @@ export default function MyMeetingsPage() {
     }
   };
 
+  const normalizedMeetings = meetings.map((meeting) => ({
+    ...meeting,
+    effectiveStatus: getEffectiveMeetingStatus(meeting),
+  }));
+
   // Filter Logic
-  const filteredMeetings = meetings.filter((meeting) => {
+  const filteredMeetings = normalizedMeetings.filter((meeting) => {
     const matchesSearch =
       (meeting.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (meeting.meetingCode || '').toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = statusFilter === 'ALL' || meeting.status === statusFilter;
+    const matchesStatus = statusFilter === 'ALL' || meeting.effectiveStatus === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -218,7 +253,7 @@ export default function MyMeetingsPage() {
             <div className="bg-card px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border border-border text-center flex-1 sm:flex-none min-w-0 sm:min-w-[120px] shadow-sm">
               <span className="text-[8px] sm:text-[9px] font-black text-primary uppercase tracking-widest">Active Live</span>
               <p className="text-2xl sm:text-3xl font-black text-primary mt-1">
-                {meetings.filter(m => m.status === 'LIVE').length}
+                {normalizedMeetings.filter(m => m.effectiveStatus === 'LIVE').length}
               </p>
             </div>
           </div>
@@ -265,22 +300,7 @@ export default function MyMeetingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
           {filteredMeetings.map((meeting) => {
             const isHost = meeting.hostId === user?.id;
-            let effectiveStatus = meeting.status;
-            const isBotDone = meeting.botStatus === 'done' || meeting.botStatus === 'fatal' || meeting.botStatus === 'call_ended';
-            
-            if (meeting.status === 'ENDED' || meeting.status === 'CANCELLED' || isBotDone) {
-              effectiveStatus = meeting.status === 'CANCELLED' ? 'CANCELLED' : 'ENDED';
-            } else {
-              const now = Date.now();
-              const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
-              const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
-
-              if (endTime && endTime < now) {
-                effectiveStatus = "ENDED";
-              } else if (startTime > now) {
-                effectiveStatus = "SCHEDULED";
-              }
-            }
+            const effectiveStatus = meeting.effectiveStatus;
 
             return (
               <div
