@@ -16,6 +16,36 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { DashboardSkeleton } from '@/components/ui/skeletons/PageSkeletons';
 
+const getEffectiveMeetingStatus = (meeting: any): 'SCHEDULED' | 'LIVE' | 'ENDED' | 'CANCELLED' => {
+  const isBotDone = meeting.botStatus === 'done' || meeting.botStatus === 'fatal' || meeting.botStatus === 'call_ended';
+
+  if (meeting.status === 'CANCELLED') {
+    return 'CANCELLED';
+  }
+
+  if (meeting.status === 'ENDED' || isBotDone) {
+    return 'ENDED';
+  }
+
+  const now = Date.now();
+  const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
+  const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
+
+  if (endTime && endTime < now) {
+    return 'ENDED';
+  }
+
+  if (meeting.status === 'LIVE') {
+    return 'LIVE';
+  }
+
+  if (startTime > now) {
+    return 'SCHEDULED';
+  }
+
+  return 'LIVE';
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,7 +57,7 @@ export default function DashboardPage() {
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'SCHEDULED' | 'LIVE'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'SCHEDULED' | 'LIVE' | 'COMPLETED'>('ALL');
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -42,30 +72,7 @@ export default function DashboardPage() {
     setIsLoading(true);
     try {
       const data = await meetingService.getMyMeetings();
-      setMeetings(data.filter((m: any) => {
-        let effStatus = m.status;
-        const isBotDone = m.botStatus === 'done' || m.botStatus === 'fatal' || m.botStatus === 'call_ended';
-        
-        if (m.status === 'ENDED' || m.status === 'CANCELLED' || isBotDone) {
-          effStatus = m.status === 'CANCELLED' ? 'CANCELLED' : 'ENDED';
-        } else {
-          const now = Date.now();
-          const startTime = m.startTime ? new Date(m.startTime).getTime() : now;
-          const endTime = m.endTime ? new Date(m.endTime).getTime() : null;
-
-          if (endTime && endTime < now) {
-            effStatus = "ENDED";
-          } else if (startTime > now) {
-            effStatus = "SCHEDULED";
-          }
-        }
-
-        const isVmaOrTeams = m.provider === 'vma' || m.provider === 'microsoft';
-        if (isVmaOrTeams) {
-          return effStatus === 'LIVE' || effStatus === 'SCHEDULED';
-        }
-        return effStatus !== 'ENDED'; // Don't show ENDED for others by default either unless specified, but user said show ended. Let's return true.
-      }));
+      setMeetings(data);
     } catch (error) {
       console.error('Error fetching meetings:', error);
     } finally {
@@ -77,9 +84,16 @@ export default function DashboardPage() {
     fetchMeetings();
   }, []);
 
+  const normalizedMeetings = useMemo(() => {
+    return meetings.map((meeting: any) => ({
+      ...meeting,
+      effectiveStatus: getEffectiveMeetingStatus(meeting),
+    }));
+  }, [meetings]);
+
   // Filtered meetings based on search query and status filter
   const filteredMeetings = useMemo(() => {
-    let result = meetings;
+    let result = normalizedMeetings;
 
     // Filter by search query (title or meeting code)
     if (searchQuery.trim()) {
@@ -93,11 +107,12 @@ export default function DashboardPage() {
 
     // Filter by status
     if (statusFilter !== 'ALL') {
-      result = result.filter((m: any) => m.status === statusFilter);
+      const mappedFilter = statusFilter === 'COMPLETED' ? 'ENDED' : statusFilter;
+      result = result.filter((m: any) => m.effectiveStatus === mappedFilter);
     }
 
     return result;
-  }, [meetings, searchQuery, statusFilter]);
+  }, [normalizedMeetings, searchQuery, statusFilter]);
 
   const handleMeetingCreated = (code: string) => {
     setIsModalOpen(false);
@@ -132,7 +147,7 @@ export default function DashboardPage() {
               Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
             </h1>
             <p className="text-xs sm:text-base lg:text-lg text-muted-foreground font-medium max-w-xl">
-              You have <span className="text-foreground font-bold">{meetings.filter(m => m.status === 'SCHEDULED').length} sessions</span> scheduled for today. Ready to initialize your next meeting?
+              You have <span className="text-foreground font-bold">{normalizedMeetings.filter(m => m.effectiveStatus === 'SCHEDULED').length} sessions</span> scheduled for today. Ready to initialize your next meeting?
             </p>
           </div>
 
@@ -245,7 +260,7 @@ export default function DashboardPage() {
                   <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Status Filter</p>
                 </div>
                 <div className="p-2 space-y-1">
-                  {(['ALL', 'SCHEDULED', 'LIVE'] as const).map((status) => (
+                  {(['ALL', 'SCHEDULED', 'LIVE', 'COMPLETED'] as const).map((status) => (
                     <button
                       key={status}
                       onClick={() => {
@@ -257,7 +272,7 @@ export default function DashboardPage() {
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         }`}
                     >
-                      {status === 'ALL' ? 'All Sessions' : status}
+                      {status === 'ALL' ? 'All Sessions' : status === 'COMPLETED' ? 'Completed' : status}
                     </button>
                   ))}
                 </div>
