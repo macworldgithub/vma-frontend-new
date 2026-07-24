@@ -42,7 +42,7 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
       bg: "bg-primary/10",
       label: "Live Now",
     },
-    ENDED: { color: "text-muted-foreground", bg: "bg-muted", label: "Ended" },
+    ENDED: { color: "text-muted-foreground", bg: "bg-muted", label: "Completed" },
     CANCELLED: {
       color: "text-rose-600",
       bg: "bg-rose-500/10",
