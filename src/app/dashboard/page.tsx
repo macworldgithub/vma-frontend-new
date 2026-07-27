@@ -144,7 +144,7 @@ export default function DashboardPage() {
               <span className="text-[8px] sm:text-[10px] font-black text-accent uppercase tracking-[0.2em]">Enterprise Secure Platform</span>
             </div>
             <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black text-foreground uppercase tracking-tighter leading-tight">
-              Welcome back, <span className="text-primary">{user?.name?.split(' ')[0]}</span>
+              Welcome <span className="text-primary">{user?.name?.split(' ')[0]}</span>
             </h1>
             <p className="text-xs sm:text-base lg:text-lg text-muted-foreground font-medium max-w-xl">
               You have <span className="text-foreground font-bold">{normalizedMeetings.filter(m => m.effectiveStatus === 'SCHEDULED').length} sessions</span> scheduled for today. Ready to initialize your next meeting?
