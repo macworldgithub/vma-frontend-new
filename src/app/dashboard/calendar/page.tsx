@@ -174,7 +174,16 @@ export default function CalendarPage() {
   const handleConnectMicrosoft = async () => {
     try {
       const authUrl = await calendarService.getMicrosoftAuthUrl();
-      window.location.href = authUrl;
+      try {
+        if (window.top && window.top !== window) {
+          window.top.location.href = authUrl;
+        } else {
+          window.location.href = authUrl;
+        }
+      } catch (e) {
+        // Fallback for cross-origin iframe blocking top window navigation
+        window.open(authUrl, "_blank");
+      }
     } catch (err) {
       alert("Failed to initialize Microsoft connection.");
     }
@@ -303,87 +312,87 @@ export default function CalendarPage() {
           <div className="space-y-4">
             {filteredEvents.map((event) => {
               const isDeployed = event.meetingLink ? dbMeetings.some(m => m.meetingLink === event.meetingLink && (m.recallBotId || (m.botStatus && m.botStatus !== 'none'))) : false;
-              
-              return (
-              <div
-                key={event._id}
-                className="glass-card p-6 rounded-2xl group border-border bg-card hover-float flex flex-col md:flex-row md:items-center justify-between gap-6"
-              >
-                <div className="flex gap-6 items-start">
-                  <div className="flex flex-col items-center justify-center bg-muted rounded-xl px-4 py-3 border border-border min-w-[80px]">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-                      {new Date(event.startTime).toLocaleDateString("en-AU", {
-                        month: "short",
-                      })}
-                    </span>
-                    <span className="text-2xl font-black text-foreground leading-none">
-                      {new Date(event.startTime).getDate()}
-                    </span>
-                  </div>
 
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
-                      {event.title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                      <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                        {new Date(event.startTime).toLocaleTimeString("en-AU", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
+              return (
+                <div
+                  key={event._id}
+                  className="glass-card p-6 rounded-2xl group border-border bg-card hover-float flex flex-col md:flex-row md:items-center justify-between gap-6"
+                >
+                  <div className="flex gap-6 items-start">
+                    <div className="flex flex-col items-center justify-center bg-muted rounded-xl px-4 py-3 border border-border min-w-[80px]">
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                        {new Date(event.startTime).toLocaleDateString("en-AU", {
+                          month: "short",
                         })}
-                        {" - "}
-                        {new Date(event.endTime).toLocaleTimeString("en-AU", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </p>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-black uppercase tracking-tighter">
-                        {event.platform === "teams"
-                          ? "Microsoft Teams"
-                          : event.platform}
+                      </span>
+                      <span className="text-2xl font-black text-foreground leading-none">
+                        {new Date(event.startTime).getDate()}
                       </span>
                     </div>
+
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-1">
+                        {event.title}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                          {new Date(event.startTime).toLocaleTimeString("en-AU", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                          {" - "}
+                          {new Date(event.endTime).toLocaleTimeString("en-AU", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </p>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-black uppercase tracking-tighter">
+                          {event.platform === "teams"
+                            ? "Microsoft Teams"
+                            : event.platform}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    {event.meetingLink && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white flex-shrink-0"
+                          onClick={() => handleCopyLink(event.meetingLink!)}
+                          title="Copy meeting link"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white"
+                          onClick={() => window.open(event.meetingLink, "_blank")}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          <span className="hidden sm:inline">Join Meeting</span>
+                          <span className="sm:hidden">Join</span>
+                        </Button>
+                        <div className="relative group/btn" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
+                          <Button
+                            className={`gap-2 shadow-lg shadow-primary/20 w-full disabled:opacity-50 ${isDeployed ? 'cursor-not-allowed' : ''}`}
+                            onClick={() => handleDeployBotClick(event)}
+                            disabled={isDeployed}
+                          >
+                            <Bot className="h-4 w-4" />
+                            <span className="hidden sm:inline">{isDeployed ? "Bot Deployed" : "Deploy Bot"}</span>
+                            <span className="sm:hidden">{isDeployed ? "Deployed" : "Deploy"}</span>
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  {event.meetingLink && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white flex-shrink-0"
-                        onClick={() => handleCopyLink(event.meetingLink!)}
-                        title="Copy meeting link"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white"
-                        onClick={() => window.open(event.meetingLink, "_blank")}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        <span className="hidden sm:inline">Join Meeting</span>
-                        <span className="sm:hidden">Join</span>
-                      </Button>
-                      <div className="relative group/btn" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
-                        <Button
-                          className={`gap-2 shadow-lg shadow-primary/20 w-full disabled:opacity-50 ${isDeployed ? 'cursor-not-allowed' : ''}`}
-                          onClick={() => handleDeployBotClick(event)}
-                          disabled={isDeployed}
-                        >
-                          <Bot className="h-4 w-4" />
-                          <span className="hidden sm:inline">{isDeployed ? "Bot Deployed" : "Deploy Bot"}</span>
-                          <span className="sm:hidden">{isDeployed ? "Deployed" : "Deploy"}</span>
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
               );
             })}
           </div>
