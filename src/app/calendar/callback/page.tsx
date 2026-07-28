@@ -31,9 +31,18 @@ function CallbackContent() {
 
       try {
         await calendarService.connectMicrosoft(code, state);
-        router.push('/dashboard/calendar?status=success&provider=microsoft');
+        if (window.top) {
+          window.top.location.href = '/dashboard/calendar?status=success&provider=microsoft';
+        } else {
+          window.location.href = '/dashboard/calendar?status=success&provider=microsoft';
+        }
       } catch (err: any) {
         console.error('Calendar connection failed:', err);
+        // Fallback redirection to dashboard if token was already saved
+        if (err.response?.status === 400 || err.response?.data?.message?.includes('already')) {
+          window.location.href = '/dashboard/calendar?status=success&provider=microsoft';
+          return;
+        }
         setError(err.response?.data?.message || 'Failed to connect Microsoft Teams');
       }
     };
