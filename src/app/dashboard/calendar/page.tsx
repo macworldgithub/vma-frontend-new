@@ -165,8 +165,15 @@ export default function CalendarPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get("status") === "success") {
         setSuccessMessage("Microsoft Teams connected successfully!");
+        fetchEvents(true);
+        performSync(true);
         router.replace("/dashboard/calendar");
         setTimeout(() => setSuccessMessage(null), 5000);
+      } else if (params.get("status") === "error") {
+        const errorMsg = params.get("error") || "Failed to connect Teams Calendar";
+        setError(errorMsg);
+        toast.error(errorMsg);
+        router.replace("/dashboard/calendar");
       }
     }
   }, [router]);
