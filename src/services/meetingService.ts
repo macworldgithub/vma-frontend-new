@@ -49,6 +49,8 @@ export interface IceServer {
   credential?: string;
 }
 
+const inFlightSummons = new Map<string, Promise<{ message: string; meetingId: string }>>();
+
 export const meetingService = {
   getIceServers: async (): Promise<{ iceServers: IceServer[] }> => {
     const response = await api.get('/meetings/ice-servers');
@@ -96,8 +98,25 @@ export const meetingService = {
   },
 
   summonBot: async (data: { title: string; meetingLink: string; platform: string; meetingId?: string }): Promise<{ message: string; meetingId: string }> => {
-    const response = await api.post('/bot/summon', data);
-    return response.data;
+    const key = data.meetingId || data.meetingLink;
+    if (key && inFlightSummons.has(key)) {
+      return inFlightSummons.get(key)!;
+    }
+
+    const requestPromise = (async () => {
+      try {
+        const response = await api.post('/bot/summon', data);
+        return response.data;
+      } finally {
+        if (key) inFlightSummons.delete(key);
+      }
+    })();
+
+    if (key) {
+      inFlightSummons.set(key, requestPromise);
+    }
+
+    return requestPromise;
   },
 
   downloadMeetingReport: async (id: string): Promise<Blob> => {

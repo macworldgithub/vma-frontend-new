@@ -31,6 +31,8 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
 
   const isDeployed = meetingLink.trim() !== '' && deployedLinks.includes(meetingLink.trim());
 
+  const isSubmittingRef = React.useRef(false);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +42,12 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
       return;
     }
 
+    if (isSubmittingRef.current || isLoading) {
+      return;
+    }
+    isSubmittingRef.current = true;
     setIsLoading(true);
+
     try {
       const response = await meetingService.summonBot({
         title: title.trim(),
@@ -58,6 +65,7 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
       console.error('Failed to summon bot:', error);
       toast.error(error.response?.data?.message || 'Failed to deploy AI Bot. Please try again.');
     } finally {
+      isSubmittingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -162,7 +170,7 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
               <div className="flex-[2] relative" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
                 <Button 
                   type="submit" 
-                  disabled={isLoading || !title.trim() || !meetingLink.trim() || isDeployed}
+                  disabled={isLoading || isSubmittingRef.current || !title.trim() || !meetingLink.trim() || isDeployed}
                   className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50 cursor-not-allowed"
                 >
                   {isLoading ? (

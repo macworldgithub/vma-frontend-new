@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { calendarService } from "@/services/calendarService";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, ExternalLink, CheckCircle2, Copy, Bot } from "lucide-react";
+import { RefreshCw, ExternalLink, CheckCircle2, Copy, Bot, Loader2 } from "lucide-react";
 import { SummonBotModal } from "@/components/dashboard/SummonBotModal";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
@@ -49,6 +49,8 @@ export default function CalendarPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSummonBotOpen, setIsSummonBotOpen] = useState(false);
   const [selectedEventToSummon, setSelectedEventToSummon] = useState<CalendarEvent | null>(null);
+  const [deployingIds, setDeployingIds] = useState<Set<string>>(new Set());
+  const deployingIdsRef = useRef<Set<string>>(new Set());
 
   const handleCopyLink = (link: string) => {
     navigator.clipboard.writeText(link);
@@ -61,6 +63,14 @@ export default function CalendarPage() {
         toast.error("No meeting link available to deploy bot.");
         return;
       }
+
+      const eventKey = event._id || event.meetingLink;
+      if (deployingIdsRef.current.has(eventKey)) {
+        return;
+      }
+      deployingIdsRef.current.add(eventKey);
+      setDeployingIds((prev) => new Set(prev).add(eventKey));
+
       toast.info("Deploying Bot...");
 
       await meetingService.summonBot({
@@ -75,6 +85,16 @@ export default function CalendarPage() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to deploy bot.");
+    } finally {
+      const eventKey = event._id || event.meetingLink;
+      if (eventKey) {
+        deployingIdsRef.current.delete(eventKey);
+        setDeployingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(eventKey);
+          return next;
+        });
+      }
     }
   };
 
@@ -319,6 +339,8 @@ export default function CalendarPage() {
           <div className="space-y-4">
             {filteredEvents.map((event) => {
               const isDeployed = event.meetingLink ? dbMeetings.some(m => m.meetingLink === event.meetingLink && (m.recallBotId || (m.botStatus && m.botStatus !== 'none'))) : false;
+              const isDeploying = (event._id && deployingIds.has(event._id)) || (event.meetingLink ? deployingIds.has(event.meetingLink) : false);
+              const isBtnDisabled = isDeployed || isDeploying;
 
               return (
                 <div
@@ -387,13 +409,23 @@ export default function CalendarPage() {
                         </Button>
                         <div className="relative group/btn" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
                           <Button
-                            className={`gap-2 shadow-lg shadow-primary/20 w-full disabled:opacity-50 ${isDeployed ? 'cursor-not-allowed' : ''}`}
+                            className={`gap-2 shadow-lg shadow-primary/20 w-full disabled:opacity-50 ${isBtnDisabled ? 'cursor-not-allowed' : ''}`}
                             onClick={() => handleDeployBotClick(event)}
-                            disabled={isDeployed}
+                            disabled={isBtnDisabled}
                           >
-                            <Bot className="h-4 w-4" />
-                            <span className="hidden sm:inline">{isDeployed ? "Bot Deployed" : "Deploy Bot"}</span>
-                            <span className="sm:hidden">{isDeployed ? "Deployed" : "Deploy"}</span>
+                            {isDeploying ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="hidden sm:inline">Deploying...</span>
+                                <span className="sm:hidden">Deploying</span>
+                              </>
+                            ) : (
+                              <>
+                                <Bot className="h-4 w-4" />
+                                <span className="hidden sm:inline">{isDeployed ? "Bot Deployed" : "Deploy Bot"}</span>
+                                <span className="sm:hidden">{isDeployed ? "Deployed" : "Deploy"}</span>
+                              </>
+                            )}
                           </Button>
                         </div>
                       </>
