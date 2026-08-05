@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { calendarService } from "@/services/calendarService";
 import { Button } from "@/components/ui/Button";
-import { RefreshCw, ExternalLink, CheckCircle2, Copy, Bot, Loader2 } from "lucide-react";
+import { RefreshCw, ExternalLink, CheckCircle2, Copy, Bot, Loader2, Unlink } from "lucide-react";
 import { SummonBotModal } from "@/components/dashboard/SummonBotModal";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
@@ -254,6 +254,25 @@ export default function CalendarPage() {
                 <CheckCircle2 className="h-3 w-3" />
                 Linked to Teams
               </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!confirm('Are you sure you want to disconnect your Teams calendar? You will need to reconnect to sync events again.')) return;
+                  try {
+                    await calendarService.disconnectProvider('microsoft');
+                    toast.success('Teams calendar disconnected.');
+                    setIsConnected(false);
+                    setConnectedProviders((prev) => prev.filter((p) => p !== 'microsoft'));
+                    setEvents([]);
+                  } catch (err) {
+                    toast.error('Failed to disconnect. Please try again.');
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 transition-colors cursor-pointer"
+              >
+                <Unlink className="h-3 w-3" />
+                Disconnect
+              </button>
               {isSyncing && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full animate-in fade-in">
                   <RefreshCw className="h-3 w-3 animate-spin" />

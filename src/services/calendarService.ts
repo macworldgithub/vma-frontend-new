@@ -29,5 +29,10 @@ export const calendarService = {
   connectMicrosoft: async (code: string, state: string) => {
     const response = await api.get(`/calendar/microsoft/callback?code=${code}&state=${state}`);
     return response.data;
-  }
+  },
+
+  disconnectProvider: async (provider: 'google' | 'microsoft') => {
+    const response = await api.delete(`/calendar/disconnect/${provider}`);
+    return response.data;
+  },
 };
