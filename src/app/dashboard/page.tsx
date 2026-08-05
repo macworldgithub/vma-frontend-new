@@ -23,13 +23,18 @@ const getEffectiveMeetingStatus = (meeting: any): 'SCHEDULED' | 'LIVE' | 'ENDED'
     return 'CANCELLED';
   }
 
-  if (meeting.status === 'ENDED' || isBotDone) {
-    return 'ENDED';
-  }
-
   const now = Date.now();
   const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
   const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
+  const isTimeframeActive = endTime ? endTime > now : false;
+
+  if ((meeting.status === 'ENDED' || isBotDone) && !isTimeframeActive) {
+    return 'ENDED';
+  }
+
+  if (meeting.status === 'ENDED' && isTimeframeActive) {
+    return 'LIVE';
+  }
 
   if (endTime && endTime < now) {
     return 'ENDED';

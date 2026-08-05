@@ -50,21 +50,24 @@ export const MeetingCard = ({ meeting }: MeetingCardProps) => {
     },
   };
 
+  const now = Date.now();
+  const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
+  const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
+  const isTimeframeActive = endTime ? endTime > now : false;
+
   let effectiveStatus = meeting.status;
   const isBotDone = meeting.botStatus === 'done' || meeting.botStatus === 'fatal' || meeting.botStatus === 'call_ended';
   
-  if (meeting.status === 'ENDED' || meeting.status === 'CANCELLED' || isBotDone) {
-    effectiveStatus = meeting.status === 'CANCELLED' ? 'CANCELLED' : 'ENDED';
-  } else {
-    const now = Date.now();
-    const startTime = meeting.startTime ? new Date(meeting.startTime).getTime() : now;
-    const endTime = meeting.endTime ? new Date(meeting.endTime).getTime() : null;
-
-    if (endTime && endTime < now) {
-      effectiveStatus = "ENDED";
-    } else if (startTime > now) {
-      effectiveStatus = "SCHEDULED";
-    }
+  if (meeting.status === 'CANCELLED') {
+    effectiveStatus = 'CANCELLED';
+  } else if ((meeting.status === 'ENDED' || isBotDone) && !isTimeframeActive) {
+    effectiveStatus = 'ENDED';
+  } else if (effectiveStatus === 'ENDED' && isTimeframeActive) {
+    effectiveStatus = 'LIVE';
+  } else if (endTime && endTime < now) {
+    effectiveStatus = "ENDED";
+  } else if (startTime > now) {
+    effectiveStatus = "SCHEDULED";
   }
   
   const currentStatus = statusConfig[effectiveStatus];

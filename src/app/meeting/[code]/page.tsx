@@ -58,8 +58,11 @@ export default function JoinPage() {
       try {
         const response = await api.get(`/meetings/join/${code}`);
         if (response.data.status === "ENDED") {
-          setError("This meeting has already ended.");
-          return;
+          const isTimeframeActive = response.data.endTime && new Date(response.data.endTime) > new Date();
+          if (!isTimeframeActive) {
+            setError("This meeting has already ended.");
+            return;
+          }
         }
         setMeeting(response.data);
       } catch (err) {
@@ -84,8 +87,11 @@ export default function JoinPage() {
           setMeeting(response.data);
           clearInterval(pollInterval);
         } else if (response.data.status === "ENDED") {
-          setError("This meeting has already ended.");
-          clearInterval(pollInterval);
+          const isTimeframeActive = response.data.endTime && new Date(response.data.endTime) > new Date();
+          if (!isTimeframeActive) {
+            setError("This meeting has already ended.");
+            clearInterval(pollInterval);
+          }
         }
       } catch (err) {
         console.error("Failed to poll meeting status:", err);
