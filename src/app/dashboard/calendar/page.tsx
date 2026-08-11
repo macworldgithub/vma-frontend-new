@@ -216,6 +216,17 @@ export default function CalendarPage() {
     }
   };
 
+  const handleDisconnectMicrosoft = async () => {
+    try {
+      await calendarService.disconnectProvider('microsoft');
+      setConnectedProviders((prev) => prev.filter((p) => p !== 'microsoft'));
+      setEvents((prev) => prev.filter((e) => e.provider !== 'microsoft'));
+      toast.success("Teams calendar disconnected successfully.");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to disconnect Teams calendar.");
+    }
+  };
+
   const isMicrosoftConnected = connectedProviders.includes("microsoft");
 
   const filteredEvents = events.filter(
@@ -224,14 +235,6 @@ export default function CalendarPage() {
 
   if (isLoading) {
     return <CalendarPageSkeleton />;
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <RefreshCw className="h-12 w-12 text-primary animate-spin" />
-        <p className="text-muted-foreground animate-pulse font-medium uppercase tracking-widest text-xs">
-          Accessing Calendar Data...
-        </p>
-      </div>
-    );
   }
 
   return (
