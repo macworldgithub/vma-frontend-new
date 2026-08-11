@@ -360,9 +360,20 @@ export default function CalendarPage() {
 
           <div className="space-y-4">
             {filteredEvents.map((event) => {
-              const isDeployed = event.meetingLink ? dbMeetings.some(m => m.meetingLink === event.meetingLink && (m.recallBotId || (m.botStatus && m.botStatus !== 'none'))) : false;
+              const now = new Date();
+              const isEnded = event.endTime ? new Date(event.endTime).getTime() < now.getTime() || (event as any).status === 'ENDED' : false;
+
+              const isDeployed = Boolean(
+                (event as any).recallBotId ||
+                ((event as any).botStatus && !['none', 'error', null, '', undefined].includes((event as any).botStatus)) ||
+                (event.meetingLink && dbMeetings.some((m: any) =>
+                  (m._id === event._id || m.externalEventId === (event as any).externalEventId || (m.meetingLink && m.meetingLink.trim().replace(/\/$/, '') === event.meetingLink?.trim().replace(/\/$/, ''))) &&
+                  (m.recallBotId || (m.botStatus && !['none', 'error', null, '', undefined].includes(m.botStatus)))
+                ))
+              );
+
               const isDeploying = (event._id && deployingIds.has(event._id)) || (event.meetingLink ? deployingIds.has(event.meetingLink) : false);
-              const isBtnDisabled = isDeployed || isDeploying;
+              const isBtnDisabled = isDeployed || isDeploying || isEnded;
 
               return (
                 <div
@@ -429,7 +440,16 @@ export default function CalendarPage() {
                           <span className="hidden sm:inline">Join Meeting</span>
                           <span className="sm:hidden">Join</span>
                         </Button>
-                        <div className="relative group/btn" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
+                        <div
+                          className="relative group/btn"
+                          title={
+                            isDeployed
+                              ? "Bot has already been deployed to this meeting"
+                              : isEnded
+                              ? "This meeting has ended"
+                              : "Deploy virtual assistant bot to this meeting"
+                          }
+                        >
                           <Button
                             className={`gap-2 shadow-lg shadow-primary/20 w-full disabled:opacity-50 ${isBtnDisabled ? 'cursor-not-allowed' : ''}`}
                             onClick={() => handleDeployBotClick(event)}
@@ -441,11 +461,23 @@ export default function CalendarPage() {
                                 <span className="hidden sm:inline">Deploying...</span>
                                 <span className="sm:hidden">Deploying</span>
                               </>
+                            ) : isDeployed ? (
+                              <>
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                <span className="hidden sm:inline">Bot Deployed</span>
+                                <span className="sm:hidden">Deployed</span>
+                              </>
+                            ) : isEnded ? (
+                              <>
+                                <Bot className="h-4 w-4 opacity-40" />
+                                <span className="hidden sm:inline">Meeting Ended</span>
+                                <span className="sm:hidden">Ended</span>
+                              </>
                             ) : (
                               <>
                                 <Bot className="h-4 w-4" />
-                                <span className="hidden sm:inline">{isDeployed ? "Bot Deployed" : "Deploy Bot"}</span>
-                                <span className="sm:hidden">{isDeployed ? "Deployed" : "Deploy"}</span>
+                                <span className="hidden sm:inline">Deploy Bot</span>
+                                <span className="sm:hidden">Deploy</span>
                               </>
                             )}
                           </Button>
