@@ -10,9 +10,10 @@ interface SummonBotModalProps {
   onSuccess: (meetingId: string) => void;
   initialTitle?: string;
   initialMeetingLink?: string;
+  meetingId?: string;
 }
 
-export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', initialMeetingLink = '' }: SummonBotModalProps) {
+export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', initialMeetingLink = '', meetingId }: SummonBotModalProps) {
   const [title, setTitle] = useState(initialTitle);
   const [meetingLink, setMeetingLink] = useState(initialMeetingLink);
   const [platform, setPlatform] = useState('microsoft_teams');
@@ -21,13 +22,15 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
 
   React.useEffect(() => {
     if (isOpen) {
+      setTitle(initialTitle);
+      setMeetingLink(initialMeetingLink);
       meetingService.getMyMeetings()
         .then(meetings => {
           setDeployedLinks(meetings.filter((m: any) => m.recallBotId || (m.botStatus && m.botStatus !== 'none')).map((m: any) => m.meetingLink).filter(Boolean));
         })
         .catch(console.error);
     }
-  }, [isOpen]);
+  }, [isOpen, initialTitle, initialMeetingLink]);
 
   const isDeployed = meetingLink.trim() !== '' && deployedLinks.includes(meetingLink.trim());
 
@@ -53,6 +56,7 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
         title: title.trim(),
         meetingLink: meetingLink.trim(),
         platform,
+        meetingId,
       });
       toast.success('AI Bot deployed successfully!');
       onSuccess(response.meetingId);

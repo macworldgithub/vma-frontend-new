@@ -420,7 +420,7 @@ export default function CalendarPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    {event.meetingLink && (
+                    {event.meetingLink ? (
                       <>
                         <Button
                           variant="outline"
@@ -483,6 +483,26 @@ export default function CalendarPage() {
                           </Button>
                         </div>
                       </>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-muted-foreground bg-muted border border-border px-3 py-1.5 rounded-xl tracking-tight">
+                          No Online Link
+                        </span>
+                        {!isEnded && (
+                          <Button
+                            variant="outline"
+                            className="gap-2 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300 bg-white border-primary/20 hover:border-primary/50 text-xs font-bold"
+                            onClick={() => {
+                              setSelectedEventToSummon(event);
+                              setIsSummonBotOpen(true);
+                            }}
+                          >
+                            <Bot className="h-4 w-4 text-primary" />
+                            <span className="hidden sm:inline">Deploy Bot</span>
+                            <span className="sm:hidden">Deploy</span>
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -501,9 +521,11 @@ export default function CalendarPage() {
         onSuccess={() => {
           setIsSummonBotOpen(false);
           setSelectedEventToSummon(null);
+          fetchEvents(true);
         }}
         initialTitle={selectedEventToSummon?.title || ''}
         initialMeetingLink={selectedEventToSummon?.meetingLink || ''}
+        meetingId={selectedEventToSummon?._id}
       />
     </div>
   );
