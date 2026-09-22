@@ -12,7 +12,6 @@ interface SignupFormData {
   name: string;
   email: string;
   password: string;
-  role: 'staff' | 'admin';
 }
 
 export default function SignupPage() {
@@ -23,16 +22,8 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
-  } = useForm<SignupFormData>({
-    defaultValues: {
-      role: 'staff'
-    }
-  });
-
-  const selectedRole = watch('role');
+  } = useForm<SignupFormData>();
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
@@ -77,31 +68,6 @@ export default function SignupPage() {
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setValue('role', 'staff')}
-                className={`p-2 sm:p-3 rounded-xl border-2 transition-all duration-300 text-xs sm:text-sm font-bold uppercase tracking-wider ${
-                  selectedRole === 'staff'
-                    ? 'border-primary bg-primary/10 text-primary shadow-md shadow-primary/20'
-                    : 'border-border bg-muted/20 text-muted-foreground hover:border-muted-foreground/30'
-                }`}
-              >
-                Staff
-              </button>
-              <button
-                type="button"
-                onClick={() => setValue('role', 'admin')}
-                className={`p-2 sm:p-3 rounded-xl border-2 transition-all duration-300 text-xs sm:text-sm font-bold uppercase tracking-wider ${
-                  selectedRole === 'admin'
-                    ? 'border-primary bg-primary/10 text-primary shadow-md shadow-primary/20'
-                    : 'border-border bg-muted/20 text-muted-foreground hover:border-muted-foreground/30'
-                }`}
-              >
-                Admin
-              </button>
-            </div>
-
             <Input
               label="Full Name"
               type="text"

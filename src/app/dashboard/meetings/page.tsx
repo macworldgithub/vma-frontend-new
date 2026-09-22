@@ -9,7 +9,7 @@ import {
   MessageSquare, CalendarDays, Trash2, Shield, Calendar,
   Play, Users, Lock, Unlock, Sparkles, Send, UserCheck,
   Plus, BrainCircuit,
-  FileDown, RefreshCw
+  FileDown, RefreshCw, BotOff
 } from 'lucide-react';
 import { meetingService, Meeting } from '@/services/meetingService';
 import { useAuthStore } from '@/store/authStore';
@@ -66,6 +66,7 @@ export default function MyMeetingsPage() {
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [activeDrawerTab, setActiveDrawerTab] = useState<'chat' | 'summary'>('summary');
   const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
+  const [removingBotId, setRemovingBotId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMeetings();
@@ -224,6 +225,20 @@ export default function MyMeetingsPage() {
     }
   };
 
+  const handleUninviteBot = async (meeting: Meeting) => {
+    if (!confirm('Remove the AI bot from this meeting? It will not be invited again automatically.')) return;
+    setRemovingBotId(meeting._id);
+    try {
+      await meetingService.uninviteBot(meeting._id);
+      await fetchMeetings();
+    } catch (error) {
+      console.error('Failed to remove bot:', error);
+      alert('Could not remove the AI bot from this meeting.');
+    } finally {
+      setRemovingBotId(null);
+    }
+  };
+
   return (
     <div className="space-y-10 pb-20 relative min-h-screen">
 
@@ -361,6 +376,20 @@ export default function MyMeetingsPage() {
                   </div>
 
                   <div className="flex gap-2">
+
+                    {meeting.recallBotId && meeting.botStatus !== 'call_ended' && meeting.botStatus !== 'done' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUninviteBot(meeting)}
+                        disabled={removingBotId === meeting._id}
+                        className="rounded-lg sm:rounded-xl px-2.5 sm:px-3 h-8 sm:h-10 gap-1 sm:gap-1.5 text-[8px] sm:text-[9px] font-black tracking-widest uppercase border-rose-500/20 text-rose-600 hover:bg-rose-500/10"
+                        title="Remove AI bot"
+                      >
+                        <BotOff className="h-3 sm:h-3.5 w-3 sm:w-3.5" />
+                        {removingBotId === meeting._id ? 'REMOVING' : 'UNINVITE BOT'}
+                      </Button>
+                    )}
 
                     {/* View Chat Action for Completed Meetings */}
                     {effectiveStatus === "ENDED" && (

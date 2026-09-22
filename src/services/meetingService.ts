@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import api from "@/lib/axios";
 
 export interface CreateMeetingDto {
   title: string;
@@ -12,7 +12,7 @@ export interface Meeting {
   title: string;
   meetingCode: string;
   meetingLink: string;
-  status: 'SCHEDULED' | 'LIVE' | 'ENDED' | 'CANCELLED';
+  status: "SCHEDULED" | "LIVE" | "ENDED" | "CANCELLED";
   hostId: string;
   startTime: string;
   endTime?: string;
@@ -49,21 +49,26 @@ export interface IceServer {
   credential?: string;
 }
 
-const inFlightSummons = new Map<string, Promise<{ message: string; meetingId: string }>>();
+const inFlightSummons = new Map<
+  string,
+  Promise<{ message: string; meetingId: string }>
+>();
 
 export const meetingService = {
   getIceServers: async (): Promise<{ iceServers: IceServer[] }> => {
-    const response = await api.get('/meetings/ice-servers');
+    const response = await api.get("/meetings/ice-servers");
     return response.data;
   },
 
-  createMeeting: async (data: CreateMeetingDto): Promise<{ meeting: Meeting; joinUrl: string }> => {
-    const response = await api.post('/meetings/create', data);
+  createMeeting: async (
+    data: CreateMeetingDto,
+  ): Promise<{ meeting: Meeting; joinUrl: string }> => {
+    const response = await api.post("/meetings/create", data);
     return response.data;
   },
 
   getMyMeetings: async (): Promise<Meeting[]> => {
-    const response = await api.get('/meetings/my');
+    const response = await api.get("/meetings/my");
     return response.data;
   },
 
@@ -82,7 +87,9 @@ export const meetingService = {
     return response.data;
   },
 
-  getLiveDetails: async (id: string): Promise<{ meeting: Meeting; liveParticipants: any[] }> => {
+  getLiveDetails: async (
+    id: string,
+  ): Promise<{ meeting: Meeting; liveParticipants: any[] }> => {
     const response = await api.get(`/meetings/${id}/live`);
     return response.data;
   },
@@ -97,7 +104,12 @@ export const meetingService = {
     return response.data;
   },
 
-  summonBot: async (data: { title: string; meetingLink: string; platform: string; meetingId?: string }): Promise<{ message: string; meetingId: string }> => {
+  summonBot: async (data: {
+    title: string;
+    meetingLink: string;
+    platform: string;
+    meetingId?: string;
+  }): Promise<{ message: string; meetingId: string }> => {
     const key = data.meetingId || data.meetingLink;
     if (key && inFlightSummons.has(key)) {
       return inFlightSummons.get(key)!;
@@ -105,7 +117,7 @@ export const meetingService = {
 
     const requestPromise = (async () => {
       try {
-        const response = await api.post('/bot/summon', data);
+        const response = await api.post("/bot/summon", data);
         return response.data;
       } finally {
         if (key) inFlightSummons.delete(key);
@@ -119,9 +131,16 @@ export const meetingService = {
     return requestPromise;
   },
 
+  uninviteBot: async (
+    id: string,
+  ): Promise<{ message: string; meetingId: string }> => {
+    const response = await api.delete(`/bot/meeting/${id}`);
+    return response.data;
+  },
+
   downloadMeetingReport: async (id: string): Promise<Blob> => {
     const response = await api.get(`/bot/meeting/${id}/report`, {
-      responseType: 'blob',
+      responseType: "blob",
     });
     return response.data;
   },
