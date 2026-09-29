@@ -165,12 +165,14 @@ export default function LoginPage() {
             Access Platform
           </Button>
 
-          <div className="text-center text-sm text-muted-foreground font-medium pt-2">
-            New to VMA?{' '}
-            <Link href="/signup" className="text-primary hover:text-primary/80 transition-colors font-bold">
-              Request Access
-            </Link>
-          </div>
+          {selectedRole === 'staff' && (
+            <div className="text-center text-sm text-muted-foreground font-medium pt-2">
+              New to VMA?{' '}
+              <Link href="/signup" className="text-primary hover:text-primary/80 transition-colors font-bold">
+                Request Access
+              </Link>
+            </div>
+          )}
         </form>
       </div>
     </div>
