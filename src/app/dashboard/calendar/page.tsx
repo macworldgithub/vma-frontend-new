@@ -20,6 +20,9 @@ interface CalendarEvent {
   platform: string;
   participants: string[];
   provider?: string;
+  isOrganizer?: boolean;
+  organizerEmail?: string;
+  organizerName?: string;
 }
 
 const MicrosoftIcon = ({ className }: { className?: string }) => (
@@ -49,6 +52,8 @@ export default function CalendarPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSummonBotOpen, setIsSummonBotOpen] = useState(false);
   const [selectedEventToSummon, setSelectedEventToSummon] = useState<CalendarEvent | null>(null);
+  const [consentModalEvent, setConsentModalEvent] = useState<CalendarEvent | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
   const [deployingIds, setDeployingIds] = useState<Set<string>>(new Set());
   const deployingIdsRef = useRef<Set<string>>(new Set());
 
@@ -57,7 +62,23 @@ export default function CalendarPage() {
     toast.success('Meeting link copied!');
   };
 
-  const handleDeployBotClick = async (event: CalendarEvent) => {
+  const handleDeployBotClick = (event: CalendarEvent) => {
+    if (!event.meetingLink) {
+      toast.error("No meeting link available to deploy bot.");
+      return;
+    }
+
+    // If user is an attendee (not the organizer), require explicit consent modal
+    if (event.isOrganizer === false) {
+      setConsentModalEvent(event);
+      setConsentChecked(false);
+      return;
+    }
+
+    executeBotDeployment(event);
+  };
+
+  const executeBotDeployment = async (event: CalendarEvent) => {
     try {
       if (!event.meetingLink) {
         toast.error("No meeting link available to deploy bot.");
@@ -81,10 +102,11 @@ export default function CalendarPage() {
       });
 
       toast.success("Bot deployed successfully!");
+      setConsentModalEvent(null);
       fetchEvents(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("Failed to deploy bot.");
+      toast.error(error.response?.data?.message || "Failed to deploy bot.");
     } finally {
       const eventKey = event._id || event.meetingLink;
       if (eventKey) {
@@ -415,6 +437,15 @@ export default function CalendarPage() {
                             ? "Microsoft Teams"
                             : event.platform}
                         </span>
+                        {event.isOrganizer === true ? (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 font-black uppercase tracking-widest">
+                            Organiser (You)
+                          </span>
+                        ) : (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-slate-500/10 text-slate-600 border border-slate-500/20 font-bold uppercase tracking-wider">
+                            Attendee {event.organizerName || event.organizerEmail ? `• Hosted by ${event.organizerName || event.organizerEmail}` : ''}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -508,6 +539,83 @@ export default function CalendarPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Consent Confirmation Modal for Attendee Deployments */}
+      {consentModalEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setConsentModalEvent(null)}
+          />
+          
+          <div className="relative w-full max-w-lg bg-card border border-border shadow-2xl rounded-3xl overflow-hidden animate-scale-in">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 via-primary to-amber-500" />
+            
+            <div className="p-6 sm:p-8 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-amber-600">
+                  <Bot className="h-5 w-5" />
+                  <span className="text-xs font-black uppercase tracking-widest">AI Recording Consent Required</span>
+                </div>
+                <h3 className="text-xl font-black text-foreground uppercase">
+                  Deploying to Unhosted Meeting
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  You are listed as an attendee for <strong className="text-foreground">{consentModalEvent.title}</strong>
+                  {consentModalEvent.organizerName || consentModalEvent.organizerEmail ? ` organised by ${consentModalEvent.organizerName || consentModalEvent.organizerEmail}` : ''}.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+                <p className="text-xs font-medium text-amber-700 leading-relaxed">
+                  High-end client and enterprise meetings frequently prohibit AI recording bots. Deploying a bot without the meeting host&apos;s prior approval may violate meeting policies.
+                </p>
+                <div className="flex items-start gap-2.5 pt-1">
+                  <input
+                    type="checkbox"
+                    id="modalConsentCheckbox"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer"
+                  />
+                  <label htmlFor="modalConsentCheckbox" className="text-xs font-bold text-foreground leading-snug cursor-pointer select-none">
+                    I confirm that I have obtained explicit permission from the meeting organiser and attendees to deploy the AI note-taking bot.
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setConsentModalEvent(null)}
+                  className="flex-1 rounded-xl h-12 text-xs font-black uppercase tracking-widest"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={!consentChecked || (consentModalEvent._id ? deployingIds.has(consentModalEvent._id) : false)}
+                  onClick={() => executeBotDeployment(consentModalEvent)}
+                  className="flex-1 rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50 cursor-not-allowed"
+                >
+                  {consentModalEvent._id && deployingIds.has(consentModalEvent._id) ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Deploying...
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="h-4 w-4" />
+                      Confirm & Deploy
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -19,11 +19,13 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
   const [platform, setPlatform] = useState('microsoft_teams');
   const [isLoading, setIsLoading] = useState(false);
   const [deployedLinks, setDeployedLinks] = useState<string[]>([]);
+  const [hasConsent, setHasConsent] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
       setTitle(initialTitle);
       setMeetingLink(initialMeetingLink);
+      setHasConsent(false);
       meetingService.getMyMeetings()
         .then(meetings => {
           setDeployedLinks(meetings.filter((m: any) => m.recallBotId || (m.botStatus && m.botStatus !== 'none')).map((m: any) => m.meetingLink).filter(Boolean));
@@ -162,7 +164,26 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
                 Bot has already been deployed to that meeting.
               </div>
             )}
-            <div className="pt-4 flex gap-3">
+
+            <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2.5">
+              <div className="flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="consentCheckbox"
+                  checked={hasConsent}
+                  onChange={(e) => setHasConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary/20 accent-primary cursor-pointer"
+                />
+                <label htmlFor="consentCheckbox" className="text-[11px] font-bold text-foreground leading-snug cursor-pointer select-none">
+                  I confirm that I have permission from the meeting organiser and participants to record and transcribe this session with an AI assistant.
+                </label>
+              </div>
+              <p className="text-[9px] text-muted-foreground font-medium pl-6">
+                Note: Many enterprise and client meetings prohibit unauthorized AI bots.
+              </p>
+            </div>
+
+            <div className="pt-2 flex gap-3">
               <Button 
                 type="button" 
                 variant="outline" 
@@ -171,10 +192,10 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
               >
                 Cancel
               </Button>
-              <div className="flex-[2] relative" title={isDeployed ? "Bot has already been deployed to that meeting" : ""}>
+              <div className="flex-[2] relative" title={isDeployed ? "Bot has already been deployed to that meeting" : !hasConsent ? "Please confirm participant consent" : ""}>
                 <Button 
                   type="submit" 
-                  disabled={isLoading || isSubmittingRef.current || !title.trim() || !meetingLink.trim() || isDeployed}
+                  disabled={isLoading || isSubmittingRef.current || !title.trim() || !meetingLink.trim() || isDeployed || !hasConsent}
                   className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50 cursor-not-allowed"
                 >
                   {isLoading ? (
