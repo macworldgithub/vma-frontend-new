@@ -46,6 +46,14 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
       toast.error('Please provide a title and meeting link.');
       return;
     }
+    if (!hasConsent) {
+      toast.error('Please confirm participant consent before deploying the bot.');
+      return;
+    }
+    if (isDeployed) {
+      toast.error('Bot has already been deployed to that meeting.');
+      return;
+    }
 
     if (isSubmittingRef.current || isLoading) {
       return;
@@ -192,11 +200,16 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
               >
                 Cancel
               </Button>
-              <div className="flex-[2] relative" title={isDeployed ? "Bot has already been deployed to that meeting" : !hasConsent ? "Please confirm participant consent" : ""}>
+              <div
+                className={`flex-[2] relative ${
+                  isDeployed || !hasConsent || !title.trim() || !meetingLink.trim() ? 'cursor-not-allowed' : ''
+                }`}
+                title={isDeployed ? 'Bot has already been deployed to that meeting' : !hasConsent ? 'Please confirm participant consent' : ''}
+              >
                 <Button 
                   type="submit" 
                   disabled={isLoading || isSubmittingRef.current || !title.trim() || !meetingLink.trim() || isDeployed || !hasConsent}
-                  className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50 cursor-not-allowed"
+                  className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>
