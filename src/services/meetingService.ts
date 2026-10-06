@@ -109,7 +109,7 @@ export const meetingService = {
     meetingLink: string;
     platform: string;
     meetingId?: string;
-  }): Promise<{ message: string; meetingId: string }> => {
+  }): Promise<{ message: string; meetingId: string; success?: boolean }> => {
     const key = data.meetingId || data.meetingLink;
     if (key && inFlightSummons.has(key)) {
       return inFlightSummons.get(key)!;

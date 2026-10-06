@@ -94,15 +94,19 @@ export default function CalendarPage() {
 
       toast.info("Deploying Bot...");
 
-      await meetingService.summonBot({
+      const result = await meetingService.summonBot({
         title: event.title,
         meetingLink: event.meetingLink,
         platform: event.platform === "teams" ? "teams" : event.platform,
         meetingId: event._id,
       });
 
-      toast.success("Bot deployed successfully!");
-      setConsentModalEvent(null);
+      if ((result as any).success === false) {
+        toast.error((result as any).message || "Bot could not be deployed. Please try again.");
+      } else {
+        toast.success("Bot deployed successfully!");
+        setConsentModalEvent(null);
+      }
       fetchEvents(true);
     } catch (error: any) {
       console.error(error);

@@ -46,14 +46,6 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
       toast.error('Please provide a title and meeting link.');
       return;
     }
-    if (!hasConsent) {
-      toast.error('Please confirm participant consent before deploying the bot.');
-      return;
-    }
-    if (isDeployed) {
-      toast.error('Bot has already been deployed to that meeting.');
-      return;
-    }
 
     if (isSubmittingRef.current || isLoading) {
       return;
@@ -68,9 +60,15 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
         platform,
         meetingId,
       });
+
+      if ((response as any).success === false) {
+        toast.error((response as any).message || 'Bot could not be deployed. Please try again.');
+        return;
+      }
+
       toast.success('AI Bot deployed successfully!');
       onSuccess(response.meetingId);
-      
+
       // Reset form
       setTitle(initialTitle);
       setMeetingLink(initialMeetingLink);
@@ -78,6 +76,7 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
     } catch (error: any) {
       console.error('Failed to summon bot:', error);
       toast.error(error.response?.data?.message || 'Failed to deploy AI Bot. Please try again.');
+
     } finally {
       isSubmittingRef.current = false;
       setIsLoading(false);
@@ -86,14 +85,14 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-      <div 
+      <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      
+
       <div className="relative w-full max-w-md bg-card border border-border shadow-2xl rounded-3xl overflow-hidden animate-scale-in">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-accent to-primary animate-gradient-x" />
-        
+
         <div className="p-6 sm:p-8 space-y-6">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
@@ -107,7 +106,7 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
                 Summon the OmniSuiteAI assistant to an external meeting.
               </p>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -192,24 +191,19 @@ export function SummonBotModal({ isOpen, onClose, onSuccess, initialTitle = '', 
             </div>
 
             <div className="pt-2 flex gap-3">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={onClose}
                 className="flex-1 rounded-xl h-12 text-xs font-black uppercase tracking-widest"
               >
                 Cancel
               </Button>
-              <div
-                className={`flex-[2] relative ${
-                  isDeployed || !hasConsent || !title.trim() || !meetingLink.trim() ? 'cursor-not-allowed' : ''
-                }`}
-                title={isDeployed ? 'Bot has already been deployed to that meeting' : !hasConsent ? 'Please confirm participant consent' : ''}
-              >
-                <Button 
-                  type="submit" 
+              <div className="flex-[2] relative" title={isDeployed ? "Bot has already been deployed to that meeting" : !hasConsent ? "Please confirm participant consent" : ""}>
+                <Button
+                  type="submit"
                   disabled={isLoading || isSubmittingRef.current || !title.trim() || !meetingLink.trim() || isDeployed || !hasConsent}
-                  className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50"
+                  className="w-full rounded-xl h-12 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 gap-2 disabled:opacity-50 cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
